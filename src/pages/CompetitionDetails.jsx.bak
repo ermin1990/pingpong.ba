@@ -1,0 +1,368 @@
+import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { db } from '../firebase/config';
+import { doc, getDoc, collection, query, where, getDocs, updateDoc, addDoc, serverTimestamp, writeBatch, onSnapshot } from 'firebase/firestore';
+import DashboardLayout from '../layouts/DashboardLayout';
+import { Users, Trophy, Play, CheckCircle, Clock, Save, Plus, Layers, ChevronRight, LayoutGrid, FileText, Info, UserPlus } from 'lucide-react';
+import { generateBergerMatches } from '../utils/berger';
+
+const CompetitionDetails = () => {
+  const { id } = useParams();
+  const { userData } = useAuth();
+  const [competition, setCompetition] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [allPlayers, setAllPlayers] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+  const [selectedPlayers, setSelectedPlayers] = useState([]);
+  const [activeTab, setActiveTab] = useState('categories');
+  const [generating, setGenerating] = useState(false);
+  const [matches, setMatches] = useState([]);
+  const [savingMatchId, setSavingMatchId] = useState(null);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryFormat, setNewCategoryFormat] = useState('round_robin'); // 'round_robin' | 'groups_knockout'
+  const [editingFormat, setEditingFormat] = useState(false);
+  
+  // Grouping state
+  const [groupCount, setGroupCount] = useState(2);
+  const [groups, setGroups] = useState([]); // Array of arrays of player objects
+  
+  // Novi state za brzo dodavanje igrača direktno ovdje
+  const [showAddPlayer, setShowAddPlayer] = useState(false);
+  const [playerFormMode, setPlayerFormMode] = useState('single');
+  const [newPlayerName, setNewPlayerName] = useState('');
+  const [newPlayerClub, setNewPlayerClub] = useState('');
+  const [bulkPlayerText, setBulkPlayerText] = useState('');
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!id || !userData) return;
+
+      try {
+        // 1. Dohvati detalje takmičenja
+        const compRef = doc(db, "competitions", id);
+        const compSnap = await getDoc(compRef);
+        
+        if (compSnap.exists()) {
+          const compData = { id: compSnap.id, ...compSnap.data() };
+          setCompetition(compData);
+          
+          // 2. Dohvati igrače
+          let playersQ;
+          if (userData.role === 'super_admin') {
+            playersQ = query(collection(db, "players"));
+          } else {
+            playersQ = query(
+              collection(db, "players"), 
+              where("organizationId", "==", userData.organizationId)
+            );
+          }
+
+          const playersSnap = await getDocs(playersQ);
+          setAllPlayers(playersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        }
+      } catch (err) {
+        console.error("Greška pri učitavanju:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [id, userData]);
+
+  // Real-time kategorije
+  useEffect(() => {
+    if (!id) return;
+    const q = query(collection(db, "competitions", id, "categories"));
+    const unsubscribe = onSnapshot(q, (snap) => {
+      const list = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setCategories(list);
+    });
+    return () => unsubscribe();
+  }, [id]);
+
+  // Real-time mečevi za aktivnu kategoriju
+  useEffect(() => {
+    if (activeTab === 'matches' && id && selectedCategoryId) {
+      const q = query(
+        collection(db, "matches"), 
+        where("competitionId", "==", id),
+        where("categoryId", "==", selectedCategoryId)
+      );
+      
+      const unsubscribe = onSnapshot(q, (snap) => {
+        const list = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        // Sort po rundi, pa po grupi ako postoji
+        setMatches(list.sort((a, b) => {
+          if (a.round !== b.round) return a.round - b.round;
+          if (a.groupId !== b.groupId) return (a.groupId || 0) - (b.groupId || 0);
+          return 0;
+        }));
+      });
+      return () => unsubscribe();
+    }
+  }, [activeTab, id, selectedCategoryId]);
+
+  const activeCategory = categories.find(c => c.id === selectedCategoryId);
+
+  // Kada se promijeni kategorija, resetuj selekciju igrača na one koji su već u kategoriji
+  useEffect(() => {
+    if (selectedCategoryId && activeCategory) {
+      setSelectedPlayers(activeCategory.playerIds || []);
+    }
+  }, [selectedCategoryId, activeCategory]);
+
+  const handleAddCategory = async (e) => {
+    e.preventDefault();
+    if (!newCategoryName.trim()) return;
+
+    try {
+      await addDoc(collection(db, "competitions", id, "categories"), {
+        name: newCategoryName.trim(),
+        format: newCategoryFormat,
+        status: 'draft',
+        createdAt: serverTimestamp(),
+        playerIds: []
+      });
+      setNewCategoryName('');
+    } catch (err) {
+      alert("Greška pri kreiranju kategorije.");
+    }
+  };
+
+  const togglePlayerSelection = (playerId) => {
+    if (activeCategory?.status !== 'draft') return;
+    
+    setSelectedPlayers(prev => 
+      prev.includes(playerId) 
+        ? prev.filter(pid => pid !== playerId) 
+        : [...prev, playerId]
+    );
+  };
+
+  const saveSelectedPlayers = async () => {
+    if (!selectedCategoryId) return;
+    try {
+      const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
+      await updateDoc(catRef, {
+        playerIds: selectedPlayers,
+        updatedAt: serverTimestamp()
+      });
+      alert("Lista igrača sačuvana.");
+    } catch (err) {
+      alert("Greška pri spašavanju igrača.");
+    }
+  };
+
+  const handleQuickAddPlayer = async (e) => {
+    e.preventDefault();
+    if (!newPlayerName.trim()) return;
+
+    try {
+      const playerRef = await addDoc(collection(db, "players"), {
+        name: newPlayerName.trim(),
+        club: newPlayerName.trim(), // Ops, club field should be newPlayerClub
+        club: newPlayerClub.trim(),
+        organizationId: userData.organizationId || "SUPER_ADMIN",
+        createdAt: new Date(),
+        matchesPlayed: 0,
+        wins: 0
+      });
+      
+      // Automatski dodaj novog igrača u selekciju ove kategorije
+      setSelectedPlayers(prev => [...prev, playerRef.id]);
+      setAllPlayers(prev => [...prev, { id: playerRef.id, name: newPlayerName.trim(), club: newPlayerClub.trim() }]);
+      
+      setNewPlayerName('');
+      setNewPlayerClub('');
+      setShowAddPlayer(false);
+    } catch (err) {
+      alert("Greška pri dodavanju igrača.");
+    }
+  };
+
+  const handleQuickBulkAdd = async (e) => {
+    e.preventDefault();
+    if (!bulkPlayerText.trim()) return;
+
+    setGenerating(true);
+    try {
+      const batch = writeBatch(db);
+      const entries = bulkPlayerText.split(/[;\n]/).filter(entry => entry.trim());
+      const newIds = [];
+      const newObjects = [];
+
+      entries.forEach(entry => {
+        const [pName, pClub] = entry.split(',').map(s => s.trim());
+        if (pName) {
+          const playerRef = doc(collection(db, "players"));
+          const pData = {
+            name: pName,
+            club: pClub || '',
+            organizationId: userData.organizationId || "SUPER_ADMIN",
+            createdAt: new Date(),
+            matchesPlayed: 0,
+            wins: 0
+          };
+          batch.set(playerRef, pData);
+          newIds.push(playerRef.id);
+          newObjects.push({ id: playerRef.id, ...pData });
+        }
+      });
+
+      await batch.commit();
+      setSelectedPlayers(prev => [...prev, ...newIds]);
+      setAllPlayers(prev => [...prev, ...newObjects]);
+      setBulkPlayerText('');
+      setShowAddPlayer(false);
+      alert(`Dodano ${entries.length} novih igrača.`);
+    } catch (err) {
+      alert("Greška pri bulk dodavanju.");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const handleGenerateMatches = async () => {
+    if (selectedPlayers.length < 2) {
+      alert("Morate izabrati barem 2 igrača.");
+      return;
+    }
+
+    setGenerating(true);
+    try {
+      const batch = writeBatch(db);
+      
+      if (activeCategory.format === 'groups_knockout') {
+        // GENERISANJE PO GRUPAMA
+        if (groups.length === 0) {
+          alert("Prvo morate kreirati grupe.");
+          setGenerating(false);
+          return;
+        }
+
+        groups.forEach((groupPlayers, groupIdx) => {
+          const groupRounds = generateBergerMatches(groupPlayers);
+          groupRounds.forEach(round => {
+            round.matches.forEach(match => {
+              const matchRef = doc(collection(db, "matches"));
+              batch.set(matchRef, {
+                ...match,
+                competitionId: id,
+                categoryId: selectedCategoryId,
+                groupId: groupIdx, // Dodajemo ID grupe
+                groupName: `Grupa ${String.fromCharCode(65 + groupIdx)}`,
+                organizationId: userData.organizationId,
+                createdAt: serverTimestamp()
+              });
+            });
+          });
+        });
+      } else {
+        // STANDARDNI ROUND ROBIN
+        const participants = allPlayers.filter(p => selectedPlayers.includes(p.id));
+        const rounds = generateBergerMatches(participants);
+
+        rounds.forEach(round => {
+          round.matches.forEach(match => {
+            const matchRef = doc(collection(db, "matches"));
+            batch.set(matchRef, {
+              ...match,
+              competitionId: id,
+              categoryId: selectedCategoryId,
+              organizationId: userData.organizationId,
+              createdAt: serverTimestamp()
+            });
+          });
+        });
+      }
+
+      // 2. Ažuriraj kategoriju
+      const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
+      batch.update(catRef, {
+        status: 'active',
+        playerIds: selectedPlayers,
+        groupConfig: activeCategory.format === 'groups_knockout' ? groups.map(g => g.map(p => p.id)) : null,
+        updatedAt: serverTimestamp()
+      });
+
+      await batch.commit();
+      setActiveTab('matches');
+      alert("Raspored za kategoriju uspješno generisan!");
+    } catch (err) {
+      console.error(err);
+      alert("Greška pri generisanju mečeva.");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const handleScoreChange = (matchId, playerKey, val) => {
+    setMatches(prev => prev.map(m => 
+      m.id === matchId 
+        ? { ...m, [playerKey + 'Score']: parseInt(val) || 0 }
+        : m
+    ));
+  };
+
+  const saveMatchResult = async (match) => {
+    setSavingMatchId(match.id);
+    try {
+      const matchRef = doc(db, "matches", match.id);
+      await updateDoc(matchRef, {
+        player1Score: match.player1Score || 0,
+        player2Score: match.player2Score || 0,
+        status: 'completed',
+        updatedAt: serverTimestamp()
+      });
+      // Ovdje bi mogli dodati i logiku za ažuriranje tabele ako treba real-time
+      alert("Rezultat uspješno ažuriran!");
+    } catch (err) {
+      console.error(err);
+      alert("Greška pri spašavanju rezultata.");
+    } finally {
+      setSavingMatchId(null);
+    }
+  };
+
+  const handleUpdateFormat = async (newFormat) => {
+    if (!selectedCategoryId) return;
+    try {
+      const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
+      await updateDoc(catRef, {
+        format: newFormat,
+        updatedAt: serverTimestamp()
+      });
+      setEditingFormat(false);
+      // Resetuj grupe ako prelazimo na format bez grupa
+      if (newFormat !== 'groups_knockout') setGroups([]);
+    } catch (err) {
+      alert("Greška pri ažuriranju formata.");
+    }
+  };
+
+  const handleAutoGroup = () => {
+    const participants = allPlayers.filter(p => selectedPlayers.includes(p.id));
+    // Shuffle
+    const shuffled = [...participants].sort(() => Math.random() - 0.5);
+    
+    const newGroups = Array.from({ length: groupCount }, () => []);
+    shuffled.forEach((player, index) => {
+      newGroups[index % groupCount].push(player);
+    });
+    
+    setGroups(newGroups);
+  };
+
+  const movePlayerToGroup = (playerId, targetGroupIdx) => {
+    setGroups(prev => {
+      const newGroups = prev.map(g => g.filter(p => p.id !== playerId));
+      const player = allPlayers.find(p => p.id === playerId);
+      if (player) {
+        newGroups[targetGroupIdx].push(player);
+      }
+      return newGroups;
+    });
+  };
