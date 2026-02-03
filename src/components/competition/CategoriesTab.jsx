@@ -1,4 +1,4 @@
-import { Plus, ChevronRight, Info, Target, Users, PlayCircle } from 'lucide-react';
+import { Plus, ChevronRight, Info, Target, Users, PlayCircle, Zap, Settings2, ExternalLink, Code } from 'lucide-react';
 
 const CategoriesTab = ({ 
   categories, 
@@ -9,27 +9,58 @@ const CategoriesTab = ({
   setNewCategoryName, 
   newCategoryFormat, 
   setNewCategoryFormat, 
-  handleAddCategory 
+  handleAddCategory,
+  competitionSlug
 }) => {
   const activeCategory = categories.find(c => c.id === selectedCategoryId);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 space-y-4">
-        <h2 className="text-xl font-bold text-white mb-4">Pregled Disciplina</h2>
+        <h2 className="text-xl font-bold text-white mb-4">Pregled Kategorija</h2>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {categories.map(cat => (
             <div 
               key={cat.id} 
-              onClick={() => setSelectedCategoryId(cat.id)}
+              onClick={() => {
+                setSelectedCategoryId(cat.id);
+              }}
               className={`p-5 rounded-xl border cursor-pointer transition-all ${selectedCategoryId === cat.id ? 'bg-slate-800 border-blue-500 ring-1 ring-blue-500' : 'bg-slate-900 border-slate-800 hover:border-slate-700'}`}
             >
               <div className="flex justify-between items-start mb-3">
                 <h3 className="font-bold text-lg text-white">{cat.name}</h3>
-                <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase ${cat.status === 'active' ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-400'}`}>
-                  {cat.status}
-                </span>
+                <div className="flex items-center gap-1.5 p-1 bg-slate-950/50 rounded-lg">
+                  {competitionSlug && (
+                    <>
+                      <a 
+                        href={`/p/${competitionSlug}?category=${cat.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="p-1.5 text-slate-400 hover:text-blue-400 hover:bg-slate-800 rounded-md transition-all"
+                        title="Otvori javni link"
+                      >
+                        <ExternalLink size={14} />
+                      </a>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const code = `<iframe src="${window.location.origin}/p/${competitionSlug}?category=${cat.id}&embed=true" width="100%" height="800" frameborder="0"></iframe>`;
+                          navigator.clipboard.writeText(code);
+                          alert('Iframe kod za ugradnju je kopiran u međuspremnik!');
+                        }}
+                        className="p-1.5 text-slate-400 hover:text-emerald-400 hover:bg-slate-800 rounded-md transition-all"
+                        title="Kopiraj iframe kod za blog"
+                      >
+                        <Code size={14} />
+                      </button>
+                    </>
+                  )}
+                  <span className={`text-[10px] px-2 py-1 rounded font-bold uppercase ${cat.status === 'active' ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-400'}`}>
+                    {cat.status}
+                  </span>
+                </div>
               </div>
               
               <div className="flex justify-between items-center text-sm text-slate-400">
@@ -106,6 +137,18 @@ const CategoriesTab = ({
                    className="w-full flex items-center justify-between p-4 rounded-lg bg-slate-700/50 hover:bg-slate-700 transition-all text-sm font-bold text-white"
                  >
                     Vidi Raspored <PlayCircle size={16} />
+                 </button>
+                 <button 
+                   onClick={() => setActiveTab('knockout')} 
+                   className="w-full flex items-center justify-between p-4 rounded-lg bg-slate-700/50 hover:bg-slate-700 transition-all text-sm font-bold text-white"
+                 >
+                    Eliminaciona Faza <Zap size={16} />
+                 </button>
+                 <button 
+                   onClick={() => setActiveTab('settings')} 
+                   className="w-full flex items-center justify-between p-4 rounded-lg bg-slate-700/50 hover:bg-slate-700 transition-all text-sm font-bold text-white"
+                 >
+                    Postavke Kategorije <Settings2 size={16} />
                  </button>
               </div>
             </div>

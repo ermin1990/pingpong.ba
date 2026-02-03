@@ -1,0 +1,112 @@
+{
+  "competitions": [
+    {
+      "id": "52",
+      "name": "PODKATEGORIJA NAJMLAĐE KADETKINJE",
+      "slug": "podkategorija-najmlade-kadetkinje-1769779372",
+      "type": "tournament",
+      "status": "active",
+      "sets_to_win": "3",
+      "points_per_set": "11"
+    },
+    {
+      "id": "53",
+      "name": "PODKATEGORIJA NAJMLAĐI KADETI",
+      "slug": "podkategorija-najmladi-kadeti-1769780005",
+      "type": "tournament",
+      "status": "active",
+      "sets_to_win": "3",
+      "points_per_set": "11"
+    },
+    {
+      "id": "54",
+      "name": "NAJMLAĐE KADETKINJE",
+      "slug": "najmlade-kadetkinje-1769780747",
+      "type": "tournament",
+      "status": "active",
+      "sets_to_win": "3",
+      "points_per_set": "11"
+    },
+    {
+      "id": "55",
+      "name": "NAJMLAĐI KADETI",
+      "slug": "najmladi-kadeti-1769781400",
+      "type": "tournament",
+      "status": "active",
+      "sets_to_win": "3",
+      "points_per_set": "11"
+    },
+    {
+      "id": "56",
+      "name": "MLAĐE KADETKINJE",
+      "slug": "mlade-kadetkinje-1769784150",
+      "type": "tournament",
+      "status": "active",
+      "sets_to_win": "3",
+      "points_per_set": "11"
+    },
+    {
+      "id": "57",
+      "name": "MLAĐI KADETI",
+      "slug": "mladi-kadeti-1769784513",
+      "type": "tournament",
+      "status": "active",
+      "sets_to_win": "3",
+      "points_per_set": "11"
+    },
+    {
+      "id": "58",
+      "name": "JUNIORKE",
+      "slug": "juniorke-1769784992",
+      "type": "tournament",
+      "status": "active",
+      "sets_to_win": "3",
+      "points_per_set": "11"
+    },
+    {
+      "id": "59",
+      "name": "JUNIORI",
+      "slug": "juniori-1769785291",
+      "type": "tournament",
+      "status": "active",
+      "sets_to_win": "3",
+      "points_per_set": "11"
+    },
+    {
+      "id": "60",
+      "name": "KADETKINJE",
+      "slug": "kadetkinje-1769787369",
+      "type": "tournament",
+      "status": "active",
+      "sets_to_win": "3",
+      "points_per_set": "11"
+    },
+    {
+      "id": "61",
+      "name": "KADETI",
+      "slug": "kadeti-1769787864",
+      "type": "tournament",
+      "status": "active",
+      "sets_to_win": "3",
+      "points_per_set": "11"
+    },
+    {
+      "id": "62",
+      "name": "SENIORKE",
+      "slug": "seniorke-1769790992",
+      "type": "tournament",
+      "status": "active",
+      "sets_to_win": "3",
+      "points_per_set": "11"
+    },
+    {
+      "id": "63",
+      "name": "SENIORI",
+      "slug": "seniori-1769791519",
+      "type": "tournament",
+      "status": "active",
+      "sets_to_win": "3",
+      "points_per_set": "11"
+    }
+  ]
+}

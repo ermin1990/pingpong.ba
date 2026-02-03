@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase/config';
-import { collection, query, where, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
-import { Trophy, Plus, Calendar, Target, ChevronRight } from 'lucide-react';
+import { collection, query, where, onSnapshot, addDoc, serverTimestamp, or } from 'firebase/firestore';
+import { Trophy, Plus, Calendar, Target, ChevronRight, ExternalLink } from 'lucide-react';
 import DashboardLayout from '../layouts/DashboardLayout';
 
 const Competitions = () => {
@@ -19,15 +19,28 @@ const Competitions = () => {
   const [type, setType] = useState('League');
 
   useEffect(() => {
-    if (!userData || (!userData.organizationId && userData.role !== 'super_admin')) return;
+    if (!userData) return;
 
     let q;
     if (userData.role === 'super_admin') {
       q = query(collection(db, "competitions"));
     } else {
+      const filters = [];
+      if (userData.organizationId) {
+        filters.push(where("organizationId", "==", userData.organizationId));
+      }
+      if (userData.email) {
+        filters.push(where("collaborators", "array-contains", userData.email));
+      }
+
+      if (filters.length === 0) {
+        setLoading(false);
+        return;
+      }
+
       q = query(
         collection(db, "competitions"),
-        where("organizationId", "==", userData.organizationId)
+        or(...filters)
       );
     }
 
@@ -134,8 +147,22 @@ const Competitions = () => {
               </div>
 
               <div className="flex items-center justify-between pt-4 border-t border-slate-800">
-                <div className="flex items-center gap-2 text-[11px] text-slate-600 font-medium">
-                  <Calendar size={14} /> {comp.createdAt?.toDate().toLocaleDateString('de-DE')}
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 text-[11px] text-slate-600 font-medium">
+                    <Calendar size={14} /> {comp.createdAt?.toDate().toLocaleDateString('de-DE')}
+                  </div>
+                  {comp.slug && (
+                    <a 
+                      href={`/p/${comp.slug}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:text-blue-400 transition-colors"
+                      title="Javni prikaz"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <ExternalLink size={14} />
+                    </a>
+                  )}
                 </div>
                 <Link 
                   to={`/competitions/${comp.id}`} 

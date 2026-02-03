@@ -67,25 +67,42 @@ const PlayersTab = ({
           <div className="grid grid-cols-1 gap-2 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
             {allPlayers
               .filter(p => !showOnlySelected || selectedPlayers.includes(p.id))
-              .filter(p => !assignedPlayerIds.includes(p.id))
               .filter(p => !searchTerm || p.name.toLowerCase().includes(searchTerm.toLowerCase()) || (p.club && p.club.toLowerCase().includes(searchTerm.toLowerCase())))
-              .map(player => (
-              <div 
-                key={player.id}
-                onClick={() => togglePlayerSelection(player.id)}
-                className={`p-2.5 rounded-lg border-2 cursor-pointer transition-all ${selectedPlayers.includes(player.id) ? 'bg-blue-600/10 border-blue-500 text-white shadow-sm shadow-blue-500/10' : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700'}`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="truncate">
-                    <p className={`font-bold text-[11px] truncate ${selectedPlayers.includes(player.id) ? 'text-white' : 'text-slate-200'}`}>{player.name}</p>
-                    <p className="text-[9px] text-slate-500 truncate">{player.club || 'Individual'}</p>
+              .map(player => {
+                const isSelected = selectedPlayers.includes(player.id);
+                const isAssigned = assignedPlayerIds.includes(player.id);
+                
+                return (
+                  <div 
+                    key={player.id}
+                    onClick={() => togglePlayerSelection(player.id)}
+                    className={`p-2.5 rounded-lg border-2 cursor-pointer transition-all ${
+                      isSelected 
+                        ? 'bg-blue-600/10 border-blue-500 text-white shadow-sm shadow-blue-500/10' 
+                        : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="truncate">
+                        <div className="flex items-center gap-2">
+                          <p className={`font-bold text-[11px] truncate ${isSelected ? 'text-white' : 'text-slate-200'}`}>
+                            {player.name}
+                          </p>
+                          {isAssigned && (
+                            <span className="bg-emerald-500/10 text-emerald-500 text-[8px] font-black uppercase px-1.5 py-0.5 rounded border border-emerald-500/20">
+                              U žrijebu
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[9px] text-slate-500 truncate">{player.club || 'Individual'}</p>
+                      </div>
+                      {isSelected && (
+                        <CheckCircle size={14} className="text-blue-500 flex-shrink-0" />
+                      )}
+                    </div>
                   </div>
-                  {selectedPlayers.includes(player.id) && (
-                    <CheckCircle size={14} className="text-blue-500 flex-shrink-0" />
-                  )}
-                </div>
-              </div>
-            ))}
+                );
+              })}
           </div>
         </div>
       </div>

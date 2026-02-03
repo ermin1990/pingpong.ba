@@ -15,6 +15,8 @@ import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import Players from './pages/Players';
 import Competitions from './pages/Competitions';
 import CompetitionDetails from './pages/CompetitionDetails';
+import SettingsPage from './pages/SettingsPage';
+import PublicCompetition from './pages/PublicCompetition';
 
 const Unauthorized = () => {
   const [showRequestForm, setShowRequestForm] = useState(false);
@@ -298,6 +300,8 @@ export function App() {
             <Route path="/players" element={<Players />} />
             <Route path="/competitions" element={<Competitions />} />
             <Route path="/competitions/:id" element={<CompetitionDetails />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/p/:slug" element={<PublicCompetition />} />
           </Routes>
         </BrowserRouter>
       </div>

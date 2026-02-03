@@ -1,4 +1,8 @@
-import { Users, Search, CheckCircle, PlayCircle, X, LayoutGrid, Edit2, ChevronDown } from 'lucide-react';
+import { useState } from 'react';
+import { 
+  Users, Search, CheckCircle, PlayCircle, X, LayoutGrid, Edit2, 
+  ChevronDown, ArrowUp, ArrowDown, ListOrdered, Zap, RotateCcw 
+} from 'lucide-react';
 
 const MatchesTab = ({ 
   activeCategory, 
@@ -19,9 +23,37 @@ const MatchesTab = ({
   setEditingMatch, 
   setShowMatchModal, 
   saveMatchResult, 
-  savingMatchId, 
-  handleScoreChange 
+  savingMatchId,
+  handleScoreChange,
+  handleSaveManualOrder,
+  handleToggleStage,
+  handleReturnToDraft,
+  handleAutoAssignGroups
 }) => {
+  const [manualEditingGroups, setManualEditingGroups] = useState({});
+  const isGroupsCompleted = activeCategory?.stages?.groups?.completed || false;
+
+  const moveManual = (groupIdx, playerIdx, direction, currentStandings) => {
+    const newOrder = currentStandings.map(p => p.id);
+    const targetIdx = direction === 'up' ? playerIdx - 1 : playerIdx + 1;
+    
+    if (targetIdx < 0 || targetIdx >= newOrder.length) return;
+    
+    // Swap IDs in order array
+    const temp = newOrder[playerIdx];
+    newOrder[playerIdx] = newOrder[targetIdx];
+    newOrder[targetIdx] = temp;
+    
+    handleSaveManualOrder(groupIdx, newOrder);
+  };
+
+  const toggleManual = (groupIdx) => {
+    setManualEditingGroups(prev => ({
+      ...prev,
+      [groupIdx]: !prev[groupIdx]
+    }));
+  };
+
   return (
     <div className="space-y-6">
       <div className={`grid grid-cols-1 ${activeCategory?.status === 'draft' ? 'lg:grid-cols-4' : ''} gap-6`}>
@@ -74,6 +106,51 @@ const MatchesTab = ({
 
         {/* Main Schedule Area */}
         <div className={`${activeCategory?.status === 'draft' ? 'lg:col-span-3' : 'w-full'} space-y-12`}>
+          {/* Quick status bar above groups */}
+          {activeCategory?.status !== 'draft' && activeCategory?.format === 'groups_knockout' && (
+            <div className={`mb-8 p-6 rounded-3xl border transition-all duration-500 backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-6 ${
+              isGroupsCompleted 
+              ? 'bg-emerald-500/10 border-emerald-500/20 shadow-[0_0_30px_rgba(16,185,129,0.05)]' 
+              : 'bg-indigo-600 border-indigo-500 shadow-[0_10px_40px_rgba(79,70,229,0.2)]'
+            }`}>
+              <div className="flex items-center gap-5 text-center md:text-left">
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all ${
+                  isGroupsCompleted ? 'bg-emerald-500/20 text-emerald-500' : 'bg-white/20 text-white'
+                }`}>
+                  {isGroupsCompleted ? <CheckCircle size={30} /> : <Zap size={30} className="animate-pulse" />}
+                </div>
+                <div>
+                  <h4 className="text-xl font-black text-white uppercase italic tracking-tighter">
+                    Grupna faza {isGroupsCompleted ? 'je uspješno završena' : 'je u toku'}
+                  </h4>
+                  <p className={`text-[10px] font-bold uppercase tracking-[0.2em] mt-1 ${isGroupsCompleted ? 'text-emerald-500/70' : 'text-indigo-200'}`}>
+                    {isGroupsCompleted 
+                      ? 'Rezultati su zaključani. Možete generisati knockout žrijeb u sljedećem tabu.' 
+                      : 'Nakon što svi mečevi budu gotovi, kliknite na dugme za potvrdu završetka.'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+                <button 
+                  onClick={handleReturnToDraft}
+                  className="px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white transition-all active:scale-95 flex items-center justify-center gap-2"
+                >
+                  <RotateCcw size={14} /> Resetuj u Draft
+                </button>
+                <button 
+                  onClick={() => handleToggleStage('groups', !isGroupsCompleted)}
+                  className={`px-10 py-4 rounded-2xl text-xs font-black uppercase tracking-[0.2em] transition-all active:scale-95 shadow-xl ${
+                    isGroupsCompleted 
+                    ? 'bg-slate-800 text-slate-400 hover:bg-slate-700 border border-slate-700' 
+                    : 'bg-white text-indigo-600 hover:bg-indigo-50 shadow-white/10'
+                  }`}
+                >
+                  {isGroupsCompleted ? 'Ponovo otvori grupe' : 'Završi grupnu fazu'}
+                </button>
+              </div>
+            </div>
+          )}
+
           {activeCategory?.format === 'groups_knockout' && groups.length > 0 ? (
             <div className="space-y-12">
               <div className="flex items-center justify-between px-1">
@@ -94,6 +171,15 @@ const MatchesTab = ({
                           <button onClick={() => setGroups(prev => [...prev, []])} className="w-6 h-6 rounded flex items-center justify-center bg-slate-800 hover:bg-green-500/20 text-white font-bold transition-all">+</button>
                         </div>
                       </div>
+
+                      <button 
+                        onClick={handleAutoAssignGroups}
+                        className="bg-slate-800 text-slate-300 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all hover:bg-slate-700 active:scale-95"
+                        title="Automatski rasporedi sve izabrane igrače u grupe"
+                      >
+                        <Zap size={14} className="text-yellow-500" /> Auto-raspored
+                      </button>
+
                       <button 
                         onClick={handleGenerateMatches}
                         disabled={generating || selectedPlayers.length < 2}
@@ -119,8 +205,22 @@ const MatchesTab = ({
                    <div className={`grid grid-cols-1 ${activeCategory?.status === 'draft' ? 'xl:grid-cols-2' : 'md:grid-cols-2'} gap-4 md:gap-6`}>
                       {bracket.groups.map((group, localIdx) => {
                         const gIdx = localIdx + bracket.offset;
-                        const groupStandings = calculateStandings(gIdx);
                         const groupMatches = matches.filter(m => m.groupId === gIdx);
+                        const autoStandings = calculateStandings(gIdx);
+                        
+                        // Handle Manual Order
+                        const manualOrder = activeCategory?.manualOrders?.[gIdx];
+                        let groupStandings = [...autoStandings];
+                        
+                        if (manualOrder && Array.isArray(manualOrder) && manualOrder.length === autoStandings.length) {
+                          groupStandings.sort((a, b) => {
+                            const indexA = manualOrder.indexOf(a.id);
+                            const indexB = manualOrder.indexOf(b.id);
+                            return indexA - indexB;
+                          });
+                        }
+
+                        const isManualEdit = manualEditingGroups[gIdx];
 
                         return (
                           <div 
@@ -138,6 +238,13 @@ const MatchesTab = ({
                             <div className="flex justify-between items-center mb-4 px-1">
                               <h4 className="text-xl font-black text-white italic">#{String.fromCharCode(65 + gIdx)}</h4>
                               <div className="flex items-center gap-2">
+                                 <button 
+                                   onClick={() => toggleManual(gIdx)}
+                                   className={`p-1.5 rounded-lg transition-all ${isManualEdit ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'text-slate-500 hover:bg-slate-800'}`}
+                                   title="Ručno poredaj"
+                                 >
+                                   <ListOrdered size={14} />
+                                 </button>
                                  <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{group.length} Igrača</span>
                               </div>
                             </div>
@@ -162,9 +269,14 @@ const MatchesTab = ({
 
                             {/* Tabela Section */}
                             <div className="mb-8">
-                              <h5 className="text-[10px] font-black text-slate-500 mb-3 uppercase tracking-[0.2em] flex items-center gap-2">
-                                <LayoutGrid size={12} /> Tabela
-                              </h5>
+                              <div className="flex justify-between items-center mb-3 px-1">
+                                <h5 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
+                                  <LayoutGrid size={12} /> Tabela
+                                </h5>
+                                {isManualEdit && (
+                                  <span className="text-[7px] font-black text-blue-400 uppercase bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/20 animate-pulse">Ručno Poredaj</span>
+                                )}
+                              </div>
                               <div className="space-y-1">
                                 <div className="grid grid-cols-12 gap-2 mb-2 text-[8px] font-black text-slate-600 uppercase tracking-widest px-2">
                                   <div className="col-span-6">Igrač</div>
@@ -174,19 +286,45 @@ const MatchesTab = ({
                                   <div className="col-span-1 text-center">Gem±</div>
                                   <div className="col-span-2 text-center text-blue-500">B</div>
                                 </div>
-                                {groupStandings.map((p, idx) => (
-                                    <div key={p.id} className="grid grid-cols-12 gap-2 items-center py-2 px-2 bg-slate-950/30 hover:bg-slate-800/40 rounded-lg text-[10px] transition-all duration-200 border border-transparent hover:border-slate-800">
+                                {groupStandings.map((p, idx) => {
+                                  const isAdvancing = idx < (activeCategory?.advancingPlayers ?? 2);
+                                  return (
+                                    <div key={p.id} className={`grid grid-cols-12 gap-2 items-center py-2 px-2 rounded-lg text-[10px] transition-all duration-200 border ${
+                                      isAdvancing 
+                                        ? 'bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/20' 
+                                        : 'bg-slate-950/30 border-transparent hover:bg-slate-800/40 hover:border-slate-800'
+                                    }`}>
                                       <div className="col-span-6 flex items-center space-x-2 truncate">
-                                        <span className="font-black text-slate-700 w-4 text-center">{idx + 1}</span>
+                                        {isManualEdit ? (
+                                          <div className="flex flex-col gap-0.5">
+                                            <button 
+                                              onClick={(e) => { e.stopPropagation(); moveManual(gIdx, idx, 'up', groupStandings); }}
+                                              disabled={idx === 0}
+                                              className="text-slate-600 hover:text-blue-400 disabled:opacity-0 transition-colors"
+                                            >
+                                              <ArrowUp size={10} />
+                                            </button>
+                                            <button 
+                                              onClick={(e) => { e.stopPropagation(); moveManual(gIdx, idx, 'down', groupStandings); }}
+                                              disabled={idx === groupStandings.length - 1}
+                                              className="text-slate-600 hover:text-blue-400 disabled:opacity-0 transition-colors"
+                                            >
+                                              <ArrowDown size={10} />
+                                            </button>
+                                          </div>
+                                        ) : (
+                                          <span className={`font-black w-4 text-center ${isAdvancing ? 'text-emerald-500' : 'text-slate-700'}`}>{idx + 1}</span>
+                                        )}
                                         <div className="truncate text-white font-bold uppercase">{p.name}</div>
                                       </div>
                                       <div className="col-span-1 text-center font-bold text-slate-400">{p.played}</div>
                                       <div className="col-span-1 text-center font-bold text-slate-400">{p.won}</div>
                                       <div className="col-span-1 text-center font-bold text-slate-500">{p.setsWon - p.setsLost}</div>
                                       <div className="col-span-1 text-center font-bold text-slate-600">{p.pointDiff}</div>
-                                      <div className="col-span-2 text-center text-blue-400 font-black">{p.points}</div>
+                                      <div className={`col-span-2 text-center font-black ${isAdvancing ? 'text-emerald-400' : 'text-blue-400'}`}>{p.points}</div>
                                     </div>
-                                ))}
+                                  );
+                                })}
                               </div>
                             </div>
 
@@ -202,10 +340,36 @@ const MatchesTab = ({
                                             <div className="hidden lg:flex items-center justify-between p-4 gap-4">
                                                 <div className="flex-1 space-y-3">
                                                     <div className="flex justify-between items-center">
-                                                        <span className="text-[11px] font-bold text-white truncate">{match.player1.name}</span>
+                                                        <span className={`text-[11px] font-bold truncate ${match.status === 'completed' && match.player1Score > match.player2Score ? 'text-white' : 'text-slate-500'}`}>
+                                                            {match.player1.name}
+                                                        </span>
+                                                        {match.sets?.length > 0 && (
+                                                            <div className="flex gap-1 ml-4 ring-1 ring-slate-800 rounded px-1 py-0.5 bg-black/20">
+                                                                {match.sets.map((set, sIdx) => (
+                                                                    <div key={sIdx} className="w-5 text-center border-r last:border-0 border-slate-800/50">
+                                                                        <span className={`text-[10px] font-bold ${match.status === 'completed' && set.p1 > set.p2 ? 'text-blue-400' : 'text-slate-600'}`}>
+                                                                            {set.p1 ?? '-'}
+                                                                        </span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
                                                     </div>
                                                     <div className="flex justify-between items-center">
-                                                        <span className="text-[11px] font-bold text-white truncate">{match.player2.name}</span>
+                                                        <span className={`text-[11px] font-bold truncate ${match.status === 'completed' && match.player2Score > match.player1Score ? 'text-white' : 'text-slate-500'}`}>
+                                                            {match.player2.name}
+                                                        </span>
+                                                        {match.sets?.length > 0 && (
+                                                            <div className="flex gap-1 ml-4 ring-1 ring-slate-800 rounded px-1 py-0.5 bg-black/20">
+                                                                {match.sets.map((set, sIdx) => (
+                                                                    <div key={sIdx} className="w-5 text-center border-r last:border-0 border-slate-800/50">
+                                                                        <span className={`text-[10px] font-bold ${match.status === 'completed' && set.p2 > set.p1 ? 'text-blue-400' : 'text-slate-600'}`}>
+                                                                            {set.p2 ?? '-'}
+                                                                        </span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
                                                 <div className="flex flex-col items-center gap-2 ml-2 pl-4 border-l border-slate-800">
@@ -277,7 +441,16 @@ const MatchesTab = ({
                           <td className="px-6 py-5">
                             <span className="font-bold text-white text-sm">Kolo {match.round}</span>
                           </td>
-                          <td className="px-6 py-5 font-semibold text-white">{match.player1.name}</td>
+                          <td className="px-6 py-5 font-semibold text-white">
+                            <div className="flex flex-col">
+                              <span>{match.player1.name}</span>
+                              {match.sets?.length > 0 && (
+                                <span className="text-[9px] text-slate-500 font-bold">
+                                  ({match.sets.map(s => s.p1).join(', ')})
+                                </span>
+                              )}
+                            </div>
+                          </td>
                           <td className="px-6 py-5">
                             <div className="flex items-center justify-center gap-2">
                               <input 
@@ -295,7 +468,16 @@ const MatchesTab = ({
                               />
                             </div>
                           </td>
-                          <td className="px-6 py-5 font-semibold text-white">{match.player2.name}</td>
+                          <td className="px-6 py-5 font-semibold text-white">
+                            <div className="flex flex-col">
+                              <span>{match.player2.name}</span>
+                              {match.sets?.length > 0 && (
+                                <span className="text-[9px] text-slate-500 font-bold">
+                                  ({match.sets.map(s => s.p2).join(', ')})
+                                </span>
+                              )}
+                            </div>
+                          </td>
                           <td className="px-6 py-5 text-right">
                             <button 
                               onClick={() => saveMatchResult(match)}
