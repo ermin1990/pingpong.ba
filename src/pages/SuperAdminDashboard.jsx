@@ -604,7 +604,7 @@ const SuperAdminDashboard = () => {
                     <td className="px-5 py-3 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <a 
-                          href={`/competition/${comp.id}`} 
+                          href={`/competitions/${comp.id}`} 
                           target="_blank"
                           rel="noreferrer"
                           className="bg-gray-800 hover:bg-white hover:text-black p-1.5 rounded-lg text-gray-400 transition-all shadow-md"

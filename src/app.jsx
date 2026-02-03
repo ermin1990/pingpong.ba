@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import AuthProvider from './context/AuthContext';
 import { auth, db } from './firebase/config';
 import DashboardLayout from './layouts/DashboardLayout';
@@ -302,6 +302,9 @@ export function App() {
             <Route path="/competitions/:id" element={<CompetitionDetails />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/p/:slug" element={<PublicCompetition />} />
+            
+            {/* Catch-all route: Redirect to home for any undefined path */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
       </div>
