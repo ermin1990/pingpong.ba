@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase/config';
@@ -100,6 +100,7 @@ const CompetitionDetails = () => {
   const [groups, setGroups] = useState([]); // Array of arrays of player objects
   const [groupTabs, setGroupTabs] = useState({}); // { groupIdx: 'players' | 'table' | 'matches' }
   const [manualOrders, setManualOrders] = useState({}); // Ručni poredak igrača po grupama
+  const lastCategoryIdRef = useRef('');
 
   // State za uređivanje igrača
   const [editingPlayer, setEditingPlayer] = useState(null);
@@ -268,8 +269,14 @@ const CompetitionDetails = () => {
   // Kada se promijeni kategorija, resetuj selekciju igrača na one koji su već u kategoriji
   useEffect(() => {
     if (selectedCategoryId && activeCategory) {
-      setSelectedPlayers(activeCategory.playerIds || []);
-      setSeededPlayers(activeCategory.seededPlayerIds || []);
+      // Only reset the local state if specifically switching to a NEW category
+      if (lastCategoryIdRef.current !== selectedCategoryId) {
+        setSelectedPlayers(activeCategory.playerIds || []);
+        setSeededPlayers(activeCategory.seededPlayerIds || []);
+        lastCategoryIdRef.current = selectedCategoryId;
+      }
+    } else if (!selectedCategoryId) {
+      lastCategoryIdRef.current = '';
     }
   }, [selectedCategoryId, activeCategory]);
 
@@ -1072,7 +1079,7 @@ const CompetitionDetails = () => {
         player2Score: match.player2Score || 0,
         sets: match.sets || [],
         status: match.status || 'completed',
-        round: match.round || 1,
+        round: match.round !== undefined ? match.round : 1,
         roundName: match.roundName || '',
         bracketIndex: match.bracketIndex || 0,
         updatedAt: serverTimestamp()
@@ -1094,21 +1101,47 @@ const CompetitionDetails = () => {
           const currentRound = Number(match.round);
           const currentIndex = Number(match.bracketIndex ?? 0);
           
-          const nextRound = currentRound + 1;
-          
-          // Formula koja osigurava da pobjednici iz gornjeg dijela (lijevi) ostaju u gornjem, 
-          // a iz donjeg (desni) u donjem dijelu žrijeba.
-          const nextIndex = Math.floor(currentIndex / 2);
-          const nextSlot = (currentIndex % 2 === 0) ? 'player1' : 'player2';
+          let nextMatch = null;
+          let nextSlot = null;
 
-          // Nađi meč u idućoj rundi - otpornija pretraga
-          const nextMatch = matches.find(m => 
-            m.isKnockout && 
-            Number(m.round) === nextRound && 
-            Number(m.bracketIndex ?? 0) === nextIndex
-          );
+          // Ako je Baraž (Round 0), traži prvi TBD slot u Rundi 1 prema bracketIndex-u
+          if (currentRound === 0) {
+             // Uzmi sve mečeve iz Round 1, sortirane po bracketIndex
+             const round1Matches = matches
+                .filter(m => m.isKnockout && Number(m.round) === 1)
+                .sort((a,b) => (a.bracketIndex || 0) - (b.bracketIndex || 0));
+             
+             // Napravi listu svih TBD slotova u Round 1
+             const availableSlots = [];
+             for (const m of round1Matches) {
+                 if (!m.player1 || m.player1.id === 'tbd') {
+                     availableSlots.push({ match: m, slot: 'player1', bracketIndex: m.bracketIndex || 0 });
+                 }
+                 if (!m.player2 || m.player2.id === 'tbd') {
+                     availableSlots.push({ match: m, slot: 'player2', bracketIndex: m.bracketIndex || 0 });
+                 }
+             }
+             
+             // Mapiranje: Baraž meč sa bracketIndex X ide u X-ti slot u listi TBD slotova
+             if (currentIndex < availableSlots.length) {
+                 const targetSlot = availableSlots[currentIndex];
+                 nextMatch = targetSlot.match;
+                 nextSlot = targetSlot.slot;
+             }
+          } else {
+             // Standardna logika za ostale runde
+             const nextRound = currentRound + 1;
+             const nextIndex = Math.floor(currentIndex / 2);
+             nextSlot = (currentIndex % 2 === 0) ? 'player1' : 'player2';
 
-          if (nextMatch) {
+             nextMatch = matches.find(m => 
+                m.isKnockout && 
+                Number(m.round) === nextRound && 
+                Number(m.bracketIndex ?? 0) === nextIndex
+             );
+          }
+
+          if (nextMatch && nextSlot) {
             const nextMatchRef = doc(db, "matches", nextMatch.id);
             const winnerData = { id: winner.id, name: winner.name };
             
@@ -1125,7 +1158,7 @@ const CompetitionDetails = () => {
               return m;
             }));
           } else {
-            console.log("Nije pronađen naredni meč za round:", nextRound, "indeks:", nextIndex);
+            console.log("Nije pronađen naredni meč/slot za round:", currentRound + 1);
           }
         }
       }
@@ -1572,15 +1605,14 @@ const CompetitionDetails = () => {
         name: compName.trim(),
         slug: slugVal,
         collaborators: collaborators,
-        isPublic: isPublic,
+        // isPublic is updated separately now
         updatedAt: serverTimestamp()
       });
       setCompetition(prev => ({ 
         ...prev, 
         name: compName.trim(), 
         slug: slugVal,
-        collaborators: collaborators,
-        isPublic: isPublic
+        collaborators: collaborators
       }));
       setShowCompSettings(false);
       alert("Takmičenje ažurirano!");
@@ -1589,6 +1621,24 @@ const CompetitionDetails = () => {
     } finally {
       setSavingComp(false);
     }
+  };
+
+  const handleTogglePublic = async (newState) => {
+      setIsPublic(newState);
+      // Optimistic update locally
+      setCompetition(prev => ({ ...prev, isPublic: newState }));
+      
+      try {
+          await updateDoc(doc(db, "competitions", id), {
+              isPublic: newState
+          });
+      } catch (err) {
+          console.error("Failed to toggle public status", err);
+          // Revert on error
+          setIsPublic(!newState);
+          setCompetition(prev => ({ ...prev, isPublic: !newState }));
+          alert("Greška pri promjeni statusa.");
+      }
   };
 
   const activeCategoryId = selectedCategoryId;
@@ -1788,7 +1838,7 @@ const CompetitionDetails = () => {
           handleUpdateCompetition={handleUpdateCompetition}
           savingComp={savingComp}
           isPublic={isPublic}
-          setIsPublic={setIsPublic}
+          handleTogglePublic={handleTogglePublic}
         />
       )}
 

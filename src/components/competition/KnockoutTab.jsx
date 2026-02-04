@@ -252,12 +252,12 @@ const KnockoutTab = ({
   // NIKADA ne vraćaj null - uvijek prikaži nešto
   if (!activeCategory) {
     return (
-      <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-12 text-center backdrop-blur-xl">
-        <div className="w-16 h-16 bg-amber-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-amber-500">
+      <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-3xl p-12 text-center backdrop-blur-xl shadow-sm dark:shadow-none">
+        <div className="w-16 h-16 bg-amber-50 dark:bg-amber-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-amber-500 border border-amber-100 dark:border-transparent">
           <AlertTriangle size={32} />
         </div>
-        <h3 className="text-xl font-black text-white uppercase italic tracking-tighter mb-2">Kategorija nije učitana</h3>
-        <p className="text-slate-500 text-xs font-bold uppercase tracking-widest max-w-sm mx-auto">
+        <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase italic tracking-tighter mb-2">Kategorija nije učitana</h3>
+        <p className="text-slate-500 dark:text-slate-500 text-xs font-bold uppercase tracking-widest max-w-sm mx-auto">
           Provjerite da li ste odabrali kategoriju iz liste. Ako problem i dalje postoji, osvježite stranicu.
         </p>
       </div>
@@ -269,14 +269,14 @@ const KnockoutTab = ({
       {/* Pool of Players Sidebar - FIKSNI (kontrolisan preko dugmeta) */}
       {advancingPool.length > 0 && knockoutMatches.length > 0 && showQualifiersSidebar && (
         <div className="w-full lg:w-72 space-y-4 shrink-0">
-          <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-3xl p-6 sticky top-24 shadow-2xl">
+          <div className="bg-white dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sticky top-24 shadow-sm dark:shadow-2xl">
             <div className="flex items-center justify-between mb-2">
-              <h4 className="text-xs font-black text-white uppercase italic tracking-widest flex items-center gap-2">
-                <Users size={14} className="text-blue-500" /> Kvalifikovani
+              <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase italic tracking-widest flex items-center gap-2">
+                <Users size={14} className="text-blue-600 dark:text-blue-500" /> Kvalifikovani
               </h4>
               <button 
                 onClick={() => setShowQualifiersSidebar(false)}
-                className="text-slate-500 hover:text-white transition-colors"
+                className="text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 <X size={16} />
               </button>
@@ -300,7 +300,7 @@ const KnockoutTab = ({
                     }
                   }
                 }}
-                className="w-full mb-4 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-600/30 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all"
+                className="w-full mb-4 bg-blue-50 dark:bg-blue-600/20 hover:bg-blue-600 hover:text-white text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-600/30 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-sm dark:shadow-none"
               >
                 <Zap size={12} /> Popuni Prazna Polja
               </button>
@@ -314,19 +314,19 @@ const KnockoutTab = ({
                     key={player.id}
                     draggable={!isAssigned}
                     onDragStart={(e) => onDragStart(e, player)}
-                    className={`p-3 rounded-2xl border transition-all ${isAssigned ? 'bg-slate-900/20 border-slate-800/50 opacity-40 grayscale pointer-events-none' : 'bg-slate-950 border-slate-800 hover:border-blue-500/50 hover:bg-slate-900 shadow-lg cursor-grab active:cursor-grabbing hover:scale-[1.02]'}`}
+                    className={`p-3 rounded-2xl border transition-all ${isAssigned ? 'bg-slate-50 dark:bg-slate-900/20 border-slate-100 dark:border-slate-800/50 opacity-40 grayscale pointer-events-none' : 'bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 hover:border-blue-500/50 hover:bg-slate-50 dark:hover:bg-slate-900 shadow-sm dark:shadow-lg cursor-grab active:cursor-grabbing hover:scale-[1.02]'}`}
                   >
                     <div className="flex items-center justify-between pointer-events-none">
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
-                          <p className="text-[11px] font-black text-white uppercase truncate">{player.name}</p>
+                          <p className="text-[11px] font-black text-slate-900 dark:text-white uppercase truncate">{player.name}</p>
                           {seededPlayerIds.includes(player.id) && (
                             <Star size={10} className="text-amber-500 fill-amber-500" />
                           )}
                         </div>
                         <div className="flex items-center gap-2 mt-1">
-                           <span className="text-[8px] font-bold text-blue-400 bg-blue-400/10 px-1.5 py-0.5 rounded uppercase">Grupa {player.fromGroup}</span>
-                           <span className="text-[8px] font-bold text-slate-500 italic">#{player.rank}</span>
+                           <span className="text-[8px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-400/10 px-1.5 py-0.5 rounded uppercase border border-blue-100 dark:border-transparent">Grupa {player.fromGroup}</span>
+                           <span className="text-[8px] font-bold text-slate-400 dark:text-slate-500 italic">#{player.rank}</span>
                         </div>
                       </div>
                       {isAssigned && <CheckCircle size={14} className="text-emerald-500 shrink-0 ml-2" />}
@@ -335,7 +335,7 @@ const KnockoutTab = ({
                 );
               })}
             </div>
-            <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-6 leading-relaxed italic border-t border-slate-800/50 pt-4 text-center">
+            <p className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest mt-6 leading-relaxed italic border-t border-slate-100 dark:border-slate-800/50 pt-4 text-center">
                Kliknite na meč da dodijelite slobodne igrače iz ovog bazena.
             </p>
           </div>
@@ -349,7 +349,7 @@ const KnockoutTab = ({
               <>
                 <button 
                   onClick={() => setShowQualifiersSidebar(!showQualifiersSidebar)}
-                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${showQualifiersSidebar ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
+                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shadow-sm ${showQualifiersSidebar ? 'bg-blue-600 text-white shadow-blue-500/20' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'}`}
                   title={showQualifiersSidebar ? "Sakrij listu kvalifikovanih" : "Prikaži listu kvalifikovanih"}
                 >
                   <Users size={14} /> {showQualifiersSidebar ? 'Sakrij Kvalifikovane' : 'Lista Kvalifikovanih'}
@@ -357,28 +357,28 @@ const KnockoutTab = ({
 
                 <button 
                   onClick={() => setShowSetupModal(true)}
-                  className="bg-blue-600/10 text-blue-500 border border-blue-500/30 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all flex items-center gap-2"
+                  className="bg-blue-50 dark:bg-blue-600/10 text-blue-600 dark:text-blue-500 border border-blue-200 dark:border-blue-500/30 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all flex items-center gap-2 shadow-sm"
                 >
                   <LayoutGrid size={14} /> Generiši Žrijeb
                 </button>
 
                 <button 
                   onClick={() => handleToggleStage('knockout', !isKnockoutCompleted)}
-                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
+                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 shadow-sm ${
                     isKnockoutCompleted 
-                    ? 'bg-emerald-500/20 text-emerald-500 border border-emerald-500/30' 
-                    : 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-lg shadow-emerald-500/20'
+                    ? 'bg-emerald-50 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-500 border border-emerald-100 dark:border-emerald-500/30' 
+                    : 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-emerald-500/20'
                   }`}
                 >
                   {isKnockoutCompleted ? <CheckCircle size={14} /> : <Trophy size={14} />}
                   {isKnockoutCompleted ? 'Takmičenje Završeno' : 'Završi Takmičenje'}
                 </button>
 
-                <div className="w-px h-6 bg-slate-800 mx-1 hidden sm:block"></div>
+                <div className="w-px h-6 bg-slate-200 dark:bg-slate-800 mx-1 hidden sm:block"></div>
 
                 <button 
                   onClick={handleResetKnockout}
-                  className="bg-red-500/10 text-red-500 border border-red-500/20 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all flex items-center gap-2 whitespace-nowrap"
+                  className="bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-500 border border-red-100 dark:border-red-500/20 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all flex items-center gap-2 whitespace-nowrap shadow-sm"
                 >
                   <Trash2 size={14} /> Resetuj
                 </button>
@@ -386,7 +386,7 @@ const KnockoutTab = ({
             )}
             <button 
               onClick={() => setShowManualModal(true)}
-              className="bg-slate-800 text-slate-300 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-700 transition-all flex items-center gap-2"
+              className="bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-700 transition-all flex items-center gap-2 border border-slate-200 dark:border-slate-700 shadow-sm"
             >
               <Plus size={14} /> Dodaj Meč
             </button>
@@ -394,49 +394,49 @@ const KnockoutTab = ({
         </div>
 
         {activeCategory.format !== 'groups_knockout' ? (
-          <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-12 text-center backdrop-blur-xl">
-            <div className="w-16 h-16 bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-6 text-slate-600">
+          <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-3xl p-12 text-center backdrop-blur-xl shadow-sm dark:shadow-none">
+            <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-6 text-slate-400 dark:text-slate-600 border border-slate-100 dark:border-transparent">
               <AlertTriangle size={32} />
             </div>
-            <h3 className="text-xl font-black text-white uppercase italic tracking-tighter mb-2">Format nije podržan</h3>
-            <p className="text-slate-500 text-xs font-bold uppercase tracking-widest max-w-sm mx-auto">
-              Eliminaciona faza je dostupna samo za "Grupe + Knockout" format takmičenja. Trenutni format: <span className="text-blue-400">{activeCategory.format}</span>
+            <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase italic tracking-tighter mb-2">Format nije podržan</h3>
+            <p className="text-slate-500 dark:text-slate-500 text-xs font-bold uppercase tracking-widest max-w-sm mx-auto">
+              Eliminaciona faza je dostupna samo za "Grupe + Knockout" format takmičenja. Trenutni format: <span className="text-blue-600 dark:text-blue-400 font-black">{activeCategory.format}</span>
             </p>
           </div>
         ) : knockoutMatchesCount === 0 ? (
           <div className="space-y-6">
             {!isGroupsCompleted ? (
-              <div className="bg-amber-500/10 border border-amber-500/20 rounded-3xl p-8 flex items-center gap-6">
-                <div className="w-12 h-12 bg-amber-500/20 rounded-2xl flex items-center justify-center text-amber-500 shrink-0">
+              <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 rounded-3xl p-8 flex items-center gap-6 shadow-sm dark:shadow-none">
+                <div className="w-12 h-12 bg-amber-500/10 dark:bg-amber-500/20 rounded-2xl flex items-center justify-center text-amber-600 dark:text-amber-500 shrink-0 border border-amber-200 dark:border-transparent">
                   <Clock size={24} />
                 </div>
                 <div className="flex-1">
-                  <h4 className="text-white font-black uppercase italic tracking-tighter text-sm">Grupna faza još traje</h4>
-                  <p className="text-slate-500 text-[9px] font-bold uppercase tracking-widest mt-1">
+                  <h4 className="text-slate-900 dark:text-white font-black uppercase italic tracking-tighter text-sm">Grupna faza još traje</h4>
+                  <p className="text-slate-500 dark:text-slate-500 text-[9px] font-bold uppercase tracking-widest mt-1">
                     Morate označiti grupnu fazu kao završenu u postavkama kako biste generisali knockout žrijeb.
                   </p>
                 </div>
               </div>
             ) : (
-              <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-12 text-center backdrop-blur-xl">
-                <div className="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-blue-500">
+              <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-3xl p-12 text-center backdrop-blur-xl shadow-sm dark:shadow-none">
+                <div className="w-16 h-16 bg-blue-50 dark:bg-blue-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-blue-600 dark:text-blue-500 border border-blue-100 dark:border-transparent">
                   <Zap size={32} />
                 </div>
-                <h3 className="text-xl font-black text-white uppercase italic tracking-tighter mb-2">Grupna faza završena!</h3>
-                <p className="text-slate-500 text-xs font-bold uppercase tracking-widest max-w-sm mx-auto mb-6">
+                <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase italic tracking-tighter mb-2">Grupna faza završena!</h3>
+                <p className="text-slate-500 dark:text-slate-500 text-xs font-bold uppercase tracking-widest max-w-sm mx-auto mb-6">
                   Izaberite način formiranja eliminacione faze. Sistem može automatski generisati parove ili ih možete dodati ručno.
                 </p>
 
-                <div className="bg-slate-950/50 border border-slate-800/50 rounded-2xl p-4 mb-8 max-w-md mx-auto">
+                <div className="bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800/50 rounded-2xl p-4 mb-8 max-w-md mx-auto shadow-inner dark:shadow-none">
                     <div className="flex items-center justify-around gap-4">
                         <div className="text-center flex-1">
-                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Kvalifikovanih</p>
-                            <p className="text-2xl font-black text-white leading-none">{advancingPool.length}</p>
+                            <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-1">Kvalifikovanih</p>
+                            <p className="text-2xl font-black text-slate-900 dark:text-white leading-none">{advancingPool.length}</p>
                         </div>
-                        <div className="w-px h-8 bg-slate-800"></div>
+                        <div className="w-px h-8 bg-slate-200 dark:bg-slate-800"></div>
                         <div className="text-center flex-1">
-                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Preporuka</p>
-                            <p className="text-sm font-black text-blue-500 uppercase leading-none">
+                            <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-1">Preporuka</p>
+                            <p className="text-sm font-black text-blue-600 dark:text-blue-500 uppercase leading-none">
                                 {(() => {
                                     const count = advancingPool.length;
                                     if (count <= 2) return "Finale";
@@ -448,11 +448,11 @@ const KnockoutTab = ({
                                 })()}
                             </p>
                         </div>
-                        <div className="w-px h-8 bg-slate-800"></div>
+                        <div className="w-px h-8 bg-slate-200 dark:bg-slate-800"></div>
                         <div className="text-center flex-1">
-                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Status</p>
+                            <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-1">Status</p>
                             <div className="flex flex-col items-center">
-                                <p className={`text-[10px] font-black uppercase leading-none ${advancingPool.length % 2 === 0 ? 'text-emerald-500' : 'text-amber-500'}`}>
+                                <p className={`text-[10px] font-black uppercase leading-none ${advancingPool.length % 2 === 0 ? 'text-emerald-600 dark:text-emerald-500' : 'text-amber-600 dark:text-amber-500'}`}>
                                     {advancingPool.length % 2 === 0 ? 'Paran Broj' : 'Neparan Broj'}
                                 </p>
                                 {(() => {
@@ -460,7 +460,7 @@ const KnockoutTab = ({
                                     let p2 = 2;
                                     while(p2 * 2 <= count) p2 *= 2;
                                     if (count > 2 && count !== p2) {
-                                        return <span className="text-[7px] bg-amber-500/10 text-amber-500 px-1 rounded mt-1 font-bold italic">Preporučen Baraž</span>
+                                        return <span className="text-[7px] bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-500 px-1 rounded mt-1 font-bold italic border border-amber-200 dark:border-transparent">Preporučen Baraž</span>
                                     }
                                     return null;
                                 })()}
@@ -471,7 +471,7 @@ const KnockoutTab = ({
                 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-sm mx-auto">
                   <button 
-                    className="w-full bg-white text-slate-900 px-6 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-blue-500 hover:text-white transition-all shadow-xl active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="w-full bg-blue-600 text-white px-6 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-blue-700 transition-all shadow-xl shadow-blue-600/20 active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
                     onClick={handleGenerateKnockout}
                     disabled={generating}
                   >
@@ -479,7 +479,7 @@ const KnockoutTab = ({
                   </button>
                   
                   <button 
-                    className="w-full bg-slate-800 text-slate-300 px-6 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-slate-700 transition-all shadow-xl active:scale-95 flex items-center justify-center gap-2"
+                    className="w-full bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-6 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm dark:shadow-xl active:scale-95 flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700"
                     onClick={() => setShowSetupModal(true)}
                   >
                     <Plus size={16} /> Manuelno
@@ -496,10 +496,10 @@ const KnockoutTab = ({
                 const advancing = standings.slice(0, advancingCount);
                 
                 return (
-                  <div key={idx} className="bg-slate-900/20 border border-slate-800/50 rounded-2xl p-4">
+                  <div key={idx} className="bg-white dark:bg-slate-900/20 border border-slate-200 dark:border-slate-800/50 rounded-2xl p-4 shadow-sm dark:shadow-none">
                     <div className="flex justify-between items-center mb-3">
-                      <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Grupa {String.fromCharCode(65 + idx)}</h4>
-                      <span className="text-[8px] font-bold text-emerald-500 uppercase bg-emerald-500/10 px-2 py-0.5 rounded-full">Prolaze {advancingCount}</span>
+                      <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Grupa {String.fromCharCode(65 + idx)}</h4>
+                      <span className="text-[8px] font-bold text-emerald-600 dark:text-emerald-500 uppercase bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-100 dark:border-transparent">Prolaze {advancingCount}</span>
                     </div>
                     <div className="space-y-2">
                         {advancing.map((p, pIdx) => (
@@ -507,19 +507,19 @@ const KnockoutTab = ({
                             key={p.id} 
                             draggable
                             onDragStart={(e) => onDragStart(e, p)}
-                            className="flex items-center gap-3 bg-slate-950/40 p-2 rounded-xl border border-slate-800/50 cursor-grab active:cursor-grabbing hover:border-emerald-500/30 transition-colors group"
+                            className="flex items-center gap-3 bg-slate-50 dark:bg-slate-950/40 p-2 rounded-xl border border-slate-200 dark:border-slate-800/50 cursor-grab active:cursor-grabbing hover:border-emerald-500/30 transition-colors group shadow-sm dark:shadow-none"
                           >
-                            <span className="text-[10px] font-black text-emerald-500 w-4">{pIdx + 1}.</span>
+                            <span className="text-[10px] font-black text-emerald-600 w-4">{pIdx + 1}.</span>
                             <div className="flex-1">
                               <div className="flex items-center gap-1.5">
-                                <p className="text-[11px] font-bold text-white uppercase">{p.name}</p>
+                                <p className="text-[11px] font-bold text-slate-900 dark:text-white uppercase">{p.name}</p>
                                 {seededPlayerIds.includes(p.id) && (
                                   <Star size={10} className="text-amber-500 fill-amber-500" />
                                 )}
                               </div>
-                              <p className="text-[8px] text-slate-600 font-bold uppercase">{p.club || 'Bez kluba'}</p>
+                              <p className="text-[8px] text-slate-500 dark:text-slate-600 font-bold uppercase">{p.club || 'Bez kluba'}</p>
                             </div>
-                            <GripVertical size={12} className="text-slate-800 group-hover:text-emerald-500/50 transition-colors" />
+                            <GripVertical size={12} className="text-slate-300 dark:text-slate-800 group-hover:text-emerald-500/50 transition-colors" />
                           </div>
                         ))}
                     </div>
@@ -529,22 +529,22 @@ const KnockoutTab = ({
             </div>
           </div>
         ) : (
-          <div className="bg-slate-900/40 backdrop-blur-xl rounded-3xl p-4 md:p-8 border border-slate-800 shadow-2xl relative overflow-hidden">
+          <div className="bg-white dark:bg-slate-900/40 backdrop-blur-xl rounded-3xl p-4 md:p-8 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-2xl relative overflow-hidden">
             {/* Zoom Controls Overlay */}
               <div className="absolute right-6 top-6 z-10 flex items-center gap-2">
                 <button 
                   onClick={handleZoomOut}
-                  className="w-10 h-10 flex items-center justify-center bg-slate-950 border border-slate-800 text-white rounded-xl hover:bg-slate-800 font-bold transition-all shadow-xl"
+                  className="w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 font-bold transition-all shadow-md dark:shadow-xl"
                   title="Smanji"
                 >
                   −
                 </button>
-                <div className="bg-slate-950/80 px-3 py-2 rounded-xl border border-slate-800 text-[10px] font-black text-slate-500 min-w-[60px] text-center">
+                <div className="bg-white/80 dark:bg-slate-950/80 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-[10px] font-black text-slate-500 min-w-[60px] text-center shadow-sm">
                   {Math.round(scale * 100)}%
                 </div>
                 <button 
                   onClick={handleZoomIn}
-                  className="w-10 h-10 flex items-center justify-center bg-slate-950 border border-slate-800 text-white rounded-xl hover:bg-slate-800 font-bold transition-all shadow-xl"
+                  className="w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 font-bold transition-all shadow-md dark:shadow-xl"
                   title="Povećaj"
                 >
                   +
@@ -559,7 +559,7 @@ const KnockoutTab = ({
                   {roundKeys.map((rName) => (
                     <div key={rName} className="flex flex-col min-w-[240px]">
                       <div className="text-center mb-8 flex flex-col items-center gap-2">
-                        <h4 className="text-xs font-black text-white uppercase italic tracking-widest border-b border-blue-500/30 pb-2 inline-block px-4">
+                        <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase italic tracking-widest border-b border-blue-500/30 pb-2 inline-block px-4">
                           {rName}
                         </h4>
                         <button
@@ -584,13 +584,13 @@ const KnockoutTab = ({
                           const isMatchReady = match.player1?.id && match.player2?.id && match.player1.id !== 'tbd' && match.player2.id !== 'tbd';
                           const isP1Real = match.player1?.id && match.player1.id !== 'tbd';
                           const isP2Real = match.player2?.id && match.player2.id !== 'tbd';
-                          // Dozvoli walkover ako imamo jednog pravog igrača a drugi je TBD ili undefined, a meč nije završen
+                          // Dozlovi walkover ako imamo jednog pravog igrača a drugi je TBD ili undefined, a meč nije završen
                           const isWalkoverPossible = match.status !== 'completed' && ((isP1Real && !isP2Real) || (!isP1Real && isP2Real));
 
                           return (
                             <div 
                               key={match.id}
-                              className={`group relative bg-slate-950 hover:bg-slate-900/80 rounded-2xl border transition-all duration-300 hover:scale-[1.05] shadow-lg cursor-pointer flex flex-col overflow-hidden ${isMatchReady ? 'border-slate-800 hover:border-blue-500/50' : 'border-dashed border-slate-700 hover:border-slate-500'}`}
+                              className={`group relative bg-slate-100 dark:bg-slate-950 hover:bg-slate-200 dark:hover:bg-slate-900/80 rounded-2xl border transition-all duration-300 hover:scale-[1.05] shadow-sm dark:shadow-lg cursor-pointer flex flex-col overflow-hidden ${isMatchReady ? 'border-slate-300 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-500/50' : 'border-dashed border-slate-400 dark:border-slate-700 hover:border-slate-500 dark:hover:border-slate-500'}`}
                               style={{ minHeight: '100px' }}
                             >
                               {/* Match Action Buttons - Top Right */}
@@ -601,7 +601,7 @@ const KnockoutTab = ({
                                     setEditingMatch(match);
                                     setShowMatchModal(true);
                                   }}
-                                  className="p-1.5 bg-slate-800/80 hover:bg-blue-600 text-slate-400 hover:text-white rounded-lg transition-all"
+                                  className="p-1.5 bg-white/90 dark:bg-slate-800/80 border border-slate-200 dark:border-transparent hover:bg-blue-600 dark:hover:bg-blue-600 text-slate-500 dark:text-slate-400 hover:text-white dark:hover:text-white rounded-lg transition-all shadow-sm"
                                   title="Postavke meča"
                                 >
                                   <Settings size={12} />
@@ -611,7 +611,7 @@ const KnockoutTab = ({
                                     e.stopPropagation();
                                     handleDeleteMatch(match.id);
                                   }}
-                                  className="p-1.5 bg-slate-800/80 hover:bg-red-600 text-slate-400 hover:text-white rounded-lg transition-all"
+                                  className="p-1.5 bg-white/90 dark:bg-slate-800/80 border border-slate-200 dark:border-transparent hover:bg-red-600 dark:hover:bg-red-600 text-slate-500 dark:text-slate-400 hover:text-white dark:hover:text-white rounded-lg transition-all shadow-sm"
                                   title="Obriši meč"
                                 >
                                   <Trash2 size={12} />
@@ -620,7 +620,7 @@ const KnockoutTab = ({
 
                               {/* Player 1 Row */}
                               <div 
-                                className="flex items-center justify-between p-3 flex-1 group/p1 border-b border-slate-800/50 hover:bg-blue-500/5 transition-colors"
+                                className="flex items-center justify-between p-3 flex-1 group/p1 border-b border-slate-300 dark:border-slate-800/50 hover:bg-blue-500/5 transition-colors"
                                 onDragOver={(e) => {
                                   e.preventDefault();
                                   e.dataTransfer.dropEffect = 'copy';
@@ -632,14 +632,14 @@ const KnockoutTab = ({
                                 }}
                               >
                                 <div className="flex items-center gap-3 min-w-0 flex-1">
-                                  <div className={`w-1.5 h-1.5 rounded-full ${p1Winner ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-800'}`}></div>
+                                  <div className={`w-1.5 h-1.5 rounded-full ${p1Winner ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-200 dark:bg-slate-800'}`}></div>
                                   <div className="flex flex-col truncate group/name relative">
-                                    <div className={`text-[11px] font-black uppercase truncate transition-colors flex items-center gap-1.5 ${p1Winner ? 'text-emerald-500' : 'text-slate-400 group-hover/p1:text-blue-400'}`}>
+                                    <div className={`text-[11px] font-black uppercase truncate transition-colors flex items-center gap-1.5 ${p1Winner ? 'text-emerald-600 dark:text-emerald-500' : 'text-slate-500 dark:text-slate-400 group-hover/p1:text-blue-600 dark:group-hover/p1:text-blue-400'}`}>
                                       {match.player1?.name || (
                                         isSlotReserved(match, 1) ? (
-                                          <span className="text-amber-500/50 text-[9px] italic">Pobjednik prethodne runde</span>
+                                          <span className="text-amber-600/50 dark:text-amber-500/50 text-[9px] italic">Pobjednik prethodne runde</span>
                                         ) : (
-                                          <span className="text-slate-700 animate-pulse text-[9px]">Direktan prolaz (Prevucite...)</span>
+                                          <span className="text-slate-300 dark:text-slate-700 animate-pulse text-[9px]">Direktan prolaz (Prevucite...)</span>
                                         )
                                       )}
                                       {match.player1?.id && seededPlayerIds.includes(match.player1.id) && (
@@ -650,13 +650,13 @@ const KnockoutTab = ({
                                       </div>
                                     </div>
                                     {match.player1?.id && match.player1.id !== 'tbd' && (
-                                       <span className="text-[7px] text-slate-600 font-bold uppercase truncate leading-tight">
+                                       <span className="text-[7px] text-slate-400 dark:text-slate-600 font-bold uppercase truncate leading-tight">
                                           {allPlayers.find(p => p.id === match.player1.id)?.club || 'Individual'}
                                        </span>
                                     )}
                                   </div>
                                 </div>
-                                <div className={`w-7 h-7 flex items-center justify-center rounded-lg text-xs font-black transition-all ${p1Winner ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-slate-500 group-hover/p1:bg-slate-700'}`}>
+                                <div className={`w-7 h-7 flex items-center justify-center rounded-lg text-xs font-black transition-all ${p1Winner ? 'bg-emerald-500 text-white' : 'bg-white border border-slate-200 dark:border-0 dark:bg-slate-800 text-slate-600 dark:text-slate-500 group-hover/p1:bg-slate-50 dark:group-hover/p1:bg-slate-700'}`}>
                                   {match.player1Score ?? 0}
                                 </div>
                               </div>
@@ -675,14 +675,14 @@ const KnockoutTab = ({
                                 }}
                               >
                                 <div className="flex items-center gap-3 min-w-0 flex-1">
-                                  <div className={`w-1.5 h-1.5 rounded-full ${p2Winner ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-800'}`}></div>
+                                  <div className={`w-1.5 h-1.5 rounded-full ${p2Winner ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-200 dark:bg-slate-800'}`}></div>
                                   <div className="flex flex-col truncate group/name2 relative">
-                                    <div className={`text-[11px] font-black uppercase truncate transition-colors flex items-center gap-1.5 ${p2Winner ? 'text-emerald-500' : 'text-slate-400 group-hover/p2:text-blue-400'}`}>
+                                    <div className={`text-[11px] font-black uppercase truncate transition-colors flex items-center gap-1.5 ${p2Winner ? 'text-emerald-600 dark:text-emerald-500' : 'text-slate-500 dark:text-slate-400 group-hover/p2:text-blue-600 dark:group-hover/p2:text-blue-400'}`}>
                                       {match.player2?.name || (
                                         isSlotReserved(match, 2) ? (
-                                          <span className="text-amber-500/50 text-[9px] italic">Pobjednik prethodne runde</span>
+                                          <span className="text-amber-600/50 dark:text-amber-500/50 text-[9px] italic">Pobjednik prethodne runde</span>
                                         ) : (
-                                          <span className="text-slate-700 animate-pulse text-[9px]">Direktan prolaz (Prevucite...)</span>
+                                          <span className="text-slate-300 dark:text-slate-700 animate-pulse text-[9px]">Direktan prolaz (Prevucite...)</span>
                                         )
                                       )}
                                       {match.player2?.id && seededPlayerIds.includes(match.player2.id) && (
@@ -693,20 +693,20 @@ const KnockoutTab = ({
                                       </div>
                                     </div>
                                     {match.player2?.id && match.player2.id !== 'tbd' && (
-                                       <span className="text-[7px] text-slate-600 font-bold uppercase truncate leading-tight">
+                                       <span className="text-[7px] text-slate-400 dark:text-slate-600 font-bold uppercase truncate leading-tight">
                                           {allPlayers.find(p => p.id === match.player2.id)?.club || 'Individual'}
                                        </span>
                                     )}
                                   </div>
                                 </div>
-                                <div className={`w-7 h-7 flex items-center justify-center rounded-lg text-xs font-black transition-all ${p2Winner ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-slate-500 group-hover/p2:bg-slate-700'}`}>
+                                <div className={`w-7 h-7 flex items-center justify-center rounded-lg text-xs font-black transition-all ${p2Winner ? 'bg-emerald-500 text-white' : 'bg-white border border-slate-200 dark:border-0 dark:bg-slate-800 text-slate-600 dark:text-slate-500 group-hover/p2:bg-slate-50 dark:group-hover/p2:bg-slate-700'}`}>
                                   {match.player2Score ?? 0}
                                 </div>
                               </div>
 
                               {/* Quick View Results Button Overlay - ONLY show if both players are present */}
                               {isMatchReady && (
-                                <div className="absolute inset-x-0 bottom-0 top-0 opacity-0 group-hover:opacity-100 bg-blue-600/10 flex items-center justify-center transition-opacity z-10 pointer-events-none">
+                                <div className="absolute inset-x-0 bottom-0 top-0 opacity-0 group-hover:opacity-100 bg-blue-600/5 dark:bg-blue-600/10 flex items-center justify-center transition-opacity z-10 pointer-events-none">
                                   <button 
                                     className="bg-blue-600 text-white px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-tighter shadow-lg translate-y-8 group-hover:translate-y-0 transition-transform flex items-center gap-1.5 pointer-events-auto"
                                     onClick={(e) => { 
@@ -721,7 +721,7 @@ const KnockoutTab = ({
                               )}
 
                               {isWalkoverPossible && (
-                                <div className="absolute inset-x-0 bottom-0 top-0 opacity-0 group-hover:opacity-100 bg-emerald-600/10 flex items-center justify-center transition-opacity z-10 pointer-events-none">
+                                <div className="absolute inset-x-0 bottom-0 top-0 opacity-0 group-hover:opacity-100 bg-emerald-600/5 dark:bg-emerald-600/10 flex items-center justify-center transition-opacity z-10 pointer-events-none">
                                   <button 
                                     className="bg-emerald-600 text-white px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-tighter shadow-lg translate-y-8 group-hover:translate-y-0 transition-transform flex items-center gap-1.5 pointer-events-auto"
                                     onClick={(e) => { 
@@ -758,19 +758,19 @@ const KnockoutTab = ({
 
       {/* Manual Match Modal */}
       {showManualModal && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-          <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl">
-            <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
-              <h3 className="text-white font-black uppercase italic tracking-tighter text-lg">Ručno kreiranje meča</h3>
-              <button onClick={() => setShowManualModal(false)} className="text-slate-500 hover:text-white"><X size={20} /></button>
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 dark:bg-black/90 backdrop-blur-md transition-all">
+          <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-slate-300 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900/50">
+              <h3 className="text-slate-900 dark:text-white font-black uppercase italic tracking-tighter text-lg">Ručno kreiranje meča</h3>
+              <button onClick={() => setShowManualModal(false)} className="text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"><X size={20} /></button>
             </div>
             
             <div className="p-8 space-y-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
               {suggestedMatches.length > 0 && (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
-                    <Zap size={14} className="text-blue-500" />
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Prijedlozi na osnovu grupa</span>
+                    <Zap size={14} className="text-blue-600 dark:text-blue-500" />
+                    <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Prijedlozi na osnovu grupa</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {suggestedMatches.map((s, idx) => {
@@ -786,10 +786,10 @@ const KnockoutTab = ({
                               player2Id: s.p2.id
                             });
                           }}
-                          className={`flex flex-col p-3 rounded-xl border text-left transition-all ${isUsed ? 'bg-slate-900/40 border-slate-800 opacity-20' : 'bg-blue-500/5 border-blue-500/20 hover:bg-blue-500/10'}`}
+                          className={`flex flex-col p-3 rounded-xl border text-left transition-all ${isUsed ? 'bg-slate-50 dark:bg-slate-900/40 border-slate-100 dark:border-slate-800 opacity-20' : 'bg-blue-50 dark:bg-blue-500/5 border-blue-100 dark:border-blue-500/20 hover:bg-blue-100 dark:hover:bg-blue-500/10'}`}
                         >
-                          <span className="text-[10px] font-black text-blue-400 uppercase">{s.label}</span>
-                          <span className="text-[9px] text-slate-400 font-bold uppercase truncate">{s.desc}</span>
+                          <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase">{s.label}</span>
+                          <span className="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase truncate">{s.desc}</span>
                         </button>
                       );
                     })}
@@ -797,33 +797,33 @@ const KnockoutTab = ({
                 </div>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-800">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100 dark:border-slate-800">
                 {/* Player 1 Selection */}
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Igrač 1</label>
+                  <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Igrač 1</label>
                   <select 
-                    className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-white font-bold outline-none focus:border-blue-500 transition-all cursor-pointer"
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer shadow-sm dark:shadow-none"
                     value={manualMatch.player1Id}
                     onChange={(e) => setManualMatch({...manualMatch, player1Id: e.target.value})}
                   >
                     <option value="">Izaberi igrača</option>
                     {allPlayers.map(p => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
+                      <option key={p.id} value={p.id} className="dark:bg-slate-950">{p.name}</option>
                     ))}
                   </select>
                 </div>
 
                 {/* Player 2 Selection */}
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Igrač 2</label>
+                  <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Igrač 2</label>
                   <select 
-                    className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-white font-bold outline-none focus:border-blue-500 transition-all cursor-pointer"
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer shadow-sm dark:shadow-none"
                     value={manualMatch.player2Id}
                     onChange={(e) => setManualMatch({...manualMatch, player2Id: e.target.value})}
                   >
                     <option value="">Izaberi igrača</option>
                     {allPlayers.map(p => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
+                      <option key={p.id} value={p.id} className="dark:bg-slate-950">{p.name}</option>
                     ))}
                   </select>
                 </div>
@@ -831,20 +831,20 @@ const KnockoutTab = ({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Naziv runde</label>
+                  <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Naziv runde</label>
                   <input 
                     type="text" 
                     placeholder="Npr. Polufinale"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-white font-bold outline-none focus:border-blue-500"
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 shadow-sm dark:shadow-none"
                     value={manualMatch.roundName}
                     onChange={(e) => setManualMatch({...manualMatch, roundName: e.target.value})}
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Redni broj runde</label>
+                  <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Redni broj runde</label>
                   <input 
                     type="number" 
-                    className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-white font-bold outline-none focus:border-blue-500"
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 shadow-sm dark:shadow-none"
                     value={manualMatch.round}
                     onChange={(e) => setManualMatch({...manualMatch, round: e.target.value})}
                   />
@@ -854,7 +854,7 @@ const KnockoutTab = ({
               <div className="pt-4">
                 <button 
                   onClick={onAddManual}
-                  className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-blue-500 transition-all active:scale-95 shadow-xl shadow-blue-500/20"
+                  className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-blue-700 transition-all active:scale-95 shadow-xl shadow-blue-600/30"
                 >
                   Kreiraj Meč
                 </button>
@@ -865,14 +865,14 @@ const KnockoutTab = ({
       )}
 
       {editingPlayerSlot && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-          <div className="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[80vh]">
-            <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/60 dark:bg-black/90 backdrop-blur-md">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900/50">
               <div>
-                <h3 className="text-white font-black uppercase italic tracking-tighter text-lg">Izaberi Igrača</h3>
+                <h3 className="text-slate-900 dark:text-white font-black uppercase italic tracking-tighter text-lg">Izaberi Igrača</h3>
                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Izaberi učesnika za poziciju {editingPlayerSlot.playerSlot}</p>
               </div>
-              <button onClick={() => setEditingPlayerSlot(null)} className="text-slate-500 hover:text-white"><X size={20} /></button>
+              <button onClick={() => setEditingPlayerSlot(null)} className="text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"><X size={20} /></button>
             </div>
             
             <div className="p-4 overflow-y-auto">
@@ -907,38 +907,38 @@ const KnockoutTab = ({
                <div className="grid grid-cols-1 gap-2">
                   <button 
                     onClick={() => onSelectPlayerForSlot({ id: 'tbd', name: 'TBD' })}
-                    className="flex items-center gap-3 bg-slate-800/20 hover:bg-slate-800 p-4 rounded-2xl border border-slate-800/50 transition-all text-left"
+                    className="flex items-center gap-3 bg-slate-50 dark:bg-slate-800/20 hover:bg-slate-100 dark:hover:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-800/50 transition-all text-left shadow-sm dark:shadow-none"
                   >
-                    <div className="w-10 h-10 bg-slate-950 rounded-xl flex items-center justify-center text-slate-500">
+                    <div className="w-10 h-10 bg-white dark:bg-slate-950 border border-slate-100 dark:border-transparent rounded-xl flex items-center justify-center text-slate-400 dark:text-slate-500">
                       <Clock size={18} />
                     </div>
                     <div>
-                      <p className="text-sm font-black text-slate-400 uppercase tracking-tight">TBD</p>
-                      <p className="text-[10px] text-slate-600 font-bold uppercase">Pozicija će biti naknadno određena</p>
+                      <p className="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-tight">TBD</p>
+                      <p className="text-[10px] text-slate-400 dark:text-slate-600 font-bold uppercase">Pozicija će biti naknadno određena</p>
                     </div>
                   </button>
 
                   {roundWinners.length > 0 && (
                     <>
                       <div className="flex items-center gap-2 mt-4 mb-2">
-                        <Trophy size={14} className="text-yellow-500" />
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Pobjednici prošlih mečeva</span>
+                        <Trophy size={14} className="text-amber-600 dark:text-yellow-500" />
+                        <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Pobjednici prošlih mečeva</span>
                       </div>
                       <div className="grid grid-cols-1 gap-2">
                         {roundWinners.map(player => (
                           <button 
                             key={`winner-${player.id}-${player.matchId}`}
                             onClick={() => onSelectPlayerForSlot(player)}
-                            className="flex items-center gap-3 bg-blue-500/10 border border-blue-500/20 p-4 rounded-2xl hover:bg-blue-500/20 transition-all text-left group"
+                            className="flex items-center gap-3 bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20 p-4 rounded-2xl hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-all text-left group shadow-sm dark:shadow-none"
                           >
-                            <div className="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center text-blue-400 font-black">
+                            <div className="w-10 h-10 bg-blue-100 dark:bg-blue-500/20 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-400 font-black">
                               {player.name?.[0]?.toUpperCase()}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-black text-white uppercase tracking-tight truncate">{player.name}</p>
-                              <p className="text-[9px] text-blue-400 font-bold uppercase">Pobjednik iz: {player.fromRound}</p>
+                              <p className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight truncate">{player.name}</p>
+                              <p className="text-[9px] text-blue-600 dark:text-blue-400 font-bold uppercase">Pobjednik iz: {player.fromRound}</p>
                             </div>
-                            <ChevronRight size={16} className="text-blue-500/50 group-hover:text-blue-500 transition-colors" />
+                            <ChevronRight size={16} className="text-blue-400/50 dark:text-blue-500/50 group-hover:text-blue-600 dark:group-hover:text-blue-500 transition-colors" />
                           </button>
                         ))}
                       </div>
@@ -962,22 +962,22 @@ const KnockoutTab = ({
                           return (
                             <>
                               <div className="flex items-center gap-2 mt-6 mb-2">
-                                <Zap size={14} className="text-emerald-500" />
-                                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Kvalifikovani iz grupa</span>
+                                <Zap size={14} className="text-emerald-600 dark:text-emerald-500" />
+                                <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Kvalifikovani iz grupa</span>
                               </div>
                               <div className="grid grid-cols-1 gap-2">
                                 {advancingFromGroups.map(player => (
                                   <button 
                                     key={`group-${player.id}`}
                                     onClick={() => onSelectPlayerForSlot(player)}
-                                    className="flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-2xl hover:bg-emerald-500/20 transition-all text-left"
+                                    className="flex items-center gap-3 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 p-4 rounded-2xl hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-all text-left shadow-sm dark:shadow-none"
                                   >
-                                    <div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-400 font-black">
+                                    <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-600 dark:text-emerald-400 font-black">
                                       {player.fromGroup}
                                     </div>
                                     <div className="flex-1">
-                                      <p className="text-sm font-black text-white uppercase">{player.name}</p>
-                                      <p className="text-[9px] text-emerald-400 font-bold uppercase">Grupa {player.fromGroup}</p>
+                                      <p className="text-sm font-black text-slate-900 dark:text-white uppercase">{player.name}</p>
+                                      <p className="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold uppercase">Grupa {player.fromGroup}</p>
                                     </div>
                                   </button>
                                 ))}
@@ -989,27 +989,27 @@ const KnockoutTab = ({
                     return null;
                   })()}
 
-                  <div className="mt-8 pt-4 border-t border-slate-800/50">
+                  <div className="mt-8 pt-4 border-t border-slate-100 dark:border-slate-800/50">
                     <details className="group">
                       <summary className="flex items-center justify-between cursor-pointer list-none">
                         <div className="flex items-center gap-2">
-                          <Users size={14} className="text-slate-600" />
-                          <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Svi registrovani igrači (Napredno)</span>
+                          <Users size={14} className="text-slate-400 dark:text-slate-600" />
+                          <span className="text-[10px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-widest">Svi registrovani igrači (Napredno)</span>
                         </div>
-                        <ChevronDown size={14} className="text-slate-600 group-open:rotate-180 transition-transform" />
+                        <ChevronDown size={14} className="text-slate-400 dark:text-slate-600 group-open:rotate-180 transition-transform" />
                       </summary>
                       <div className="grid grid-cols-1 gap-2 mt-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                         {allPlayers.map(player => (
                           <button 
                             key={player.id}
                             onClick={() => onSelectPlayerForSlot(player)}
-                            className="flex items-center gap-3 bg-slate-950 border border-slate-800 p-4 rounded-2xl hover:border-blue-500/50 group transition-all text-left"
+                            className="flex items-center gap-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl hover:border-blue-400 dark:hover:border-blue-500/50 group transition-all text-left shadow-sm dark:shadow-none"
                           >
-                            <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-500 group_hover:bg-blue-600 group-hover:text-white transition-all font-black">
+                            <div className="w-10 h-10 bg-blue-50 dark:bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-500 group_hover:bg-blue-600 group-hover:text-white transition-all font-black">
                               {player.name?.[0]?.toUpperCase()}
                             </div>
                             <div>
-                              <p className="text-sm font-black text-white uppercase tracking-tight">{player.name}</p>
+                              <p className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">{player.name}</p>
                               <p className="text-[10px] text-slate-500 font-bold uppercase">{player.club || 'Bez kluba'}</p>
                             </div>
                           </button>
@@ -1024,14 +1024,14 @@ const KnockoutTab = ({
       )}
 
       {showSetupModal && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-          <div className="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl">
-            <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/60 dark:bg-black/90 backdrop-blur-md">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900/50">
               <div>
-                <h3 className="text-white font-black uppercase italic tracking-tighter text-lg">Manuelna Faza</h3>
+                <h3 className="text-slate-900 dark:text-white font-black uppercase italic tracking-tighter text-lg">Manuelna Faza</h3>
                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Izaberite broj učesnika za žrijeb</p>
               </div>
-              <button onClick={() => setShowSetupModal(false)} className="text-slate-500 hover:text-white"><X size={20} /></button>
+              <button onClick={() => setShowSetupModal(false)} className="text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"><X size={20} /></button>
             </div>
             
             <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto custom-scrollbar">
@@ -1053,13 +1053,13 @@ const KnockoutTab = ({
                 const byesCount = count - playersInBaraz;
 
                 return (
-                  <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-2xl mb-4">
+                  <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 p-4 rounded-2xl mb-4 shadow-sm dark:shadow-none">
                     <div className="flex items-center gap-2 mb-3">
-                      <Zap size={16} className="text-amber-500" />
-                      <span className="text-xs font-black text-amber-500 uppercase tracking-widest">Baraž + Glavni Žrijeb</span>
+                      <Zap size={16} className="text-amber-600 dark:text-amber-500" />
+                      <span className="text-xs font-black text-amber-600 dark:text-amber-500 uppercase tracking-widest">Baraž + Glavni Žrijeb</span>
                     </div>
-                    <p className="text-[10px] text-slate-400 font-bold uppercase mb-4 leading-relaxed">
-                      Imate <span className="text-white">{count}</span> igrača. Sistem će kreirati <span className="text-white">{barazMatchesCount}</span> meča baraža i kompletan kostur od <span className="text-white">{powerOf2}</span> igrača.
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase mb-4 leading-relaxed">
+                      Imate <span className="text-slate-900 dark:text-white font-black">{count}</span> igrača. Sistem će kreirati <span className="text-slate-900 dark:text-white font-black">{barazMatchesCount}</span> meča baraža i kompletan kostur od <span className="text-slate-900 dark:text-white font-black">{powerOf2}</span> igrača.
                     </p>
                     <button 
                       onClick={async () => {
@@ -1087,7 +1087,7 @@ const KnockoutTab = ({
                     >
                       Generiši Kompletnu Šemu
                     </button>
-                    <div className="mt-3 flex gap-4 text-[8px] font-black uppercase text-slate-500">
+                    <div className="mt-3 flex gap-4 text-[8px] font-black uppercase text-slate-400 dark:text-slate-500">
                       <span>{playersInBaraz} u baražu</span>
                       <span>{byesCount} direktno u R1</span>
                     </div>
@@ -1095,12 +1095,12 @@ const KnockoutTab = ({
                 );
               })()}
 
-              <div className="bg-blue-500/10 border border-blue-500/20 p-4 rounded-2xl mb-2">
+              <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20 p-4 rounded-2xl mb-2 shadow-sm dark:shadow-none">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">Kvalifikovanih igrača</span>
-                  <span className="text-xl font-black text-white">{advancingPool.length}</span>
+                  <span className="text-[10px] font-black text-blue-600 dark:text-blue-500 uppercase tracking-widest">Kvalifikovanih igrača</span>
+                  <span className="text-xl font-black text-slate-900 dark:text-white">{advancingPool.length}</span>
                 </div>
-                <p className="text-[9px] text-slate-400 font-bold uppercase leading-relaxed">
+                <p className="text-[9px] text-slate-500 dark:text-slate-400 font-bold uppercase leading-relaxed">
                   Izaberite žrijeb koji najbolje odgovara broju kvalifikovanih igrača.
                 </p>
               </div>
@@ -1136,42 +1136,42 @@ const KnockoutTab = ({
                       handleGenerateTemplate(template.count, hasBaraz);
                       setShowSetupModal(false);
                     }}
-                    className={`w-full p-4 rounded-2xl border transition-all text-left flex items-center justify-between group relative overflow-hidden ${
+                    className={`w-full p-4 rounded-2xl border transition-all text-left flex items-center justify-between group relative overflow-hidden shadow-sm hover:shadow-md ${
                       isRecommended 
-                        ? 'bg-blue-600/10 border-blue-500/50 hover:bg-blue-600/20 shadow-lg shadow-blue-500/10' 
-                        : 'bg-slate-950 border-slate-800 hover:bg-slate-800'
+                        ? 'bg-blue-50 dark:bg-blue-600/10 border-blue-300 dark:border-blue-500/50 hover:bg-blue-100 dark:hover:bg-blue-600/20' 
+                        : 'bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800'
                     }`}
                   >
                     {isRecommended && (
-                      <div className="absolute top-0 right-0 bg-blue-500 text-[8px] font-black text-white px-2 py-0.5 rounded-bl-lg uppercase tracking-widest">
+                      <div className="absolute top-0 right-0 bg-blue-600 text-[8px] font-black text-white px-2 py-0.5 rounded-bl-lg uppercase tracking-widest">
                         Preporučeno
                       </div>
                     )}
                     <div>
                       <div className="flex items-center gap-2">
-                        <p className="text-xs font-black text-white uppercase tracking-tight">{template.name}</p>
-                        <span className="text-[9px] font-bold text-slate-500 uppercase">({template.subtitle})</span>
+                        <p className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-tight">{template.name}</p>
+                        <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase">({template.subtitle})</span>
                       </div>
                       <div className="mt-1 flex flex-wrap gap-2">
-                        <span className="text-[9px] font-bold text-slate-400 uppercase">Kapacitet: {template.players}</span>
-                        <span className="text-[9px] font-bold text-slate-600 uppercase border-l border-slate-800 pl-2">Mečeva: {template.matches}</span>
+                        <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase">Kapacitet: {template.players}</span>
+                        <span className="text-[9px] font-bold text-slate-300 dark:text-slate-600 uppercase border-l border-slate-200 dark:border-slate-800 pl-2">Mečeva: {template.matches}</span>
                         {diff > 0 ? (
-                          <span className="text-[9px] font-bold text-emerald-500 uppercase italic">
+                          <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-500 uppercase italic">
                             + {diff} slobodno (BYE)
                           </span>
                         ) : diff < 0 ? (
-                          <span className="text-[9px] font-bold text-red-500 uppercase italic">
+                          <span className="text-[9px] font-bold text-red-600 dark:text-red-500 uppercase italic">
                             Nedostaje {Math.abs(diff)} mjesta
                           </span>
                         ) : (
-                          <span className="text-[9px] font-bold text-emerald-400 uppercase italic">
+                          <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 uppercase italic">
                             Idealan broj igrača
                           </span>
                         )}
                       </div>
                     </div>
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs transition-all ${
-                      isRecommended ? 'bg-blue-500 text-white' : 'bg-slate-900 text-slate-400 group-hover:text-blue-500 group-hover:bg-blue-500/10'
+                      isRecommended ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-500 group-hover:bg-blue-50 dark:group-hover:bg-blue-500/10'
                     }`}>
                       {template.count}
                     </div>
@@ -1179,8 +1179,8 @@ const KnockoutTab = ({
                 );
               })}
 
-              <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl">
-                <p className="text-[9px] text-amber-500/80 font-bold uppercase tracking-widest leading-relaxed">
+              <div className="p-4 bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 rounded-2xl shadow-sm dark:shadow-none">
+                <p className="text-[9px] text-amber-600 dark:text-amber-500/80 font-bold uppercase tracking-widest leading-relaxed">
                   * Sistem će kreirati prazan žrijeb. Igrače ćete dodijeliti ručno klikom na svaku poziciju u žrijebu.
                 </p>
               </div>

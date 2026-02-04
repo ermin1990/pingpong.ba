@@ -13,38 +13,38 @@ const SettingsTab = ({
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Dugme za status faze */}
-      <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-6 backdrop-blur-xl">
+      <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 backdrop-blur-xl shadow-sm dark:shadow-none transition-colors">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isGroupsCompleted ? 'bg-emerald-500/10 text-emerald-500' : 'bg-blue-500/10 text-blue-500'}`}>
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isGroupsCompleted ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-500' : 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-500'}`}>
               {isGroupsCompleted ? <CheckCircle size={20} /> : <Clock size={20} />}
             </div>
             <div>
-              <h4 className="text-sm font-black text-white uppercase tracking-tighter">Grupna faza je {isGroupsCompleted ? 'zavr�ena' : 'u toku'}</h4>
-              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Markiranje zavr�etka omogucava prelazak u knockout</p>
+              <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tighter">Grupna faza je {isGroupsCompleted ? 'završena' : 'u toku'}</h4>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Markiranje završetka omogućava prelazak u knockout</p>
             </div>
           </div>
           <button 
             onClick={() => handleToggleStage('groups', !isGroupsCompleted)}
             className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
               isGroupsCompleted 
-              ? 'bg-slate-800 text-slate-400 hover:bg-slate-700' 
-              : 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-lg shadow-emerald-500/20'
+              ? 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700' 
+              : 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-lg shadow-emerald-600/20'
             }`}
           >
-            {isGroupsCompleted ? 'Ponovo otvori' : 'Zavr�i grupe'}
+            {isGroupsCompleted ? 'Ponovo otvori' : 'Završi grupe'}
           </button>
         </div>
       </div>
 
-      <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-8 backdrop-blur-xl">
+      <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 backdrop-blur-xl shadow-sm dark:shadow-none transition-colors">
         <div className="flex items-center gap-4 mb-8">
-          <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500">
+          <div className="w-12 h-12 bg-blue-50 dark:bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-500 border border-blue-100 dark:border-transparent">
             <Settings2 size={24} />
           </div>
           <div>
-            <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">Postavke Bodovanja</h3>
-            <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Defini�ite sistem bodovanja za {activeCategory?.name}</p>
+            <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase italic tracking-tighter">Postavke Bodovanja</h3>
+            <p className="text-slate-500 dark:text-slate-500 text-xs font-bold uppercase tracking-widest">Definišite sistem bodovanja za {activeCategory?.name}</p>
           </div>
         </div>
 
@@ -52,10 +52,10 @@ const SettingsTab = ({
           <div className="space-y-2">
             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Bodovi za pobjedu</label>
             <div className="relative">
-              <Trophy className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" size={16} />
+              <Trophy className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-600" size={16} />
               <input 
                 type="number"
-                className="w-full bg-slate-950 border border-slate-800 rounded-2xl py-4 pl-12 pr-4 text-white font-black text-lg focus:border-blue-500 outline-none transition-all"
+                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 pl-12 pr-4 text-slate-900 dark:text-white font-black text-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all shadow-sm dark:shadow-none"
                 defaultValue={activeCategory?.winPoints ?? 2}
                 id="winPointsInput"
               />
@@ -65,10 +65,10 @@ const SettingsTab = ({
           <div className="space-y-2">
             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Bodovi za poraz</label>
             <div className="relative">
-              <X className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" size={16} />
+              <X className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-600" size={16} />
               <input 
                 type="number"
-                className="w-full bg-slate-950 border border-slate-800 rounded-2xl py-4 pl-12 pr-4 text-white font-black text-lg focus:border-blue-500 outline-none transition-all"
+                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 pl-12 pr-4 text-slate-900 dark:text-white font-black text-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all shadow-sm dark:shadow-none"
                 defaultValue={activeCategory?.lossPoints ?? 0}
                 id="lossPointsInput"
               />
@@ -76,14 +76,14 @@ const SettingsTab = ({
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Prolazi igraca dalje</label>
+            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Prolazi igrača dalje</label>
             <div className="relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-600">
                 <Settings2 size={16} />
               </div>
               <input 
                 type="number"
-                className="w-full bg-slate-950 border border-slate-800 rounded-2xl py-4 pl-12 pr-4 text-white font-black text-lg focus:border-blue-500 outline-none transition-all text-emerald-500"
+                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 pl-12 pr-4 text-emerald-600 dark:text-emerald-500 font-black text-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all shadow-sm dark:shadow-none"
                 defaultValue={activeCategory?.advancingPlayers ?? 2}
                 placeholder="2"
                 id="advancingPlayersInput"
@@ -94,12 +94,12 @@ const SettingsTab = ({
           <div className="space-y-2">
             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Setova za pobjedu</label>
             <div className="relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-600">
                 <Trophy size={16} />
               </div>
               <input 
                 type="number"
-                className="w-full bg-slate-950 border border-slate-800 rounded-2xl py-4 pl-12 pr-4 text-white font-black text-lg focus:border-blue-500 outline-none transition-all text-blue-500"
+                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 pl-12 pr-4 text-blue-600 dark:text-blue-500 font-black text-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all shadow-sm dark:shadow-none"
                 defaultValue={activeCategory?.setsToWin ?? 2}
                 placeholder="2"
                 id="setsToWinInput"
@@ -108,7 +108,7 @@ const SettingsTab = ({
           </div>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-slate-800">
+        <div className="mt-8 pt-8 border-t border-slate-100 dark:border-slate-800">
           <button 
             onClick={() => {
               const win = document.getElementById('winPointsInput').value;
@@ -122,9 +122,9 @@ const SettingsTab = ({
                 setsToWin: sets
               });
             }}
-            className="w-full bg-white text-slate-900 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-blue-500 hover:text-white transition-all shadow-xl shadow-white/5 active:scale-95 flex items-center justify-center gap-2"
+            className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-blue-700 transition-all shadow-xl shadow-blue-600/20 active:scale-95 flex items-center justify-center gap-2"
           >
-            <Save size={16} /> Sacuvaj Postavke
+            <Save size={16} /> Sačuvaj Postavke
           </button>
         </div>
       </div>

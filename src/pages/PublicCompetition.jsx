@@ -21,11 +21,11 @@ const KnockoutMatchCard = ({ match, isFinal = false }) => {
 
   return (
     <div 
-      className={`block bg-gray-800/40 backdrop-blur-md rounded-xl border border-gray-700/50 shadow-xl transition-all duration-200 hover:scale-[1.02] knockout-match relative pt-[3px] my-[3px] ${isFinal ? 'ring-2 ring-amber-500/20' : ''}`}
+      className={`block bg-white dark:bg-slate-800/40 backdrop-blur-md rounded-xl border border-slate-200 dark:border-slate-700/50 shadow-sm dark:shadow-xl transition-all duration-200 hover:scale-[1.02] knockout-match relative pt-[3px] my-[3px] ${isFinal ? 'ring-2 ring-amber-500/20' : ''}`}
     >
       {isLive && (
         <div className="absolute -top-1 -right-1 z-20">
-          <div className="bg-blue-600 text-[6px] font-black uppercase px-1.5 py-0.5 rounded shadow-lg animate-pulse border border-blue-400">
+          <div className="bg-blue-600 text-[6px] font-black uppercase px-1.5 py-0.5 rounded shadow-lg border border-blue-400 text-white">
             UŽIVO
           </div>
         </div>
@@ -35,7 +35,7 @@ const KnockoutMatchCard = ({ match, isFinal = false }) => {
           {/* Home Player */}
           <div className="flex items-center justify-between mb-1.5">
             <div className="flex items-center gap-2 flex-1 min-w-0 mr-2">
-                <div className={`player-name font-semibold truncate text-[13px] ${p1Win ? 'text-green-500 font-bold' : 'text-gray-300'}`}>
+                <div className={`player-name font-semibold truncate text-[13px] ${p1Win ? 'text-emerald-600 dark:text-green-500 font-bold' : 'text-slate-500 dark:text-gray-300'}`}>
                   {match.player1?.name || "TBD"}
                 </div>
             </div>
@@ -45,7 +45,7 @@ const KnockoutMatchCard = ({ match, isFinal = false }) => {
                   <div className="flex gap-0.5 justify-end">
                     {match.sets.map((s, idx) => (s.p1 > 0 || s.p2 > 0) && (
                       <div key={idx} className="w-4 text-center">
-                        <span className={`text-[10px] leading-none font-bold block ${s.p1 > s.p2 ? 'text-gray-300' : 'text-gray-600'}`}>
+                        <span className={`text-[10px] leading-none font-bold block ${s.p1 > s.p2 ? 'text-slate-600 dark:text-gray-300' : 'text-slate-300 dark:text-gray-600'}`}>
                           {s.p1}
                         </span>
                       </div>
@@ -53,8 +53,8 @@ const KnockoutMatchCard = ({ match, isFinal = false }) => {
                   </div>
                 )}
                 <div className="flex-shrink-0">
-                    <div className={`w-7 h-7 rounded flex items-center justify-center border border-white/5 badge-box ${p1Win ? 'bg-green-900/80' : 'bg-gray-800'}`}>
-                        <div className="text-sm font-bold text-white badge-number">
+                    <div className={`w-7 h-7 rounded flex items-center justify-center border border-slate-100 dark:border-white/5 badge-box ${p1Win ? 'bg-emerald-50 dark:bg-green-900/80' : 'bg-slate-50 dark:bg-gray-800'}`}>
+                        <div className={`text-sm font-bold badge-number ${p1Win ? 'text-emerald-700 dark:text-white' : 'text-slate-900 dark:text-white'}`}>
                           {match.player1Score || 0}
                         </div>
                     </div>
@@ -65,7 +65,7 @@ const KnockoutMatchCard = ({ match, isFinal = false }) => {
           {/* Away Player */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 flex-1 min-w-0 mr-2">
-                <div className={`player-name font-semibold truncate text-[13px] ${p2Win ? 'text-green-500 font-bold' : 'text-gray-300'}`}>
+                <div className={`player-name font-semibold truncate text-[13px] ${p2Win ? 'text-emerald-600 dark:text-green-500 font-bold' : 'text-slate-500 dark:text-gray-300'}`}>
                   {match.player2?.name || "TBD"}
                 </div>
             </div>
@@ -75,7 +75,7 @@ const KnockoutMatchCard = ({ match, isFinal = false }) => {
                   <div className="flex gap-0.5 justify-end">
                     {match.sets.map((s, idx) => (s.p1 > 0 || s.p2 > 0) && (
                       <div key={idx} className="w-4 text-center">
-                        <span className={`text-[10px] leading-none font-bold block ${s.p2 > s.p1 ? 'text-gray-300' : 'text-gray-600'}`}>
+                        <span className={`text-[10px] leading-none font-bold block ${s.p2 > s.p1 ? 'text-slate-600 dark:text-gray-300' : 'text-slate-300 dark:text-gray-600'}`}>
                           {s.p2}
                         </span>
                       </div>
@@ -83,8 +83,8 @@ const KnockoutMatchCard = ({ match, isFinal = false }) => {
                   </div>
                 )}
                 <div className="flex-shrink-0">
-                    <div className={`w-7 h-7 rounded flex items-center justify-center border border-white/5 badge-box ${p2Win ? 'bg-green-900/80' : 'bg-gray-800'}`}>
-                        <div className="text-sm font-bold text-white badge-number">
+                    <div className={`w-7 h-7 rounded flex items-center justify-center border border-slate-100 dark:border-white/5 badge-box ${p2Win ? 'bg-emerald-50 dark:bg-green-900/80' : 'bg-slate-50 dark:bg-gray-800'}`}>
+                        <div className={`text-sm font-bold badge-number ${p2Win ? 'text-emerald-700 dark:text-white' : 'text-slate-900 dark:text-white'}`}>
                           {match.player2Score || 0}
                         </div>
                     </div>
@@ -143,12 +143,7 @@ const PublicCompetition = () => {
         if (compDoc) {
           const compData = { id: compDoc.id, ...compDoc.data() };
           
-          // Sigurnosna provjera: ako nije javno, ne prikazuj (osim ako nema slug, ali slug je javni identifikator)
-          if (!compData.isPublic && compData.slug !== slug) {
-             // Možda dopustiti ako je ID? Korisnik je rekao "ako je korisnik uključi"
-             // Za sada ćemo dopustiti sve koji imaju direktan link, ali isPublic bi trebao biti glavni
-          }
-
+          // Uvijek postavi competition podatke, pa ćemo kasnije provjeriti isPublic
           setCompetition(compData);
 
           // Fetch full player data for this organization
@@ -449,255 +444,143 @@ const PublicCompetition = () => {
   );
 
   return (
-    <div className={`min-h-screen bg-[#070b14] text-slate-200 font-sans ${!isEmbed ? 'pb-20' : 'pb-4'}`}>
-      {/* Header */}
-      {!isEmbed && (
-        <header className="bg-slate-950/50 backdrop-blur-xl border-b border-slate-900 sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
-            <div 
-               className="flex items-center gap-4 cursor-pointer group"
-               onClick={() => setSelectedCategoryId('')}
-            >
-               <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-blue-600/40 group-hover:scale-110 transition-transform">
-                  <Trophy size={24} className="text-white" />
-               </div>
-               <div>
-                  <h1 className="text-xl sm:text-2xl font-black text-white uppercase italic tracking-tighter leading-none">{competition.name}</h1>
-                  <div className="flex items-center gap-2 mt-2">
-                     <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                     <p className="text-[10px] text-blue-500 font-black uppercase tracking-widest leading-none">Public Portal</p>
-                  </div>
-               </div>
+    <div className="min-h-screen bg-white dark:bg-[#070b14] text-slate-900 dark:text-white selection:bg-blue-500/30">
+      {/* Dynamic Header / Banner */}
+      <header className="relative pt-16 pb-12 md:pt-24 md:pb-20 overflow-hidden bg-slate-50 dark:bg-transparent border-b border-slate-200 dark:border-none">
+        <div className="absolute inset-0 opacity-20 hidden dark:block">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-[120px] animate-pulse" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-600/10 rounded-full blur-[120px]" />
+        </div>
+        
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="max-w-4xl mx-auto text-center space-y-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20 rounded-full animate-in fade-in slide-in-from-top-4 duration-700">
+              <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+              <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.2em]">Live Rezultati</span>
             </div>
             
-            <div className="flex items-center gap-3">
-              {selectedCategoryId && (
-                <div className="flex items-center gap-1.5 p-1 bg-slate-900 border border-slate-800 rounded-xl">
-                  <button 
-                    onClick={() => {
-                      navigator.clipboard.writeText(window.location.href);
-                      alert('Link kategorije kopiran!');
-                    }}
-                    className="p-2 text-slate-400 hover:text-blue-400 hover:bg-slate-800 rounded-lg transition-all"
-                    title="Kopiraj link"
-                  >
-                    <Share2 size={16} />
-                  </button>
-                  <button 
-                    onClick={() => setShowEmbedCode(true)}
-                    className="p-2 text-slate-400 hover:text-emerald-400 hover:bg-slate-800 rounded-lg transition-all"
-                    title="Prikaži kod za ugradnju (iframe)"
-                  >
-                    <Code size={16} />
-                  </button>
+            <h1 className="text-4xl md:text-6xl lg:text-8xl font-black text-slate-900 dark:text-white uppercase italic tracking-tighter leading-[0.9] animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
+              {competition?.name}
+            </h1>
+            
+            <div className="flex flex-wrap items-center justify-center gap-4 md:gap-8 pt-4 animate-in fade-in duration-1000 delay-300">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-slate-100 dark:bg-slate-900 rounded-xl flex items-center justify-center text-slate-500 border border-slate-200 dark:border-slate-800">
+                  <Calendar size={18} />
                 </div>
-              )}
-              {selectedCategoryId && (
-                <button 
-                  onClick={() => setSelectedCategoryId('')}
-                  className="px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white hover:border-slate-700 transition-all flex items-center gap-2"
-                >
-                  <LayoutGrid size={14} /> Sve Kategorije
-                </button>
-              )}
+                <div className="text-left">
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Datum</p>
+                  <p className="text-xs font-black text-slate-700 dark:text-white uppercase">{competition?.date}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-slate-100 dark:bg-slate-900 rounded-xl flex items-center justify-center text-slate-500 border border-slate-200 dark:border-slate-800">
+                  <MapPin size={18} />
+                </div>
+                <div className="text-left">
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Lokacija</p>
+                  <p className="text-xs font-black text-slate-700 dark:text-white uppercase">{competition?.location}</p>
+                </div>
+              </div>
             </div>
           </div>
-        </header>
-      )}
+        </div>
+      </header>
 
-      <main className={`max-w-7xl mx-auto px-6 ${!isEmbed ? 'py-10' : 'py-4'}`}>
-        
-        {searchTerm ? (
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-12">
-                <div className="flex items-center justify-between">
-                    <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter">Rezultati Pretrage</h2>
-                    <button onClick={() => setSearchTerm('')} className="text-[10px] text-slate-600 font-black uppercase tracking-widest hover:text-white transition-colors">Poništi</button>
-                </div>
+      {/* Sticky Category Nav */}
+      <div className="sticky top-0 z-50 bg-white/80 dark:bg-[#070b14]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800/50">
+        <div className="container mx-auto px-4 overflow-x-auto no-scrollbar">
+          <div className="flex items-center h-16 md:h-20 gap-2 min-w-max">
+            <button 
+                onClick={() => handleCategorySelect(null)}
+                className={`p-3 rounded-xl transition-all ${!selectedCategoryId ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-900'}`}
+            >
+                <LayoutGrid size={20} />
+            </button>
+            <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-2" />
+            
+            {categories.map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => handleCategorySelect(cat.id)}
+                className={`px-5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${selectedCategoryId === cat.id ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'}`}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
 
-                {(() => {
-                    const searchLower = searchTerm.toLowerCase();
-                    const results = allMatches.filter(m => 
-                        m.player1?.name?.toLowerCase().includes(searchLower) || 
-                        m.player2?.name?.toLowerCase().includes(searchLower)
-                    );
-                    
-                    if (results.length === 0) {
-                        return (
-                            <div className="text-center py-24 bg-slate-950/30 rounded-[3rem] border border-slate-900/50">
-                                <div className="w-16 h-16 bg-slate-900 rounded-3xl flex items-center justify-center mx-auto mb-6 text-slate-800">
-                                    <Search size={32} />
-                                </div>
-                                <h3 className="text-lg font-black text-slate-700 uppercase italic tracking-tighter mb-2">Nema rezultata</h3>
-                                <p className="text-[10px] text-slate-800 font-bold uppercase tracking-widest px-8">Nažalost, nismo pronašli nijedan meč za igrača "{searchTerm}"</p>
-                            </div>
-                        );
-                    }
-
-                    // Group by category
-                    const matchesByCat = {};
-                    results.forEach(m => {
-                        const catKey = m.categoryId || 'league';
-                        if (!matchesByCat[catKey]) matchesByCat[catKey] = [];
-                        matchesByCat[catKey].push(m);
-                    });
-
-                    return (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {Object.keys(matchesByCat).map(catId => {
-                                const catName = catId === 'league' ? 'Liga' : (categories.find(c => c.id === catId)?.name || 'Kategorija');
-                                const catMatches = matchesByCat[catId].sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-
-                                return (
-                                    <div key={catId} className="bg-slate-900/60 border border-blue-500/10 rounded-[2.5rem] p-8 backdrop-blur-sm hover:border-blue-500/20 transition-all">
-                                        <div className="flex items-center justify-between mb-8">
-                                            <h3 className="text-xl font-black text-blue-500 uppercase italic tracking-tighter flex items-center gap-3">
-                                                <Trophy size={20} className="text-blue-500/50" /> {catName}
-                                            </h3>
-                                            <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest bg-slate-950 px-3 py-1 rounded-full border border-slate-900">{catMatches.length} mečeva</span>
-                                        </div>
-                                        <div className="space-y-4">
-                                            {catMatches.map(match => {
-                                                const p1Matches = match.player1?.name?.toLowerCase().includes(searchLower);
-                                                const p2Matches = match.player2?.name?.toLowerCase().includes(searchLower);
-                                                const p1Win = match.player1Score > match.player2Score;
-                                                const p2Win = match.player2Score > match.player1Score;
-                                                
-                                                const hasScore = (match.player1Score > 0 || match.player2Score > 0);
-                                                const isLive = match.status !== 'completed' && 
-                                                              match.player1?.name && match.player1?.id !== 'tbd' && 
-                                                              match.player2?.name && match.player2?.id !== 'tbd' && 
-                                                              hasScore;
-                                                
-                                                const hasSets = match.sets && match.sets.some(s => s.p1 > 0 || s.p2 > 0);
-                                                
-                                                return (
-                                                    <div key={match.id} className="bg-slate-950 p-5 rounded-2xl border border-slate-900/80 hover:border-slate-800 transition-all flex flex-col gap-4 group">
-                                                        <div className="flex justify-between items-center border-b border-slate-900/50 pb-3">
-                                                            <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">
-                                                                {match.isKnockout ? (match.roundName || `Runda ${match.round}`) : (match.round ? `Kolo ${match.round}` : `Grupa ${String.fromCharCode(65 + (match.groupId || 0))}`)}
-                                                            </span>
-                                                            {isLive ? (
-                                                                <div className="flex items-center gap-2 bg-red-600/10 px-2 py-1 rounded border border-red-600/20">
-                                                                    <div className="w-1 h-1 bg-red-600 rounded-full animate-pulse" />
-                                                                    <span className="text-[8px] font-black text-red-600 uppercase">UŽIVO</span>
-                                                                </div>
-                                                            ) : match.status === 'completed' && (
-                                                                <CheckCircle size={12} className="text-emerald-500/40" />
-                                                            )}
-                                                        </div>
-                                                        
-                                                        <div className="space-y-2">
-                                                            <div className="flex justify-between items-center">
-                                                                <div className="flex items-center gap-3 min-w-0">
-                                                                    <div className={`w-1.5 h-1.5 rounded-full ${p1Win && match.status === 'completed' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-transparent'}`} />
-                                                                    <p className={`text-xs font-bold uppercase truncate ${p1Win && match.status === 'completed' ? 'text-white' : 'text-slate-500'} ${p1Matches ? 'text-blue-500 font-black' : ''}`}>
-                                                                        {match.player1.name}
-                                                                    </p>
-                                                                </div>
-                                                                <span className={`text-sm font-black ${p1Win && match.status === 'completed' ? 'text-blue-500' : 'text-slate-700'}`}>{match.player1Score || 0}</span>
-                                                            </div>
-                                                            <div className="flex justify-between items-center">
-                                                                <div className="flex items-center gap-3 min-w-0">
-                                                                    <div className={`w-1.5 h-1.5 rounded-full ${p2Win && match.status === 'completed' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-transparent'}`} />
-                                                                    <p className={`text-xs font-bold uppercase truncate ${p2Win && match.status === 'completed' ? 'text-white' : 'text-slate-500'} ${p2Matches ? 'text-blue-500 font-black' : ''}`}>
-                                                                        {match.player2.name}
-                                                                    </p>
-                                                                </div>
-                                                                <span className={`text-sm font-black ${p2Win && match.status === 'completed' ? 'text-blue-500' : 'text-slate-700'}`}>{match.player2Score || 0}</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    );
-                })()}
-            </div>
+      <main className="container mx-auto px-6 py-12 md:py-20">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] animate-pulse">Učitavanje podataka...</p>
+          </div>
         ) : (
           <>
-            {competition?.type === 'League' ? (
-              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
-                 <div className="bg-slate-900/60 border border-slate-800 rounded-[2.5rem] p-8 backdrop-blur-sm overflow-hidden shadow-2xl">
-                    <div className="flex items-center justify-between mb-8">
-                       <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter flex items-center gap-3">
-                          <Trophy size={24} className="text-amber-500" /> Tabela Lige
-                       </h3>
-                       <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest bg-slate-950 px-4 py-1.5 rounded-full border border-slate-900">{competition.sport} • Berger</span>
-                    </div>
-                    <PublicGroupStandings standings={leagueStandings} />
-                 </div>
-
-                 <div className="space-y-6 pb-20">
-                    <div className="text-center">
-                       <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter">Mečevi Lige</h2>
-                       <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em]">Pregled rezultata po kolima</p>
-                    </div>
-                    
-                    {Array.from(new Set(allMatches.map(m => m.round))).sort((a,b) => a-b).map(roundNum => {
-                       const roundMatches = allMatches.filter(m => m.round === roundNum);
-                       return (
-                          <div key={roundNum} className="space-y-4">
-                             <div className="flex items-center gap-4">
-                                <div className="h-px flex-1 bg-slate-800 opacity-50"></div>
-                                <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] px-4 py-1.5 border border-slate-800 rounded-full">Kolo {roundNum}</h4>
-                                <div className="h-px flex-1 bg-slate-800 opacity-50"></div>
-                             </div>
-                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {roundMatches.map(m => {
-                                    const p1Win = m.status === 'completed' && m.player1Score > m.player2Score;
-                                    const p2Win = m.status === 'completed' && m.player2Score > m.player1Score;
-                                    return (
-                                        <div key={m.id} className="bg-slate-900/40 border border-slate-800/60 p-6 rounded-3xl hover:border-blue-500/20 transition-all group relative overflow-hidden">
-                                           <div className="space-y-4 relative z-10">
-                                              <div className="flex justify-between items-center text-[9px] font-black uppercase text-slate-600 tracking-widest border-b border-white/5 pb-2 mb-1">
-                                                 <span className="text-slate-700">REZULTAT</span>
-                                                 {m.status === 'completed' ? <CheckCircle size={12} className="text-emerald-500" /> : <div className="w-1.5 h-1.5 bg-blue-500/20 rounded-full" />}
-                                              </div>
-                                              <div className="space-y-3">
-                                                 <div className="flex justify-between items-center">
-                                                    <span className={`text-sm font-bold truncate ${p1Win ? 'text-white font-black' : 'text-slate-500'}`}>{m.player1?.name}</span>
-                                                    <span className={`text-base font-black ${p1Win ? 'text-blue-500' : 'text-slate-700'}`}>{m.player1Score || 0}</span>
-                                                 </div>
-                                                 <div className="flex justify-between items-center">
-                                                    <span className={`text-sm font-bold truncate ${p2Win ? 'text-white font-black' : 'text-slate-500'}`}>{m.player2?.name}</span>
-                                                    <span className={`text-base font-black ${p2Win ? 'text-blue-500' : 'text-slate-700'}`}>{m.player2Score || 0}</span>
-                                                 </div>
-                                              </div>
-                                           </div>
-                                        </div>
-                                    );
-                                })}
-                             </div>
-                          </div>
-                       );
-                    })}
-                 </div>
-              </div>
+            {error ? (
+                <div className="max-w-md mx-auto bg-red-500/10 border border-red-500/20 p-8 rounded-3xl text-center">
+                    <Trophy size={48} className="mx-auto text-red-500 mb-4" />
+                    <h3 className="text-xl font-black text-white uppercase italic tracking-tighter mb-2">Greška</h3>
+                    <p className="text-[10px] text-red-400 font-bold uppercase tracking-widest">{error}</p>
+                </div>
             ) : (
-                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    {selectedCategoryId ? (
+                <div className="animate-in fade-in duration-1000">
+                    {activeCategory ? (
                         <div className="space-y-12">
-                            {/* Phase Selector TABS */}
-                            <div className="flex justify-center flex-wrap gap-3 md:gap-4 p-2 bg-slate-950/50 border border-slate-900 rounded-[2rem] max-w-lg mx-auto">
+                            {/* Category Header */}
+                            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-10 border-b border-slate-200 dark:border-slate-800/50">
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-600/20">
+                                            <Trophy size={24} className="text-white" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-3xl md:text-5xl font-black text-slate-900 dark:text-white uppercase italic tracking-tighter leading-none mb-2">
+                                                {activeCategory.name}
+                                            </h2>
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">
+                                                    {activeCategory.format === 'round_robin' ? 'Round Robin Liga' : 'Grupna faza & Knockout'}
+                                                </span>
+                                                <div className="w-1 h-1 bg-slate-300 dark:bg-slate-700 rounded-full" />
+                                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                                                    {activeCategory.playerIds?.length || 0} IGRAČA
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-3">
+                                    <button 
+                                        onClick={() => setShowEmbedCode(true)}
+                                        className="h-12 px-6 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-slate-800 transition-all flex items-center gap-3"
+                                    >
+                                        <Code size={16} /> Ugradi rezultate
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Internal Navigation */}
+                            <div className="flex bg-slate-100 dark:bg-slate-950/50 p-1.5 rounded-[2rem] max-w-2xl mx-auto border border-slate-200 dark:border-slate-800/50">
                                 <button 
                                     onClick={() => setActiveTab('players')}
-                                    className={`flex-1 min-w-[100px] py-4 rounded-[1.5rem] text-[11px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-3 ${activeTab === 'players' ? 'bg-blue-600 text-white shadow-2xl shadow-blue-600/30' : 'text-slate-500 hover:text-white'}`}
+                                    className={`flex-1 min-w-[100px] py-4 rounded-[1.5rem] text-[11px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-3 ${activeTab === 'players' ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xl' : 'text-slate-500 hover:text-slate-700 dark:hover:text-white'}`}
                                 >
-                                    <Users size={16} /> Igrači
+                                    <Trophy size={16} /> Igrači
                                 </button>
                                 <button 
                                     onClick={() => setActiveTab('groups')}
-                                    className={`flex-1 min-w-[100px] py-4 rounded-[1.5rem] text-[11px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-3 ${activeTab === 'groups' ? 'bg-blue-600 text-white shadow-2xl shadow-blue-600/30' : 'text-slate-500 hover:text-white'}`}
+                                    className={`flex-1 min-w-[100px] py-4 rounded-[1.5rem] text-[11px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-3 ${activeTab === 'groups' ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xl' : 'text-slate-500 hover:text-slate-700 dark:hover:text-white'}`}
                                 >
                                     <LayoutGrid size={16} /> Grupe
                                 </button>
                                 <button 
                                     onClick={() => setActiveTab('knockout')}
-                                    className={`flex-1 min-w-[100px] py-4 rounded-[1.5rem] text-[11px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-3 ${activeTab === 'knockout' ? 'bg-blue-600 text-white shadow-2xl shadow-blue-600/30' : 'text-slate-500 hover:text-white'}`}
+                                    className={`flex-1 min-w-[100px] py-4 rounded-[1.5rem] text-[11px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-3 ${activeTab === 'knockout' ? 'bg-blue-600 text-white shadow-2xl shadow-blue-600/30' : 'text-slate-500 hover:text-slate-700 dark:hover:text-white'}`}
                                 >
                                     <Zap size={16} /> Eliminacije
                                 </button>
@@ -706,10 +589,10 @@ const PublicCompetition = () => {
                             {/* Category Content */}
                             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                                 {activeTab === 'players' && (
-                                    <div className="bg-slate-900/40 backdrop-blur-xl rounded-xl p-8 border border-slate-800 shadow-xl max-w-4xl mx-auto">
+                                    <div className="bg-white dark:bg-slate-900/40 backdrop-blur-xl rounded-xl p-8 border border-slate-200 dark:border-slate-800 shadow-xl max-w-4xl mx-auto">
                                         <div className="flex items-center gap-4 mb-8">
                                         <div className="h-8 w-1.5 bg-blue-500 rounded-full"></div>
-                                        <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter">Spisak Učesnika</h3>
+                                        <h3 className="text-2xl font-black text-slate-900 dark:text-white uppercase italic tracking-tighter">Spisak Učesnika</h3>
                                         </div>
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -729,12 +612,12 @@ const PublicCompetition = () => {
                                             }
 
                                             return participatingPlayers.map((player, idx) => (
-                                                <div key={player.id} className="bg-slate-950/50 border border-slate-800 p-4 rounded-2xl flex items-center gap-4 group hover:border-blue-500/50 transition-all">
-                                                <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-xs font-black text-slate-500 group-hover:text-blue-500 transition-colors">
+                                                <div key={player.id} className="bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl flex items-center gap-4 group hover:border-blue-500/50 dark:hover:border-blue-500/50 transition-all">
+                                                <div className="w-10 h-10 bg-white dark:bg-slate-900 rounded-xl flex items-center justify-center text-xs font-black text-slate-500 border border-slate-200 dark:border-none group-hover:text-blue-500 transition-colors">
                                                     {idx + 1}
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <p className="text-sm font-black text-white uppercase truncate">{player.name}</p>
+                                                    <p className="text-sm font-black text-slate-900 dark:text-white uppercase truncate">{player.name}</p>
                                                     <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest truncate">{player.club || 'Individual'}</p>
                                                 </div>
                                                 </div>
@@ -759,8 +642,8 @@ const PublicCompetition = () => {
                                             const advancingCount = activeCategory.advancingPlayers || 2;
                                             
                                             return (
-                                                <div key={gIdx} className={`bg-slate-900/40 backdrop-blur-xl rounded-xl p-4 md:p-6 border border-slate-800 shadow-xl ${activeCategory.format === 'round_robin' ? 'lg:col-span-2' : ''}`}>
-                                                    <h4 className="text-base md:text-lg font-bold text-white mb-3 md:mb-4">
+                                                <div key={gIdx} className={`bg-white dark:bg-slate-900/40 backdrop-blur-xl rounded-xl p-4 md:p-6 border border-slate-200 dark:border-slate-800 shadow-xl ${activeCategory.format === 'round_robin' ? 'lg:col-span-2' : ''}`}>
+                                                    <h4 className="text-base md:text-lg font-bold text-slate-900 dark:text-white mb-3 md:mb-4">
                                                         {activeCategory.format === 'round_robin' ? 'Tabela i mečevi' : `Grupa ${String.fromCharCode(65 + gIdx)}`}
                                                     </h4>
                                                     <PublicGroupStandings standings={standings} advancingCount={advancingCount} />
@@ -770,10 +653,10 @@ const PublicCompetition = () => {
                                         })}
 
                                         {groups.length === 0 && (
-                                            <div className="lg:col-span-2 py-32 text-center border-2 border-dashed border-slate-900 rounded-[3rem]">
-                                                <LayoutGrid size={64} className="mx-auto mb-6 text-slate-900" />
-                                                <h4 className="text-xl font-black text-slate-700 uppercase italic tracking-tighter">Nema grupne faze</h4>
-                                                <p className="text-[10px] text-slate-800 font-bold uppercase tracking-widest mt-2 px-8">Ova kategorija možda koristi direktni eliminacioni sistem.</p>
+                                            <div className="lg:col-span-2 py-32 text-center border-2 border-dashed border-slate-200 dark:border-slate-900 rounded-[3rem]">
+                                                <LayoutGrid size={64} className="mx-auto mb-6 text-slate-300 dark:text-slate-900" />
+                                                <h4 className="text-xl font-black text-slate-400 dark:text-slate-700 uppercase italic tracking-tighter">Nema grupne faze</h4>
+                                                <p className="text-[10px] text-slate-500 dark:text-slate-800 font-bold uppercase tracking-widest mt-2 px-8">Ova kategorija možda koristi direktni eliminacioni sistem.</p>
                                             </div>
                                         )}
                                     </div>
@@ -781,14 +664,14 @@ const PublicCompetition = () => {
 
                                 {activeTab === 'knockout' && (
                                     <div className="space-y-8">
-                                        <div className="bg-slate-900/40 backdrop-blur-xl rounded-xl p-4 md:p-6 border border-slate-800 shadow-xl">
+                                        <div className="bg-white dark:bg-slate-900/40 backdrop-blur-xl rounded-xl p-4 md:p-6 border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden">
                                             {(() => {
                                                 const maxMatchesInRound = Math.max(...knockoutRounds.map(r => r.matches.length), 1);
                                                 const autoScale = maxMatchesInRound > 8 ? 0.7 : maxMatchesInRound > 4 ? 0.85 : 1;
                                                 const finalScale = knockoutZoom * autoScale;
                                                 
                                                 return (
-                                                    <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800 pb-6">
+                                                    <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600 scrollbar-track-slate-100 dark:scrollbar-track-slate-800 pb-6">
                                                         <div className="min-w-max">
                                                             <div 
                                                                 className="flex-1 flex flex-row h-full custom-scrollbar knockout-bracket-container transition-transform duration-200" 
@@ -808,7 +691,7 @@ const PublicCompetition = () => {
                                                                     return (
                                                                         <div key={rIdx} className="flex-1 flex flex-col knockout-column h-full" style={{ gap: '5px', minWidth: '200px' }}>
                                                                             <div className="text-center mb-4">
-                                                                                <h3 className="text-lg font-bold text-amber-400 uppercase tracking-widest border-b border-amber-400/30 pb-2">
+                                                                                <h3 className="text-lg font-bold text-blue-600 dark:text-amber-400 uppercase tracking-widest border-b border-blue-100 dark:border-amber-400/30 pb-2">
                                                                                     {round.name}
                                                                                 </h3>
                                                                             </div>
@@ -848,7 +731,7 @@ const PublicCompetition = () => {
                         <div className="space-y-12">
                             {/* CATEGORY SELECT GRID */}
                             <div className="text-center space-y-2 mb-10">
-                                <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white uppercase italic tracking-tighter">Takmičarske Kategorije</h2>
+                                <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 dark:text-white uppercase italic tracking-tighter">Takmičarske Kategorije</h2>
                                 <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em] max-w-sm mx-auto">Izaberite željenu kategoriju da biste vidjeli trenutne rezultate, tabelu i eliminacije</p>
                             </div>
 
@@ -862,10 +745,10 @@ const PublicCompetition = () => {
                                         <div 
                                             key={cat.id}
                                             onClick={() => handleCategorySelect(cat.id)}
-                                            className="bg-slate-900/40 border border-slate-800 p-8 rounded-[2rem] hover:border-blue-500/40 hover:bg-slate-900/80 transition-all cursor-pointer group relative overflow-hidden shadow-2xl flex flex-col gap-6"
+                                            className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 p-8 rounded-[2rem] hover:border-blue-500/40 dark:hover:border-blue-500/40 hover:bg-slate-50 dark:hover:bg-slate-900/80 transition-all cursor-pointer group relative overflow-hidden shadow-2xl flex flex-col gap-6"
                                         >
                                             <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:scale-110 duration-500">
-                                                <Trophy size={80} />
+                                                <Trophy size={80} className="text-slate-900 dark:text-white" />
                                             </div>
                                             <div className="relative z-10 flex flex-col h-full justify-between">
                                                 <div className="space-y-4">
@@ -881,22 +764,22 @@ const PublicCompetition = () => {
                                                         )}
                                                     </div>
                                                     <div>
-                                                        <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter group-hover:text-blue-500 transition-colors">{cat.name}</h3>
+                                                        <h3 className="text-2xl font-black text-slate-900 dark:text-white uppercase italic tracking-tighter group-hover:text-blue-500 transition-colors">{cat.name}</h3>
                                                         <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1 opacity-70">
                                                             {cat.format === 'round_robin' ? 'Round Robin Liga' : 'Grupna faza i eliminacije'}
                                                         </p>
                                                     </div>
                                                 </div>
-                                                <div className="mt-8 pt-6 border-t border-slate-800/50">
+                                                <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800/50">
                                                     <div className="flex items-center justify-between mb-4">
                                                         <div className="flex flex-col">
-                                                            <span className="text-[8px] text-slate-600 font-bold uppercase tracking-[0.2em] mb-1">Napredak</span>
-                                                            <span className="text-xs font-black text-white uppercase">
+                                                            <span className="text-[8px] text-slate-400 dark:text-slate-600 font-bold uppercase tracking-[0.2em] mb-1">Napredak</span>
+                                                            <span className="text-xs font-black text-slate-900 dark:text-white uppercase">
                                                                 {totalMatches > 0 ? Math.round((completedMatches / totalMatches) * 100) : 0}%
                                                             </span>
                                                         </div>
                                                         <div className="flex flex-col text-right">
-                                                            <span className="text-[8px] text-slate-600 font-bold uppercase tracking-[0.2em] mb-1">Učesnici</span>
+                                                            <span className="text-[8px] text-slate-400 dark:text-slate-600 font-bold uppercase tracking-[0.2em] mb-1">Učesnici</span>
                                                             <span className="text-xs font-black text-blue-500 uppercase">{cat.playerIds?.length || 0} igrača</span>
                                                         </div>
                                                     </div>
@@ -911,19 +794,19 @@ const PublicCompetition = () => {
                             </div>
 
                             {/* SEARCH BAR */}
-                            <div className="max-w-2xl mx-auto space-y-6 pt-20 border-t border-slate-900/50 mt-10">
+                            <div className="max-w-2xl mx-auto space-y-6 pt-20 border-t border-slate-100 dark:border-slate-800 mt-10">
                                 <div className="text-center">
-                                    <h3 className="text-xs font-black text-slate-600 uppercase tracking-[0.3em] mb-4 text-center">Ili pretraži igrača direktno</h3>
+                                    <h3 className="text-xs font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.3em] mb-4 text-center">Ili pretraži igrača direktno</h3>
                                 </div>
                                 <div className="relative group">
                                     <input 
                                         type="text" 
                                         placeholder="Upiši ime igrača..." 
-                                        className="w-full bg-slate-950 border-2 border-slate-900 rounded-[2rem] py-5 pl-16 pr-8 text-sm text-white font-bold outline-none focus:border-blue-500/50 transition-all placeholder:text-slate-700 shadow-2xl"
+                                        className="w-full bg-slate-50 dark:bg-slate-950 border-2 border-slate-200 dark:border-slate-900 rounded-[2rem] py-5 pl-16 pr-8 text-sm text-slate-900 dark:text-white font-bold outline-none focus:border-blue-500/50 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-700 shadow-2xl"
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                     />
-                                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-700 group-focus-within:text-blue-500 transition-colors" size={24} />
+                                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 dark:text-slate-700 group-focus-within:text-blue-500 transition-colors" size={24} />
                                 </div>
                             </div>
                         </div>
@@ -936,14 +819,14 @@ const PublicCompetition = () => {
 
       {/* Footer */}
       {!isEmbed && (
-        <footer className="mt-20 border-t border-slate-900/50 py-16 text-center">
+        <footer className="mt-20 border-t border-slate-100 dark:border-slate-900/50 py-16 text-center">
            <div className="flex items-center justify-center gap-3 mb-6">
-              <div className="w-8 h-8 bg-slate-800 rounded-xl flex items-center justify-center border border-slate-700">
+              <div className="w-8 h-8 bg-slate-50 dark:bg-slate-800 rounded-xl flex items-center justify-center border border-slate-200 dark:border-slate-700">
                   <Trophy size={16} className="text-slate-400" />
               </div>
-              <span className="text-lg font-black text-white uppercase italic tracking-tighter">PINGPONG.BA</span>
+              <span className="text-lg font-black text-slate-900 dark:text-white uppercase italic tracking-tighter">PINGPONG.BA</span>
            </div>
-           <p className="text-[10px] text-slate-800 font-bold uppercase tracking-widest">
+           <p className="text-[10px] text-slate-400 dark:text-slate-800 font-bold uppercase tracking-widest">
               Automated Tournament Management System &copy; {new Date().getFullYear()}
            </p>
         </footer>
@@ -952,29 +835,29 @@ const PublicCompetition = () => {
       {/* Embed Modal */}
       {showEmbedCode && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center px-6">
-          <div className="absolute inset-0 bg-[#070b14]/90 backdrop-blur-md" onClick={() => setShowEmbedCode(false)}></div>
-          <div className="relative bg-slate-900 border border-slate-800 w-full max-w-lg rounded-[2rem] p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+          <div className="absolute inset-0 bg-white/90 dark:bg-[#070b14]/90 backdrop-blur-md" onClick={() => setShowEmbedCode(false)}></div>
+          <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-lg rounded-[2rem] p-8 shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center mb-6">
-               <h3 className="text-xl font-black text-white uppercase italic tracking-tighter flex items-center gap-3">
+               <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase italic tracking-tighter flex items-center gap-3">
                   <Code className="text-emerald-500" /> Ugradi na svoj blog
                </h3>
-               <button onClick={() => setShowEmbedCode(false)} className="text-slate-500 hover:text-white transition-colors">
+               <button onClick={() => setShowEmbedCode(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
                   <ArrowDown size={20} />
                </button>
             </div>
             
-            <p className="text-xs text-slate-400 mb-6 leading-relaxed">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">
                Iskopirajte kod ispod i zalijepite ga na svoju web stranicu kako biste prikazali rezultate <strong>{activeCategory?.name}</strong> uživo.
             </p>
 
-            <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-[11px] text-emerald-400/80 break-all mb-6 relative group">
+            <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-800 font-mono text-[11px] text-emerald-600 dark:text-emerald-400/80 break-all mb-6 relative group">
                {`<iframe src="${window.location.origin}/p/${slug}?category=${selectedCategoryId}&embed=true" width="100%" height="800" frameborder="0"></iframe>`}
                <button 
                   onClick={() => {
                     navigator.clipboard.writeText(`<iframe src="${window.location.origin}/p/${slug}?category=${selectedCategoryId}&embed=true" width="100%" height="800" frameborder="0"></iframe>`);
                     alert('Kod kopiran!');
                   }}
-                  className="absolute right-3 top-3 bg-slate-800 p-2 rounded-lg text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity hover:text-white"
+                  className="absolute right-3 top-3 bg-white dark:bg-slate-800 p-2 rounded-lg text-slate-400 border border-slate-200 dark:border-none opacity-0 group-hover:opacity-100 transition-opacity hover:text-slate-900 dark:hover:text-white"
                >
                   Kopiraj
                </button>

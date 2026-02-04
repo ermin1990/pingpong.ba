@@ -7,14 +7,14 @@ import { db } from '../firebase/config';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 
 const StatCard = ({ label, value, icon: Icon, color }) => (
-  <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-sm hover:border-slate-700 transition-all">
+  <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm hover:border-blue-400 dark:hover:border-slate-700 transition-all">
     <div className="flex items-center justify-between mb-4">
-      <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
+      <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
         <Icon className={`w-6 h-6 ${color}`} />
       </div>
     </div>
-    <div className="text-3xl font-bold text-white tracking-tight">{value}</div>
-    <div className="text-slate-400 text-sm font-medium">{label}</div>
+    <div className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">{value}</div>
+    <div className="text-slate-500 dark:text-slate-400 text-sm font-medium">{label}</div>
   </div>
 );
 
@@ -62,11 +62,11 @@ const Dashboard = () => {
   return (
     <DashboardLayout>
       <div className="max-w-7xl mx-auto space-y-8">
-        <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-8">
+        <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-8">
           <div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">Kontrolna Tabla</h1>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Kontrolna Tabla</h1>
             <p className="text-slate-500 text-sm mt-1">
-              Prijavljeni ste kao: <span className="text-blue-400 font-semibold">{userData?.role === 'super_admin' ? 'Super Admin' : 'Organizator'}</span>
+              Prijavljeni ste kao: <span className="text-blue-600 dark:text-blue-400 font-semibold">{userData?.role === 'super_admin' ? 'Super Admin' : 'Organizator'}</span>
             </p>
           </div>
           <div className="flex gap-3">
