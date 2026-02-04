@@ -10,8 +10,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
-        name: 'TeamSphere - PingPong BIH',
-        short_name: 'TeamSphere',
+        name: 'PingPong BIH',
+        short_name: 'PingPong BIH',
         description: 'Tournament management system',
         theme_color: '#070b14',
         background_color: '#070b14',

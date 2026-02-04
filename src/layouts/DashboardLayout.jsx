@@ -77,8 +77,8 @@ const DashboardLayout = ({ children, title }) => {
               </div>
               {!isSidebarCollapsed && (
                 <div className="overflow-hidden whitespace-nowrap">
-                  <div className="text-xl font-bold text-white tracking-tight">TEAMSPHERE</div>
-                  <div className="text-[10px] text-blue-500 font-bold uppercase tracking-wider">Tournament Manager</div>
+                  <div className="text-xl font-bold text-white tracking-tight">PINGPONG.BA</div>
+                  <div className="text-[10px] text-blue-500 font-bold uppercase tracking-wider"></div>
                 </div>
               )}
             </div>

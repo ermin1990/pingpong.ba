@@ -941,7 +941,7 @@ const PublicCompetition = () => {
               <div className="w-8 h-8 bg-slate-800 rounded-xl flex items-center justify-center border border-slate-700">
                   <Trophy size={16} className="text-slate-400" />
               </div>
-              <span className="text-lg font-black text-white uppercase italic tracking-tighter">TeamSphere</span>
+              <span className="text-lg font-black text-white uppercase italic tracking-tighter">PINGPONG.BA</span>
            </div>
            <p className="text-[10px] text-slate-800 font-bold uppercase tracking-widest">
               Automated Tournament Management System &copy; {new Date().getFullYear()}
