@@ -2,10 +2,9 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { LayoutDashboard, Users, Trophy, Settings, LogOut, Menu, X, Shield, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { auth } from '../firebase/config';
 
 const DashboardLayout = ({ children, title }) => {
-  const { user, userData, loading, isSuperAdmin } = useAuth();
+  const { user, userData, loading, isSuperAdmin, logout } = useAuth();
   const navigate = useNavigate();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
@@ -41,7 +40,7 @@ const DashboardLayout = ({ children, title }) => {
   ];
 
   const handleLogout = async () => {
-    await auth.signOut();
+    await logout();
     navigate('/');
   };
 
@@ -114,7 +113,7 @@ const DashboardLayout = ({ children, title }) => {
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto p-6 lg:p-10">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
-          <h1 className="text-3xl font-bold text-white tracking-tight">{title}</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">{title}</h1>
           <div className="flex items-center gap-4 bg-slate-900/50 p-2 pl-4 rounded-full border border-slate-800">
             <div className="text-right">
               <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-none">{userData?.role === 'super_admin' ? 'Super Admin' : 'Administrator'}</div>

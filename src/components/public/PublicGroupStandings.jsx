@@ -34,9 +34,14 @@ const PublicGroupStandings = ({ standings, advancingCount }) => {
                 <span className={`text-[10px] font-black italic ${isAdvancing ? 'text-blue-400' : 'text-slate-600'}`}>
                     {idx + 1}.
                 </span>
-                <span className={`text-[10px] font-black uppercase truncate ${isAdvancing ? 'text-white' : 'text-slate-400'}`}>
-                    {p.name}
-                </span>
+                <div className="flex flex-col truncate">
+                  <span className={`text-[10px] font-black uppercase truncate ${isAdvancing ? 'text-white' : 'text-slate-400'}`}>
+                      {p.name}
+                  </span>
+                  <span className="text-[7px] text-slate-500 font-bold uppercase truncate leading-tight">
+                      {p.club || 'Individual'}
+                  </span>
+                </div>
               </div>
               <div className="col-span-1 text-center text-[10px] font-bold text-slate-400">{p.won}</div>
               <div className="col-span-1 text-center text-[10px] font-bold text-slate-400">{p.lost}</div>

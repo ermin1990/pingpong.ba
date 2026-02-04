@@ -1,4 +1,4 @@
-import { Edit2, Search, X } from 'lucide-react';
+import { Edit2, Search, X, List, Users } from 'lucide-react';
 
 const CompetitionHeader = ({ 
   competition, 
@@ -37,47 +37,63 @@ const CompetitionHeader = ({
           </button>
         </div>
       ) : (
-        <div className="flex flex-wrap items-center gap-2 mb-8 bg-slate-900/50 p-1.5 rounded-2xl border border-slate-800 backdrop-blur-sm">
-          <button 
-            onClick={() => setActiveTab('categories')}
-            className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'categories' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-800 hover:text-slate-300'}`}
-          >
-            Kategorije
-          </button>
-          
-          {activeCategory && (
-            <>
-              <div className="w-px h-6 bg-slate-800 mx-2 hidden md:block"></div>
-              
-              <button 
-                onClick={() => setActiveTab('players')}
-                className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'players' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-800 hover:text-slate-300'}`}
-              >
-                Igrači
-              </button>
+        <div className="overflow-x-auto mb-8 -mx-4 px-4 md:mx-0 md:px-0">
+          <div className="flex items-center gap-2 bg-slate-900/50 p-1.5 rounded-2xl border border-slate-800 backdrop-blur-sm w-fit min-w-min">
+            <button 
+              onClick={() => setActiveTab('categories')}
+              className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'categories' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-800 hover:text-slate-300'}`}
+            >
+              Kategorije
+            </button>
 
-              <button 
-                onClick={() => setActiveTab('matches')}
-                className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'matches' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-800 hover:text-slate-300'}`}
-              >
-                Raspored
-              </button>
+            <button 
+              onClick={() => setActiveTab('all-matches')}
+              className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'all-matches' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-800 hover:text-slate-300'}`}
+            >
+              <List size={12} /> Svi Mečevi
+            </button>
 
-              <button 
-                onClick={() => setActiveTab('knockout')}
-                className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'knockout' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-800 hover:text-slate-300'}`}
-              >
-                Eliminacije
-              </button>
+            <button 
+              onClick={() => setActiveTab('all-players')}
+              className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'all-players' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-800 hover:text-slate-300'}`}
+            >
+              <Users size={12} /> Svi Igrači
+            </button>
+            
+            {activeCategory && (
+              <>
+                <div className="w-px h-6 bg-slate-800 mx-2 hidden md:block"></div>
+                
+                <button 
+                  onClick={() => setActiveTab('players')}
+                  className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'players' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-800 hover:text-slate-300'}`}
+                >
+                  Igrači
+                </button>
 
-              <button 
-                onClick={() => setActiveTab('settings')}
-                className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'settings' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-800 hover:text-slate-300'}`}
-              >
-                Postavke
-              </button>
-            </>
-          )}
+                <button 
+                  onClick={() => setActiveTab('matches')}
+                  className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'matches' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-800 hover:text-slate-300'}`}
+                >
+                  Raspored
+                </button>
+
+                <button 
+                  onClick={() => setActiveTab('knockout')}
+                  className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'knockout' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-800 hover:text-slate-300'}`}
+                >
+                  Eliminacije
+                </button>
+
+                <button 
+                  onClick={() => setActiveTab('settings')}
+                  className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'settings' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:bg-slate-800 hover:text-slate-300'}`}
+                >
+                  Postavke
+                </button>
+              </>
+            )}
+          </div>
         </div>
       )}
     </>

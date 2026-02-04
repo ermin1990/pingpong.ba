@@ -3,7 +3,9 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react()
+  ],
   base: '/', // Hosting root path (change to '/subpath/' if deploying to subdirectory)
   build: {
     outDir: 'dist',

@@ -31,9 +31,9 @@ const Home = () => {
                 </div>
 
                 <div className="mt-20 flex flex-wrap justify-center gap-12 opacity-20 grayscale">
-                    <span className="text-3xl font-black font-mono tracking-tighter">BERGER_SYSTEM</span>
-                    <span className="text-3xl font-black font-mono tracking-tighter">ELIMINATIONS</span>
-                    <span className="text-3xl font-black font-mono tracking-tighter">LIVE_SCORING</span>
+                    <span className="text-xl sm:text-2xl md:text-3xl font-black font-mono tracking-tighter">BERGER_SYSTEM</span>
+                    <span className="text-xl sm:text-2xl md:text-3xl font-black font-mono tracking-tighter">ELIMINATIONS</span>
+                    <span className="text-xl sm:text-2xl md:text-3xl font-black font-mono tracking-tighter">LIVE_SCORING</span>
                 </div>
             </div>
         </div>

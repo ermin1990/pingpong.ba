@@ -1,13 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase/config';
-import { doc, getDoc, collection, query, where, getDocs, updateDoc, setDoc, addDoc, serverTimestamp, writeBatch, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs, updateDoc, setDoc, addDoc, serverTimestamp, writeBatch, onSnapshot, deleteDoc } from 'firebase/firestore';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { 
   Users, Trophy, Play, CheckCircle, Clock, Save, Plus, Layers, 
   ChevronRight, ChevronDown, LayoutGrid, FileText, Info, UserPlus, Search, 
-  Target, Settings2, PlayCircle, Zap, X, AlertTriangle, Edit2, Code 
+  Target, Settings2, PlayCircle, Zap, X, AlertTriangle, Edit2, Code, List
 } from 'lucide-react';
 import { generateBergerMatches } from '../utils/berger';
 
@@ -21,11 +21,15 @@ import GlobalMatchSearch from '../components/competition/GlobalMatchSearch';
 import CompetitionHeader from '../components/competition/CompetitionHeader';
 import MatchUpdateModal from '../components/competition/MatchUpdateModal';
 import CompetitionSettingsModal from '../components/competition/CompetitionSettingsModal';
+import AllMatchesTab from '../components/competition/AllMatchesTab';
+import AllPlayersTab from '../components/competition/AllPlayersTab';
 
 const CompetitionDetails = () => {
   const { id } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { userData } = useAuth();
+  const navigate = useNavigate();
+  const auth = useAuth();
+  const userData = auth?.userData;
   const [competition, setCompetition] = useState(null);
   const [loading, setLoading] = useState(true);
   const [allPlayers, setAllPlayers] = useState([]);
@@ -108,7 +112,7 @@ const CompetitionDetails = () => {
           // 2. Dohvati igrače
           let playersQ;
           const isCollaborator = compData.collaborators?.includes(userData.email);
-          const isOwner = compData.organizationId === userData.organizationId;
+          const isOwner = compData.ownerUid === userData.uid;
           const isSuperAdmin = userData.role === 'super_admin';
 
           if (isSuperAdmin) {
@@ -116,7 +120,7 @@ const CompetitionDetails = () => {
           } else if (isOwner || isCollaborator) {
             playersQ = query(
               collection(db, "players"), 
-              where("organizationId", "==", compData.organizationId)
+              where("ownerUid", "==", compData.ownerUid)
             );
           } else {
             // Korisnik nema pristup ovom takmičenju
@@ -405,7 +409,7 @@ const CompetitionDetails = () => {
       const playerRef = await addDoc(collection(db, "players"), {
         name: newPlayerName.trim(),
         club: newPlayerClub.trim(),
-        organizationId: competition.organizationId,
+        ownerUid: competition.ownerUid,
         createdAt: new Date(),
         matchesPlayed: 0,
         wins: 0
@@ -441,7 +445,7 @@ const CompetitionDetails = () => {
           const pData = {
             name: pName,
             club: pClub || '',
-            organizationId: competition.organizationId,
+            ownerUid: competition.ownerUid,
             createdAt: new Date(),
             matchesPlayed: 0,
             wins: 0
@@ -558,6 +562,8 @@ const CompetitionDetails = () => {
             status: 'pending',
             competitionId: id,
             categoryId: selectedCategoryId,
+            ownerUid: competition?.ownerUid || userData?.uid || '',
+            ownerEmail: competition?.ownerEmail || userData?.email || '',
             createdAt: serverTimestamp()
           };
 
@@ -596,23 +602,37 @@ const CompetitionDetails = () => {
     }
   };
 
-  const handleGenerateTemplate = async (count) => {
+  const handleGenerateTemplate = async (count, preserveBaraz = false) => {
     if (!selectedCategoryId) return;
-    if (!window.confirm("Ovim ćete pobrisati postojeći žrijeb i rezultate eliminacija za ovu kategoriju. Nastaviti?")) return;
+    
+    const confirmMsg = preserveBaraz 
+      ? "Ovim ćete pobrisati postojeći glavni žrijeb (baraž će ostati). Nastaviti?"
+      : "Ovim ćete pobrisati postojeći žrijeb i rezultate eliminacija za ovu kategoriju (uključujući baraž). Nastaviti?";
+
+    if (!window.confirm(confirmMsg)) return;
 
     setGenerating(true);
     try {
       // 0. Prvo obriši stare knockout mečeve za ovu kategoriju
+      const matchesRef = collection(db, "matches");
       const oldMatchesQ = query(
-        collection(db, "matches"),
+        matchesRef,
         where("competitionId", "==", id),
         where("categoryId", "==", selectedCategoryId),
         where("isKnockout", "==", true)
       );
-      const oldSnap = await getDocs(oldMatchesQ);
       
+      const oldSnap = await getDocs(oldMatchesQ);
       const batch = writeBatch(db);
-      oldSnap.forEach(d => batch.delete(d.ref));
+      
+      oldSnap.forEach(d => {
+        const data = d.data();
+        // Ako čuvamo baraž, preskoči brisanje mečeva koji su u baražu
+        if (preserveBaraz && data.roundName === "Baraž") {
+          return;
+        }
+        batch.delete(d.ref);
+      });
       
       const roundsCount = Math.log2(count);
       let currentMatchCount = count / 2;
@@ -641,6 +661,8 @@ const CompetitionDetails = () => {
             status: 'pending',
             competitionId: id,
             categoryId: selectedCategoryId,
+            ownerUid: competition?.ownerUid || userData?.uid || '',
+            ownerEmail: competition?.ownerEmail || userData?.email || '',
             createdAt: serverTimestamp()
           });
         }
@@ -664,6 +686,8 @@ const CompetitionDetails = () => {
         ...matchData,
         competitionId: id,
         categoryId: selectedCategoryId,
+        ownerUid: competition?.ownerUid || userData?.uid || '',
+        ownerEmail: competition?.ownerEmail || userData?.email || '',
         status: 'pending',
         isKnockout: true,
         createdAt: serverTimestamp()
@@ -723,7 +747,8 @@ const CompetitionDetails = () => {
                 categoryId: selectedCategoryId,
                 groupId: groupIdx, // Dodajemo ID grupe
                 groupName: `Grupa ${String.fromCharCode(65 + groupIdx)}`,
-                organizationId: userData.organizationId,
+                ownerUid: competition?.ownerUid || userData?.uid || '',
+                ownerEmail: competition?.ownerEmail || userData?.email || '',
                 createdAt: serverTimestamp()
               });
             });
@@ -741,7 +766,8 @@ const CompetitionDetails = () => {
               ...match,
               competitionId: id,
               categoryId: selectedCategoryId,
-              organizationId: userData.organizationId,
+              ownerUid: competition?.ownerUid || userData?.uid || '',
+              ownerEmail: competition?.ownerEmail || userData?.email || '',
               createdAt: serverTimestamp()
             });
           });
@@ -861,6 +887,130 @@ const CompetitionDetails = () => {
     }
   };
 
+  const handleDeleteMatch = async (matchId) => {
+    if (!confirm("Da li ste sigurni da želite obrisati ovaj meč? Ova akcija se ne može poništiti.")) return;
+    
+    try {
+      await deleteDoc(doc(db, "matches", matchId));
+      setMatches(prev => prev.filter(m => m.id !== matchId));
+      alert("Meč je uspješno obrisan.");
+    } catch (err) {
+      console.error("Error deleting match:", err);
+      alert("Greška pri brisanju meča.");
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId) => {
+    if (!confirm("Da li ste sigurni da želite obrisati ovu kategoriju? Biće obrisani SVI mečevi u ovoj kategoriji. Ova akcija se ne može poništiti.")) return;
+    
+    try {
+      // Delete all matches in this category
+      const categoryMatches = matches.filter(m => m.categoryId === categoryId);
+      const batch = writeBatch(db);
+      
+      categoryMatches.forEach(match => {
+        batch.delete(doc(db, "matches", match.id));
+      });
+      
+      // Delete the category document
+      batch.delete(doc(db, "categories", categoryId));
+      
+      await batch.commit();
+      
+      // Update local state
+      setCategories(prev => prev.filter(c => c.id !== categoryId));
+      setMatches(prev => prev.filter(m => m.categoryId !== categoryId));
+      
+      // Reset selected category if deleted
+      if (selectedCategoryId === categoryId) {
+        setSelectedCategoryId(categories[0]?.id || null);
+      }
+      
+      alert("Kategorija i svi mečevi su uspješno obrisani.");
+    } catch (err) {
+      console.error("Error deleting category:", err);
+      alert("Greška pri brisanju kategorije.");
+    }
+  };
+
+  const handleDeleteCompetition = async () => {
+    if (!confirm("UPOZORENJE: Ova akcija će trajno obrisati cijelo takmičenje, SVE kategorije i SVE mečeve. Ova akcija se NE MOŽE poništiti. Da li ste apsolutno sigurni?")) return;
+    
+    // Double confirmation for critical action
+    const confirmText = prompt('Unesite "OBRIŠI" da potvrdite brisanje takmičenja:');
+    if (confirmText !== "OBRIŠI") {
+      alert("Brisanje otkazano.");
+      return;
+    }
+    
+    try {
+      const batch = writeBatch(db);
+      
+      // Delete all matches
+      matches.forEach(match => {
+        batch.delete(doc(db, "matches", match.id));
+      });
+      
+      // Delete all categories
+      categories.forEach(category => {
+        batch.delete(doc(db, "categories", category.id));
+      });
+      
+      // Delete the competition
+      batch.delete(doc(db, "competitions", competition.id));
+      
+      await batch.commit();
+      
+      alert("Takmičenje je uspješno obrisano.");
+      navigate('/competitions');
+    } catch (err) {
+      console.error("Error deleting competition:", err);
+      alert("Greška pri brisanju takmičenja.");
+    }
+  };
+
+  const handleDeleteAllMatches = async (matchIds) => {
+    try {
+      const batch = writeBatch(db);
+      matchIds.forEach(matchId => {
+        batch.delete(doc(db, "matches", matchId));
+      });
+      await batch.commit();
+      alert(`Uspješno obrisano ${matchIds.length} mečeva.`);
+    } catch (err) {
+      console.error("Error deleting matches:", err);
+      alert("Greška pri brisanju mečeva.");
+    }
+  };
+
+  const handleDeletePlayer = async (playerId) => {
+    if (!confirm("Sigurno želite obrisati ovog igrača?")) return;
+    
+    try {
+      await deleteDoc(doc(db, "players", playerId));
+      setAllPlayers(prev => prev.filter(p => p.id !== playerId));
+      alert("Igrač je uspješno obrisan.");
+    } catch (err) {
+      console.error("Error deleting player:", err);
+      alert("Greška pri brisanju igrača.");
+    }
+  };
+
+  const handleDeleteAllPlayers = async (playerIds) => {
+    try {
+      const batch = writeBatch(db);
+      playerIds.forEach(playerId => {
+        batch.delete(doc(db, "players", playerId));
+      });
+      await batch.commit();
+      setAllPlayers(prev => prev.filter(p => !playerIds.includes(p.id)));
+      alert(`Uspješno obrisano ${playerIds.length} igrača.`);
+    } catch (err) {
+      console.error("Error deleting players:", err);
+      alert("Greška pri brisanju igrača.");
+    }
+  };
+
   const handleUpdateFormat = async (newFormat) => {
     if (!selectedCategoryId) return;
     try {
@@ -912,14 +1062,69 @@ const CompetitionDetails = () => {
       return;
     }
 
-    // Shuffle players
-    const shuffled = [...playersToAssign].sort(() => Math.random() - 0.5);
-    
-    // Rasporedi u grupe
-    const newGroups = groups.map(() => []);
-    shuffled.forEach((player, index) => {
-      const groupIndex = index % groups.length;
-      newGroups[groupIndex].push(player);
+    // Identifikuj već raspoređene
+    const assignedIds = groups.flat().map(p => p.id);
+    const unassignedPlayers = playersToAssign.filter(p => !assignedIds.includes(p.id));
+
+    if (unassignedPlayers.length === 0) {
+      alert("Svi izabrani igrači su već raspoređeni u grupe.");
+      return;
+    }
+
+    // Grupiši neasignirane po klubovima kako bi ih bolje rasporedili
+    const byClub = {};
+    unassignedPlayers.forEach(p => {
+      const club = (p.club || 'Individual').trim().toLowerCase();
+      const normalizedClub = (club === 'bez kluba' || club === '') ? 'individual' : club;
+      if (!byClub[normalizedClub]) byClub[normalizedClub] = [];
+      byClub[normalizedClub].push(p);
+    });
+
+    // Sortiraj klubove po veličini da bi "teže" slučajeve prvo riješili
+    const sortedClubs = Object.keys(byClub).sort((a, b) => {
+      if (a === 'individual') return 1;
+      if (b === 'individual') return -1;
+      return byClub[b].length - byClub[a].length;
+    });
+
+    const newGroups = groups.map(g => [...g]);
+
+    sortedClubs.forEach(clubName => {
+      const clubPlayers = byClub[clubName];
+      // Randomize unutar kluba
+      const shuffledClubPlayers = [...clubPlayers].sort(() => Math.random() - 0.5);
+
+      shuffledClubPlayers.forEach(player => {
+        let bestGroupIdx = 0;
+        let minSameClubInGroup = Infinity;
+        let minTotalInGroup = Infinity;
+
+        // Randomize redoslijed provjere grupa za fer raspored
+        const groupIndices = Array.from({length: newGroups.length}, (_, i) => i).sort(() => Math.random() - 0.5);
+
+        groupIndices.forEach(idx => {
+          const group = newGroups[idx];
+          const sameClubCount = clubName === 'individual' 
+            ? 0 
+            : group.filter(p => {
+                const pc = (p.club || '').trim().toLowerCase();
+                return pc === clubName;
+              }).length;
+          
+          if (sameClubCount < minSameClubInGroup) {
+            minSameClubInGroup = sameClubCount;
+            minTotalInGroup = group.length;
+            bestGroupIdx = idx;
+          } else if (sameClubCount === minSameClubInGroup) {
+            if (group.length < minTotalInGroup) {
+              minTotalInGroup = group.length;
+              bestGroupIdx = idx;
+            }
+          }
+        });
+
+        newGroups[bestGroupIdx].push(player);
+      });
     });
     
     setGroups(newGroups);
@@ -956,7 +1161,7 @@ const CompetitionDetails = () => {
         p2.setsLost += (m.player1Score || 0);
 
         // Izračunaj poene (Gem±) iz setova
-        if (m.sets && m.sets.length > 0) {
+        if (m.sets && Array.isArray(m.sets) && m.sets.length > 0) {
           m.sets.forEach(s => {
             p1.pointDiff += (s.p1 || 0) - (s.p2 || 0);
             p2.pointDiff += (s.p2 || 0) - (s.p1 || 0);
@@ -1044,10 +1249,40 @@ const CompetitionDetails = () => {
   };
 
   const activeCategoryId = selectedCategoryId;
-  const assignedPlayerIds = groups.flat().map(p => p.id);
+  const assignedPlayerIds = groups.flat().filter(p => p && p.id).map(p => p.id);
 
   if (loading) return <DashboardLayout title="Učitavanje..."><div className="p-8">Dohvaćam podatke...</div></DashboardLayout>;
   if (!competition) return <DashboardLayout title="Greška"><div className="p-8 text-red-500 text-lg">Takmičenje nije pronađeno.</div></DashboardLayout>;
+
+  // Empty state when no categories exist
+  if (categories.length === 0 && !categoriesLoading) {
+    return (
+      <DashboardLayout title={competition.name}>
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <CompetitionHeader 
+            competition={competition}
+            setShowCompSettings={setShowCompSettings}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            categoriesLoading={categoriesLoading}
+            activeCategory={activeCategory}
+            categories={categories}
+          />
+          <div className="text-center py-20">
+            <Trophy className="w-16 h-16 mx-auto mb-4 text-slate-700" />
+            <h3 className="text-xl font-bold text-white mb-2">Nema kategorija</h3>
+            <p className="text-slate-500 mb-6">Kreirajte prvu kategoriju da započnete takmičenje.</p>
+            <button 
+              onClick={() => setActiveTab('categories')} 
+              className="bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-xl text-white font-semibold transition-all"
+            >
+              Dodaj Kategoriju
+            </button>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout title={competition.name}>
@@ -1082,6 +1317,7 @@ const CompetitionDetails = () => {
             newCategoryFormat={newCategoryFormat}
             setNewCategoryFormat={setNewCategoryFormat}
             handleAddCategory={handleAddCategory}
+            handleDeleteCategory={handleDeleteCategory}
             competitionSlug={competition?.slug}
           />
         )}
@@ -1125,6 +1361,7 @@ const CompetitionDetails = () => {
             savingMatchId={savingMatchId}
             handleScoreChange={handleScoreChange}
             handleSaveManualOrder={handleSaveManualOrder}
+            handleDeleteMatch={handleDeleteMatch}
             handleToggleStage={handleToggleStage}
             handleReturnToDraft={handleReturnToDraft}
             handleAutoAssignGroups={handleAutoAssignGroups}
@@ -1172,7 +1409,30 @@ const CompetitionDetails = () => {
               activeCategory={activeCategory}
               handleUpdateSettings={handleUpdateSettings}
               handleToggleStage={handleToggleStage}
+              handleDeleteCompetition={handleDeleteCompetition}
+              isSuperAdmin={userData?.role === 'super_admin'}
+              isOwner={competition?.ownerUid === userData?.uid}
             />
+        )}
+
+        {activeTab === 'all-matches' && (
+          <AllMatchesTab
+            allMatches={allMatchesForSearch}
+            categories={categories}
+            allPlayers={allPlayers}
+            setEditingMatch={setEditingMatch}
+            setShowMatchModal={setShowMatchModal}
+            handleDeleteMatch={handleDeleteMatch}
+            handleDeleteAllMatches={handleDeleteAllMatches}
+          />
+        )}
+
+        {activeTab === 'all-players' && (
+          <AllPlayersTab
+            allPlayers={allPlayers}
+            handleDeletePlayer={handleDeletePlayer}
+            handleDeleteAllPlayers={handleDeleteAllPlayers}
+          />
         )}
       </div>
 

@@ -97,8 +97,8 @@ const PublicCompetition = () => {
           setCompetition(compData);
 
           // Fetch full player data for this organization
-          if (compData.organizationId) {
-            const pQ = query(collection(db, "players"), where("organizationId", "==", compData.organizationId));
+          if (compData.ownerUid) {
+            const pQ = query(collection(db, "players"), where("ownerUid", "==", compData.ownerUid));
             getDocs(pQ).then(pSnap => {
               const playersList = pSnap.docs.map(d => ({ id: d.id, ...d.data() }));
               setAllPlayers(playersList);
@@ -234,8 +234,8 @@ const PublicCompetition = () => {
         // Gem difference (pointDiff)
         if (m.sets && Array.isArray(m.sets)) {
           m.sets.forEach(set => {
-            p1.pointDiff += (set.player1 || set.p1 || 0) - (set.player2 || set.p2 || 0);
-            p2.pointDiff += (set.player2 || set.p2 || 0) - (set.player1 || set.p1 || 0);
+            p1.pointDiff += (set.p1 || 0) - (set.p2 || 0);
+            p2.pointDiff += (set.p2 || 0) - (set.p1 || 0);
           });
         }
 
@@ -336,7 +336,7 @@ const PublicCompetition = () => {
                   <Trophy size={24} className="text-white" />
                </div>
                <div>
-                  <h1 className="text-2xl font-black text-white uppercase italic tracking-tighter leading-none">{competition.name}</h1>
+                  <h1 className="text-xl sm:text-2xl font-black text-white uppercase italic tracking-tighter leading-none">{competition.name}</h1>
                   <div className="flex items-center gap-2 mt-2">
                      <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
                      <p className="text-[10px] text-blue-500 font-black uppercase tracking-widest leading-none">Public Portal</p>
@@ -409,7 +409,7 @@ const PublicCompetition = () => {
             {/* CATEGORY SELECT GRID */}
             <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="text-center space-y-2">
-                    <h2 className="text-4xl font-black text-white uppercase italic tracking-tighter">Takmičarske Kategorije</h2>
+                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white uppercase italic tracking-tighter">Takmičarske Kategorije</h2>
                     <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em] max-w-sm mx-auto">Izaberite željenu kategoriju da biste vidjeli trenutne rezultate, tabelu i eliminacije</p>
                 </div>
 

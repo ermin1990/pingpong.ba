@@ -10,6 +10,57 @@ const MatchUpdateModal = ({
 }) => {
   if (!showMatchModal || !editingMatch) return null;
 
+  const applyQuickScore = (setScores) => {
+    const sets = editingMatch.sets || [];
+    const lastIdx = sets.length - 1;
+    if (lastIdx >= 0) {
+      const newSets = [...sets];
+      newSets[lastIdx] = { p1: setScores[0], p2: setScores[1] };
+      setEditingMatch({...editingMatch, sets: newSets});
+    }
+  };
+
+  const validateScore = () => {
+    const s1 = parseInt(editingMatch.player1Score) || 0;
+    const s2 = parseInt(editingMatch.player2Score) || 0;
+
+    // Validation: scores must be non-negative
+    if (s1 < 0 || s2 < 0) {
+      alert("Rezultat ne može biti negativan.");
+      return false;
+    }
+
+    // Validation: max 5 sets in table tennis
+    if (s1 > 5 || s2 > 5) {
+      alert("Maksimalan broj setova je 5.");
+      return false;
+    }
+
+    // Validation: knockout can't end in draw
+    if (editingMatch.isKnockout && s1 === s2) {
+      alert("Knockout meč ne može završiti neriješeno. Unesite pobjednički rezultat.");
+      return false;
+    }
+
+    // Validation: game scores in sets
+    if (editingMatch.sets && editingMatch.sets.length > 0) {
+      for (let i = 0; i < editingMatch.sets.length; i++) {
+        const p1 = editingMatch.sets[i].p1 || 0;
+        const p2 = editingMatch.sets[i].p2 || 0;
+        if (p1 < 0 || p2 < 0) {
+          alert(`Set ${i + 1}: Rezultat ne može biti negativan.`);
+          return false;
+        }
+        if (p1 > 30 || p2 > 30) {
+          alert(`Set ${i + 1}: Maksimalan broj poena u setu je 30.`);
+          return false;
+        }
+      }
+    }
+
+    return true;
+  };
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
       <div className="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl">
@@ -24,10 +75,12 @@ const MatchUpdateModal = ({
               <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest">{editingMatch.player1.name}</p>
               <input 
                 type="number" 
-                className="w-full bg-slate-950 border-2 border-slate-800 rounded-2xl p-4 text-center text-3xl font-black text-white focus:border-blue-500 outline-none transition-all"
+                min="0"
+                max="5"
+                className="w-full bg-slate-950 border-2 border-slate-800 rounded-2xl p-4 text-center text-2xl sm:text-3xl font-black text-white focus:border-blue-500 outline-none transition-all"
                 value={editingMatch.player1Score || 0}
                 onChange={(e) => {
-                  const val = parseInt(e.target.value) || 0;
+                  const val = Math.max(0, Math.min(5, parseInt(e.target.value) || 0));
                   const currentSets = editingMatch.sets || [];
                   const totalSets = val + (editingMatch.player2Score || 0);
                   const newSets = Array.from({ length: totalSets }, (_, i) => currentSets[i] || { p1: 0, p2: 0 });
@@ -40,10 +93,12 @@ const MatchUpdateModal = ({
               <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest">{editingMatch.player2.name}</p>
               <input 
                 type="number" 
-                className="w-full bg-slate-950 border-2 border-slate-800 rounded-2xl p-4 text-center text-3xl font-black text-white focus:border-blue-500 outline-none transition-all"
+                min="0"
+                max="5"
+                className="w-full bg-slate-950 border-2 border-slate-800 rounded-2xl p-4 text-center text-2xl sm:text-3xl font-black text-white focus:border-blue-500 outline-none transition-all"
                 value={editingMatch.player2Score || 0}
                 onChange={(e) => {
-                  const val = parseInt(e.target.value) || 0;
+                  const val = Math.max(0, Math.min(5, parseInt(e.target.value) || 0));
                   const currentSets = editingMatch.sets || [];
                   const totalSets = (editingMatch.player1Score || 0) + val;
                   const newSets = Array.from({ length: totalSets }, (_, i) => currentSets[i] || { p1: 0, p2: 0 });
@@ -55,7 +110,14 @@ const MatchUpdateModal = ({
 
           {(editingMatch.player1Score + editingMatch.player2Score) > 0 && (
             <div className="space-y-3 pt-4 border-t border-slate-800">
-              <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest text-center">Poeni po setovima</h4>
+              <div className="flex items-center justify-between">
+                <h4 className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Poeni po setovima</h4>
+                <div className="flex gap-1">
+                  <button onClick={() => applyQuickScore([11, 9])} className="text-[9px] px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded text-slate-400 hover:text-white transition-all">11:9</button>
+                  <button onClick={() => applyQuickScore([11, 7])} className="text-[9px] px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded text-slate-400 hover:text-white transition-all">11:7</button>
+                  <button onClick={() => applyQuickScore([11, 13])} className="text-[9px] px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded text-slate-400 hover:text-white transition-all">11:13</button>
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-2 max-h-[200px] overflow-y-auto pr-1 custom-scrollbar">
                 {Array.from({ length: (editingMatch.player1Score + editingMatch.player2Score) }).map((_, idx) => (
                   <div key={idx} className="flex flex-col gap-1.5 bg-slate-950/40 p-2.5 rounded-xl border border-slate-800/40">
@@ -63,24 +125,30 @@ const MatchUpdateModal = ({
                     <div className="flex items-center gap-1.5">
                       <input 
                         type="number"
+                        min="0"
+                        max="30"
                         placeholder="P1"
                         className="w-full bg-slate-900 border border-slate-800 rounded-lg py-1.5 text-center text-xs font-bold text-white outline-none focus:border-blue-500/50"
                         value={editingMatch.sets?.[idx]?.p1 || 0}
                         onChange={(e) => {
                           const newSets = [...(editingMatch.sets || [])];
-                          newSets[idx] = { ...newSets[idx], p1: parseInt(e.target.value) || 0 };
+                          const val = Math.max(0, Math.min(30, parseInt(e.target.value) || 0));
+                          newSets[idx] = { ...newSets[idx], p1: val };
                           setEditingMatch({...editingMatch, sets: newSets});
                         }}
                       />
                       <span className="text-slate-800 font-bold text-[10px]">:</span>
                       <input 
                         type="number"
+                        min="0"
+                        max="30"
                         placeholder="P2"
                         className="w-full bg-slate-900 border border-slate-800 rounded-lg py-1.5 text-center text-xs font-bold text-white outline-none focus:border-blue-500/50"
                         value={editingMatch.sets?.[idx]?.p2 || 0}
                         onChange={(e) => {
                           const newSets = [...(editingMatch.sets || [])];
-                          newSets[idx] = { ...newSets[idx], p2: parseInt(e.target.value) || 0 };
+                          const val = Math.max(0, Math.min(30, parseInt(e.target.value) || 0));
+                          newSets[idx] = { ...newSets[idx], p2: val };
                           setEditingMatch({...editingMatch, sets: newSets});
                         }}
                       />
@@ -93,10 +161,7 @@ const MatchUpdateModal = ({
 
           <button 
             onClick={async () => {
-              if (editingMatch.isKnockout && Number(editingMatch.player1Score || 0) === Number(editingMatch.player2Score || 0)) {
-                alert("Knockout meč ne može završiti neriješeno. Unesite pobjednički rezultat.");
-                return;
-              }
+              if (!validateScore()) return;
               await saveMatchResult(editingMatch);
               setShowMatchModal(false);
             }}

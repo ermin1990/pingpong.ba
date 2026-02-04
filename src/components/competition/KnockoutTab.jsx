@@ -80,6 +80,7 @@ const KnockoutTab = ({
       if (name.includes('Polufinale')) return 500 + rNum;
       if (name.includes('1/4')) return 250 + rNum;
       if (name.includes('1/8')) return 120 + rNum;
+      if (name.includes('Baraž')) return -10 + rNum;
       
       return rNum;
     };
@@ -285,6 +286,13 @@ const KnockoutTab = ({
                 </button>
 
                 <button 
+                  onClick={() => setShowSetupModal(true)}
+                  className="bg-blue-600/10 text-blue-500 border border-blue-500/30 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all flex items-center gap-2"
+                >
+                  <LayoutGrid size={14} /> Generiši Žrijeb
+                </button>
+
+                <button 
                   onClick={() => handleToggleStage('knockout', !isKnockoutCompleted)}
                   className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
                     isKnockoutCompleted 
@@ -345,9 +353,51 @@ const KnockoutTab = ({
                   <Zap size={32} />
                 </div>
                 <h3 className="text-xl font-black text-white uppercase italic tracking-tighter mb-2">Grupna faza završena!</h3>
-                <p className="text-slate-500 text-xs font-bold uppercase tracking-widest max-w-sm mx-auto mb-8">
+                <p className="text-slate-500 text-xs font-bold uppercase tracking-widest max-w-sm mx-auto mb-6">
                   Izaberite način formiranja eliminacione faze. Sistem može automatski generisati parove ili ih možete dodati ručno.
                 </p>
+
+                <div className="bg-slate-950/50 border border-slate-800/50 rounded-2xl p-4 mb-8 max-w-md mx-auto">
+                    <div className="flex items-center justify-around gap-4">
+                        <div className="text-center flex-1">
+                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Kvalifikovanih</p>
+                            <p className="text-2xl font-black text-white leading-none">{advancingPool.length}</p>
+                        </div>
+                        <div className="w-px h-8 bg-slate-800"></div>
+                        <div className="text-center flex-1">
+                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Preporuka</p>
+                            <p className="text-sm font-black text-blue-500 uppercase leading-none">
+                                {(() => {
+                                    const count = advancingPool.length;
+                                    if (count <= 2) return "Finale";
+                                    if (count <= 4) return "1/2 Finale";
+                                    if (count <= 8) return "1/4 Finale";
+                                    if (count <= 16) return "1/8 Finale";
+                                    if (count <= 32) return "1/16 Finale";
+                                    return "1/32 Finale";
+                                })()}
+                            </p>
+                        </div>
+                        <div className="w-px h-8 bg-slate-800"></div>
+                        <div className="text-center flex-1">
+                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Status</p>
+                            <div className="flex flex-col items-center">
+                                <p className={`text-[10px] font-black uppercase leading-none ${advancingPool.length % 2 === 0 ? 'text-emerald-500' : 'text-amber-500'}`}>
+                                    {advancingPool.length % 2 === 0 ? 'Paran Broj' : 'Neparan Broj'}
+                                </p>
+                                {(() => {
+                                    const count = advancingPool.length;
+                                    let p2 = 2;
+                                    while(p2 * 2 <= count) p2 *= 2;
+                                    if (count > 2 && count !== p2) {
+                                        return <span className="text-[7px] bg-amber-500/10 text-amber-500 px-1 rounded mt-1 font-bold italic">Preporučen Baraž</span>
+                                    }
+                                    return null;
+                                })()}
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-sm mx-auto">
                   <button 
@@ -473,9 +523,16 @@ const KnockoutTab = ({
                               >
                                 <div className="flex items-center gap-3 min-w-0 flex-1">
                                   <div className={`w-1.5 h-1.5 rounded-full ${p1Winner ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-800'}`}></div>
-                                  <div className={`text-[11px] font-black uppercase truncate transition-colors ${p1Winner ? 'text-emerald-500' : 'text-slate-400 group-hover/p1:text-blue-400'}`}>
-                                    {match.player1?.name || (
-                                      <span className="text-slate-700 animate-pulse text-[9px]">Prevucite igrača...</span>
+                                  <div className="flex flex-col truncate">
+                                    <div className={`text-[11px] font-black uppercase truncate transition-colors ${p1Winner ? 'text-emerald-500' : 'text-slate-400 group-hover/p1:text-blue-400'}`}>
+                                      {match.player1?.name || (
+                                        <span className="text-slate-700 animate-pulse text-[9px]">Prevucite igrača...</span>
+                                      )}
+                                    </div>
+                                    {match.player1?.id && match.player1.id !== 'tbd' && (
+                                       <span className="text-[7px] text-slate-600 font-bold uppercase truncate leading-tight">
+                                          {allPlayers.find(p => p.id === match.player1.id)?.club || 'Individual'}
+                                       </span>
                                     )}
                                   </div>
                                 </div>
@@ -496,9 +553,16 @@ const KnockoutTab = ({
                               >
                                 <div className="flex items-center gap-3 min-w-0 flex-1">
                                   <div className={`w-1.5 h-1.5 rounded-full ${p2Winner ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-800'}`}></div>
-                                  <div className={`text-[11px] font-black uppercase truncate transition-colors ${p2Winner ? 'text-emerald-500' : 'text-slate-400 group-hover/p2:text-blue-400'}`}>
-                                    {match.player2?.name || (
-                                      <span className="text-slate-700 animate-pulse text-[9px]">Prevucite igrača...</span>
+                                  <div className="flex flex-col truncate">
+                                    <div className={`text-[11px] font-black uppercase truncate transition-colors ${p2Winner ? 'text-emerald-500' : 'text-slate-400 group-hover/p2:text-blue-400'}`}>
+                                      {match.player2?.name || (
+                                        <span className="text-slate-700 animate-pulse text-[9px]">Prevucite igrača...</span>
+                                      )}
+                                    </div>
+                                    {match.player2?.id && match.player2.id !== 'tbd' && (
+                                       <span className="text-[7px] text-slate-600 font-bold uppercase truncate leading-tight">
+                                          {allPlayers.find(p => p.id === match.player2.id)?.club || 'Individual'}
+                                       </span>
                                     )}
                                   </div>
                                 </div>
@@ -695,10 +759,10 @@ const KnockoutTab = ({
                     </>
                   )}
 
-                  {/* Kvalifikovani iz grupa - samo za Runda 1 */}
+                  {/* Kvalifikovani iz grupa - za Runda 1 ili Baraž (0) */}
                   {(() => {
                     const currentMatch = matches.find(m => m.id === editingPlayerSlot.matchId);
-                    if (currentMatch?.round === 1) {
+                    if (currentMatch?.round === 1 || currentMatch?.round === 0) {
                         const advancingFromGroups = [];
                         groups.forEach((group, idx) => {
                           const standings = calculateStandings(idx);
@@ -784,31 +848,142 @@ const KnockoutTab = ({
               <button onClick={() => setShowSetupModal(false)} className="text-slate-500 hover:text-white"><X size={20} /></button>
             </div>
             
-            <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
+            <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto custom-scrollbar">
+              {/* Sekcija za Baraž / Play-in ako je broj neparan ili nije power of 2 */}
+              {(() => {
+                const count = advancingPool.length;
+                if (count <= 2) return null;
+                
+                // Pronađi najbliži manji power of 2
+                let powerOf2 = 2;
+                while (powerOf2 * 2 < count) {
+                  powerOf2 *= 2;
+                }
+                
+                if (count === powerOf2 * 2) return null; // Već je čist power of 2
+
+                const barazMatchesCount = count - powerOf2;
+                const playersInBaraz = barazMatchesCount * 2;
+                const byesCount = count - playersInBaraz;
+
+                return (
+                  <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-2xl mb-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Zap size={16} className="text-amber-500" />
+                      <span className="text-xs font-black text-amber-500 uppercase tracking-widest">Baraž (Play-in)</span>
+                    </div>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase mb-4 leading-relaxed">
+                      Imate <span className="text-white">{count}</span> igrača. Da biste dobili čist žrijeb od <span className="text-white">{powerOf2}</span> igrača, potrebno je odigrati <span className="text-white">{barazMatchesCount}</span> pred-meča.
+                    </p>
+                    <button 
+                      onClick={async () => {
+                        if (!window.confirm(`Ovo će kreirati ${barazMatchesCount} mečeva baraža. Nastaviti?`)) return;
+                        for (let i = 0; i < barazMatchesCount; i++) {
+                          await handleAddManualMatch({
+                            player1: { id: 'tbd', name: 'TBD' },
+                            player2: { id: 'tbd', name: 'TBD' },
+                            roundName: 'Baraž',
+                            round: 0,
+                            isKnockout: true
+                          });
+                        }
+                        setShowSetupModal(false);
+                      }}
+                      className="w-full bg-amber-500 text-slate-900 py-3 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-amber-400 transition-all flex items-center justify-center gap-2"
+                    >
+                      Kreiraj {barazMatchesCount} Meča Baraža
+                    </button>
+                    <div className="mt-3 flex gap-4 text-[8px] font-black uppercase text-slate-500">
+                      <span>{playersInBaraz} boraca</span>
+                      <span>{byesCount} direktno prolazi</span>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              <div className="bg-blue-500/10 border border-blue-500/20 p-4 rounded-2xl mb-2">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">Kvalifikovanih igrača</span>
+                  <span className="text-xl font-black text-white">{advancingPool.length}</span>
+                </div>
+                <p className="text-[9px] text-slate-400 font-bold uppercase leading-relaxed">
+                  Izaberite žrijeb koji najbolje odgovara broju kvalifikovanih igrača.
+                </p>
+              </div>
+
               {[
-                { count: 4, name: 'Polufinale (4 igrača)', desc: 'Kreira 2 polufinalna meča i finale' },
-                { count: 8, name: '1/4 Finale (8 igrača)', desc: 'Kreira 4 četvrtfinalna meča, polufinale i finale' },
-                { count: 16, name: '1/8 Finale (16 igrača)', desc: 'Kreira 8 mečeva osmine finala i cijeli žrijeb do kraja' },
-                { count: 32, name: '1/16 Finale (32 igrača)', desc: 'Kreira 16 mečeva šesnaestine finala i cijeli žrijeb do kraja' },
-                { count: 64, name: '1/32 Finale (64 igrača)', desc: 'Kreira 32 meča i cijeli žrijeb do kraja' }
-              ].map((template) => (
-                <button 
-                  key={template.count}
-                  onClick={() => {
-                    handleGenerateTemplate(template.count);
-                    setShowSetupModal(false);
-                  }}
-                  className="w-full bg-slate-950 hover:bg-slate-800 p-6 rounded-2xl border border-slate-800 transition-all text-left flex items-center justify-between group"
-                >
-                  <div>
-                    <p className="text-sm font-black text-white uppercase tracking-tight">{template.name}</p>
-                    <p className="text-[10px] text-slate-500 font-bold uppercase">{template.desc}</p>
-                  </div>
-                  <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-500 group-hover:bg-blue-600 group-hover:text-white transition-all">
-                    <span className="font-black text-xs">{template.count}</span>
-                  </div>
-                </button>
-              ))}
+                { count: 4, name: 'Polufinale', subtitle: '1/2 Finale', players: 4, matches: '2 + 1' },
+                { count: 8, name: 'Četvrtfinale', subtitle: '1/4 Finale', players: 8, matches: '4 + 2 + 1' },
+                { count: 16, name: 'Osmina finala', subtitle: '1/8 Finale', players: 16, matches: '8 + 4 + 2 + 1' },
+                { count: 32, name: 'Šesnaestina finala', subtitle: '1/16 Finale', players: 32, matches: '16 + 8 + 4 + 2 + 1' },
+                { count: 64, name: 'Tridesetidvojina finala', subtitle: '1/32 Finale', players: 64, matches: '32 + 16 + 8 + 4 + 2 + 1' }
+              ].map((template) => {
+                // Ako imamo mečeve baraža, broj igrača koji će ući u glavni žrijeb je:
+                // (Igrači koji nisu u baražu) + (Pobjednici baraža)
+                // Što je zapravo isto što i "powerOf2" koji smo izračunali gore
+                
+                let effectiveCount = advancingPool.length;
+                const barazCount = knockoutMatches.filter(m => m.roundName === 'Baraž').length;
+                if (barazCount > 0) {
+                    // Ako imamo baraž, efektivni broj igrača je onaj koji "ostaje" nakon što baraž pročisti neparan broj
+                    // Napravimo jednostavnije: koliko pobjednika baraža i koliko onih koji su slobodni
+                    effectiveCount = advancingPool.length - barazCount; // Svaki meč baraža "uklanja" jednog igrača iz bazena
+                }
+
+                const diff = template.players - effectiveCount;
+                const isRecommended = (effectiveCount <= template.players) && 
+                                     (effectiveCount > template.players / 2);
+                
+                return (
+                  <button 
+                    key={template.count}
+                    onClick={async () => {
+                      const hasBaraz = knockoutMatches.some(m => m.roundName === 'Baraž');
+                      handleGenerateTemplate(template.count, hasBaraz);
+                      setShowSetupModal(false);
+                    }}
+                    className={`w-full p-4 rounded-2xl border transition-all text-left flex items-center justify-between group relative overflow-hidden ${
+                      isRecommended 
+                        ? 'bg-blue-600/10 border-blue-500/50 hover:bg-blue-600/20 shadow-lg shadow-blue-500/10' 
+                        : 'bg-slate-950 border-slate-800 hover:bg-slate-800'
+                    }`}
+                  >
+                    {isRecommended && (
+                      <div className="absolute top-0 right-0 bg-blue-500 text-[8px] font-black text-white px-2 py-0.5 rounded-bl-lg uppercase tracking-widest">
+                        Preporučeno
+                      </div>
+                    )}
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs font-black text-white uppercase tracking-tight">{template.name}</p>
+                        <span className="text-[9px] font-bold text-slate-500 uppercase">({template.subtitle})</span>
+                      </div>
+                      <div className="mt-1 flex flex-wrap gap-2">
+                        <span className="text-[9px] font-bold text-slate-400 uppercase">Kapacitet: {template.players}</span>
+                        <span className="text-[9px] font-bold text-slate-600 uppercase border-l border-slate-800 pl-2">Mečeva: {template.matches}</span>
+                        {diff > 0 ? (
+                          <span className="text-[9px] font-bold text-emerald-500 uppercase italic">
+                            + {diff} slobodno (BYE)
+                          </span>
+                        ) : diff < 0 ? (
+                          <span className="text-[9px] font-bold text-red-500 uppercase italic">
+                            Nedostaje {Math.abs(diff)} mjesta
+                          </span>
+                        ) : (
+                          <span className="text-[9px] font-bold text-emerald-400 uppercase italic">
+                            Idealan broj igrača
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs transition-all ${
+                      isRecommended ? 'bg-blue-500 text-white' : 'bg-slate-900 text-slate-400 group-hover:text-blue-500 group-hover:bg-blue-500/10'
+                    }`}>
+                      {template.count}
+                    </div>
+                  </button>
+                );
+              })}
 
               <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl">
                 <p className="text-[9px] text-amber-500/80 font-bold uppercase tracking-widest leading-relaxed">

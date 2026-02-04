@@ -1,4 +1,4 @@
-import { Plus, ChevronRight, Info, Target, Users, PlayCircle, Zap, Settings2, ExternalLink, Code } from 'lucide-react';
+import { Plus, ChevronRight, Info, Target, Users, PlayCircle, Zap, Settings2, ExternalLink, Code, Trash2 } from 'lucide-react';
 
 const CategoriesTab = ({ 
   categories, 
@@ -10,6 +10,7 @@ const CategoriesTab = ({
   newCategoryFormat, 
   setNewCategoryFormat, 
   handleAddCategory,
+  handleDeleteCategory,
   competitionSlug
 }) => {
   const activeCategory = categories.find(c => c.id === selectedCategoryId);
@@ -19,94 +20,108 @@ const CategoriesTab = ({
       <div className="lg:col-span-2 space-y-4">
         <h2 className="text-xl font-bold text-white mb-4">Pregled Kategorija</h2>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {categories.map(cat => (
-            <div 
-              key={cat.id} 
-              onClick={() => {
-                setSelectedCategoryId(cat.id);
-              }}
-              className={`p-5 rounded-xl border cursor-pointer transition-all ${selectedCategoryId === cat.id ? 'bg-slate-800 border-blue-500 ring-1 ring-blue-500' : 'bg-slate-900 border-slate-800 hover:border-slate-700'}`}
-            >
-              <div className="flex justify-between items-start mb-3">
-                <h3 className="font-bold text-lg text-white">{cat.name}</h3>
-                <div className="flex items-center gap-1.5 p-1 bg-slate-950/50 rounded-lg">
-                  {competitionSlug && (
-                    <>
-                      <a 
-                        href={`/p/${competitionSlug}?category=${cat.id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="p-1.5 text-slate-400 hover:text-blue-400 hover:bg-slate-800 rounded-md transition-all"
-                        title="Otvori javni link"
-                      >
-                        <ExternalLink size={14} />
-                      </a>
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const code = `<iframe src="${window.location.origin}/p/${competitionSlug}?category=${cat.id}&embed=true" width="100%" height="800" frameborder="0"></iframe>`;
-                          navigator.clipboard.writeText(code);
-                          alert('Iframe kod za ugradnju je kopiran u međuspremnik!');
-                        }}
-                        className="p-1.5 text-slate-400 hover:text-emerald-400 hover:bg-slate-800 rounded-md transition-all"
-                        title="Kopiraj iframe kod za blog"
-                      >
-                        <Code size={14} />
-                      </button>
-                    </>
-                  )}
-                  <span className={`text-[10px] px-2 py-1 rounded font-bold uppercase ${cat.status === 'active' ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-400'}`}>
-                    {cat.status}
-                  </span>
-                </div>
-              </div>
-              
-              <div className="flex justify-between items-center text-sm text-slate-400">
-                <span>{cat.format === 'round_robin' ? 'Liga' : 'Grupe + KO'}</span>
-                <span className="font-bold text-blue-500">{cat.playerIds?.length || 0} igrača</span>
-              </div>
-
-              {selectedCategoryId === cat.id && (
-                <div className="mt-4 pt-4 border-t border-slate-700 flex justify-end">
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); setActiveTab('players'); }}
-                    className="text-xs font-bold text-blue-500 flex items-center gap-1 hover:underline"
-                  >
-                    Upravljaj <ChevronRight size={14} />
-                  </button>
-                </div>
-              )}
-            </div>
-          ))}
-
-          {/* Nova kategorija */}
-          <div className="p-5 rounded-xl border border-dashed border-slate-700 bg-slate-900/50">
-            <h3 className="text-sm font-bold text-slate-400 mb-4 flex items-center gap-2">
-              <Plus size={16} /> Nova Disciplina
-            </h3>
-            <form onSubmit={handleAddCategory} className="space-y-3">
-              <input 
-                placeholder="Naziv (npr. Seniori)" 
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"
-                value={newCategoryName}
-                onChange={(e) => setNewCategoryName(e.target.value)}
-              />
-              <select 
-                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"
-                value={newCategoryFormat}
-                onChange={(e) => setNewCategoryFormat(e.target.value)}
-              >
-                <option value="round_robin">Round Robin (Liga)</option>
-                <option value="groups_knockout">Grupa + Knockout</option>
-              </select>
-              <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-bold text-sm transition-all">
-                Dodaj
-              </button>
-            </form>
+        {categories.length === 0 ? (
+          <div className="text-center py-12 bg-slate-900 rounded-xl border border-slate-800">
+            <Zap className="w-12 h-12 mx-auto mb-3 text-slate-700" />
+            <h3 className="text-lg font-semibold text-white mb-2">Nema kategorija</h3>
+            <p className="text-slate-500 text-sm">Dodajte prvu kategoriju koristeći obrazac sa desne strane.</p>
           </div>
-        </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {categories.map(cat => (
+              <div 
+                key={cat.id} 
+                onClick={() => {
+                  setSelectedCategoryId(cat.id);
+                }}
+                className={`p-5 rounded-xl border cursor-pointer transition-all ${selectedCategoryId === cat.id ? 'bg-slate-800 border-blue-500 ring-1 ring-blue-500' : 'bg-slate-900 border-slate-800 hover:border-slate-700'}`}
+              >
+                <div className="flex justify-between items-start mb-3">
+                  <h3 className="font-bold text-lg text-white">{cat.name}</h3>
+                  <div className="flex items-center gap-1.5 p-1 bg-slate-950/50 rounded-lg">
+                    {competitionSlug && (
+                      <>
+                        <a 
+                          href={`/p/${competitionSlug}?category=${cat.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-1.5 text-slate-400 hover:text-blue-400 hover:bg-slate-800 rounded-md transition-all"
+                          title="Otvori javni link"
+                        >
+                          <ExternalLink size={14} />
+                        </a>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const code = `<iframe src="${window.location.origin}/p/${competitionSlug}?category=${cat.id}&embed=true" width="100%" height="800" frameborder="0"></iframe>`;
+                            navigator.clipboard.writeText(code);
+                            alert('Iframe kod za ugradnju je kopiran u međuspremnik!');
+                          }}
+                          className="p-1.5 text-slate-400 hover:text-emerald-400 hover:bg-slate-800 rounded-md transition-all"
+                          title="Kopiraj iframe kod za blog"
+                        >
+                          <Code size={14} />
+                        </button>
+                      </>
+                    )}
+                    <span className={`text-[10px] px-2 py-1 rounded font-bold uppercase ${cat.status === 'active' ? 'bg-green-500/20 text-green-400' : 'bg-slate-700 text-slate-400'}`}>
+                      {cat.status}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="flex justify-between items-center text-sm text-slate-400">
+                  <span>{cat.format === 'round_robin' ? 'Liga' : 'Grupe + KO'}</span>
+                  <span className="font-bold text-blue-500">{cat.playerIds?.length || 0} igrača</span>
+                </div>
+
+                {selectedCategoryId === cat.id && (
+                  <div className="mt-4 pt-4 border-t border-slate-700 flex justify-between items-center">
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); handleDeleteCategory(cat.id); }}
+                      className="text-xs font-bold text-red-500 flex items-center gap-1 hover:underline"
+                    >
+                      <Trash2 size={12} /> Obriši
+                    </button>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); setActiveTab('players'); }}
+                      className="text-xs font-bold text-blue-500 flex items-center gap-1 hover:underline"
+                    >
+                      Upravljaj <ChevronRight size={14} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {/* Nova kategorija */}
+            <div className="p-5 rounded-xl border border-dashed border-slate-700 bg-slate-900/50">
+              <h3 className="text-sm font-bold text-slate-400 mb-4 flex items-center gap-2">
+                <Plus size={16} /> Nova Disciplina
+              </h3>
+              <form onSubmit={handleAddCategory} className="space-y-3">
+                <input 
+                  placeholder="Naziv (npr. Seniori)" 
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                />
+                <select 
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"
+                  value={newCategoryFormat}
+                  onChange={(e) => setNewCategoryFormat(e.target.value)}
+                >
+                  <option value="round_robin">Round Robin (Liga)</option>
+                  <option value="groups_knockout">Grupa + Knockout</option>
+                </select>
+                <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-bold text-sm transition-all">
+                  Dodaj
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="lg:col-span-1">

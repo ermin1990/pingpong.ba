@@ -26,8 +26,8 @@ const Competitions = () => {
       q = query(collection(db, "competitions"));
     } else {
       const filters = [];
-      if (userData.organizationId) {
-        filters.push(where("organizationId", "==", userData.organizationId));
+      if (userData.uid) {
+        filters.push(where("ownerUid", "==", userData.uid));
       }
       if (userData.email) {
         filters.push(where("collaborators", "array-contains", userData.email));
@@ -64,18 +64,15 @@ const Competitions = () => {
       return;
     }
 
-    if (!userData.organizationId && userData.role !== 'super_admin') {
-      alert("Greška: Nemate dodijeljenu organizaciju. Kontaktirajte administratora.");
-      return;
-    }
-
     try {
       const docRef = await addDoc(collection(db, "competitions"), {
         name,
         sport,
         type,
         status: 'draft',
-        organizationId: userData.organizationId || "SUPER_ADMIN",
+        ownerUid: userData.uid,
+        ownerName: userData.displayName || userData.email,
+        ownerEmail: userData.email,
         createdAt: serverTimestamp(),
         participantsCount: 0
       });
@@ -139,10 +136,17 @@ const Competitions = () => {
                 </div>
                 
                 <h3 className="text-xl font-bold text-white mb-1 group-hover:text-blue-500 transition-colors">{comp.name}</h3>
-                <div className="text-xs text-slate-500 flex items-center gap-2 mb-6">
-                  <span>{comp.sport}</span>
-                  <span className="w-1 h-1 bg-slate-800 rounded-full"></span>
-                  <span>{comp.type}</span>
+                <div className="flex flex-col gap-1 mb-6">
+                  <div className="text-[10px] text-slate-500 flex items-center gap-2">
+                    <span>{comp.sport}</span>
+                    <span className="w-1 h-1 bg-slate-800 rounded-full"></span>
+                    <span>{comp.type}</span>
+                  </div>
+                  {comp.ownerName && (
+                    <div className="text-[10px] text-blue-400/60 font-medium">
+                      Kreirao: {comp.ownerName}
+                    </div>
+                  )}
                 </div>
               </div>
 

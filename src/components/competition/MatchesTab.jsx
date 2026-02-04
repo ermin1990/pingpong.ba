@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { 
   Users, Search, CheckCircle, PlayCircle, X, LayoutGrid, Edit2, 
-  ChevronDown, ArrowUp, ArrowDown, ListOrdered, Zap, RotateCcw 
+  ChevronDown, ArrowUp, ArrowDown, ListOrdered, Zap, RotateCcw, Trash2,
+  AlertTriangle 
 } from 'lucide-react';
 
 const MatchesTab = ({ 
@@ -28,6 +29,7 @@ const MatchesTab = ({
   handleSaveManualOrder,
   handleToggleStage,
   handleReturnToDraft,
+  handleDeleteMatch,
   handleAutoAssignGroups
 }) => {
   const [manualEditingGroups, setManualEditingGroups] = useState({});
@@ -175,9 +177,21 @@ const MatchesTab = ({
                       <button 
                         onClick={handleAutoAssignGroups}
                         className="bg-slate-800 text-slate-300 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all hover:bg-slate-700 active:scale-95"
-                        title="Automatski rasporedi sve izabrane igrače u grupe"
+                        title="Automatski rasporedi preostale igrače u grupe pazeći na klubove"
                       >
-                        <Zap size={14} className="text-yellow-500" /> Auto-raspored
+                        <Zap size={14} className="text-yellow-500" /> Popuni ostale
+                      </button>
+
+                      <button 
+                        onClick={() => {
+                          if(confirm("Da li želite obrisati sve trenutno raspoređene igrače iz grupa?")) {
+                            setGroups(groups.map(() => []));
+                          }
+                        }}
+                        className="bg-red-500/10 text-red-500 border border-red-500/20 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all hover:bg-red-600 hover:text-white active:scale-95"
+                        title="Isprazni sve grupe"
+                      >
+                        <Trash2 size={14} /> Resetuj
                       </button>
 
                       <button 
@@ -222,6 +236,10 @@ const MatchesTab = ({
 
                         const isManualEdit = manualEditingGroups[gIdx];
 
+                        // Provjera istih klubova u grupi
+                        const clubsInGroup = group.map(p => p.club?.trim().toLowerCase()).filter(c => c && c !== 'individual' && c !== 'bez kluba' && c !== '');
+                        const hasSameClub = clubsInGroup.some((club, index) => clubsInGroup.indexOf(club) !== index);
+
                         return (
                           <div 
                             key={gIdx} 
@@ -233,10 +251,18 @@ const MatchesTab = ({
                               const playerId = e.dataTransfer.getData('playerId');
                               if (playerId) movePlayerToGroup(playerId, gIdx);
                             }}
-                            className="bg-slate-900/40 backdrop-blur-xl rounded-2xl p-4 md:p-6 border border-slate-800 shadow-xl flex flex-col transition-all duration-300"
+                            className={`bg-slate-900/40 backdrop-blur-xl rounded-2xl p-4 md:p-6 border shadow-xl flex flex-col transition-all duration-300 ${hasSameClub && activeCategory?.status === 'draft' ? 'border-yellow-500/30' : 'border-slate-800'}`}
                           >
                             <div className="flex justify-between items-center mb-4 px-1">
-                              <h4 className="text-xl font-black text-white italic">#{String.fromCharCode(65 + gIdx)}</h4>
+                              <div className="flex items-center gap-3">
+                                <h4 className="text-xl font-black text-white italic">#{String.fromCharCode(65 + gIdx)}</h4>
+                                {hasSameClub && activeCategory?.status === 'draft' && (
+                                  <div className="flex items-center gap-1 bg-yellow-500/10 text-yellow-500 px-2 py-0.5 rounded-full border border-yellow-500/20 animate-pulse" title="Igrači iz istog kluba su u ovoj grupi!">
+                                    <AlertTriangle size={10} />
+                                    <span className="text-[7px] font-black uppercase tracking-tighter">Isti Klub</span>
+                                  </div>
+                                )}
+                              </div>
                               <div className="flex items-center gap-2">
                                  <button 
                                    onClick={() => toggleManual(gIdx)}
@@ -251,14 +277,26 @@ const MatchesTab = ({
 
                             {activeCategory?.status === 'draft' && (
                               <div className="mb-6 space-y-2 text-white">
-                                {group.map(p => (
-                                  <div key={p.id} className="bg-slate-950/50 border border-slate-800/50 p-2 rounded-xl flex justify-between items-center group/p">
-                                    <div className="truncate">
-                                      <p className="font-bold text-white text-[10px] truncate uppercase">{p.name}</p>
+                                {group.map(p => {
+                                  const clubName = (p.club || '').trim();
+                                  const isDuplicateClub = clubName && 
+                                                         clubName.toLowerCase() !== 'individual' && 
+                                                         clubName.toLowerCase() !== 'bez kluba' && 
+                                                         clubsInGroup.filter(c => c === clubName.toLowerCase()).length > 1;
+
+                                  return (
+                                    <div key={p.id} className="bg-slate-950/50 border border-slate-800/50 p-2 rounded-xl flex justify-between items-center group/p">
+                                      <div className="truncate flex-1">
+                                        <div className="flex items-center gap-2">
+                                          <p className="font-bold text-white text-[10px] truncate uppercase">{p.name}</p>
+                                          {isDuplicateClub && <AlertTriangle size={10} className="text-yellow-500 shrink-0" />}
+                                        </div>
+                                        <p className="text-[8px] text-slate-500 font-bold uppercase truncate">{p.club || 'Bez kluba'}</p>
+                                      </div>
+                                      <button onClick={() => removePlayerFromGroups(p.id)} className="p-1 text-slate-500 hover:text-red-500 opacity-0 group-hover/p:opacity-100 transition-opacity"><X size={12} /></button>
                                     </div>
-                                    <button onClick={() => removePlayerFromGroups(p.id)} className="p-1 text-slate-500 hover:text-red-500 opacity-0 group-hover/p:opacity-100 transition-opacity"><X size={12} /></button>
-                                  </div>
-                                ))}
+                                  );
+                                })}
                                 {group.length === 0 && (
                                   <div className="border border-dashed border-slate-800 rounded-xl py-6 flex flex-col items-center justify-center text-slate-700">
                                     <span className="text-[8px] font-black uppercase tracking-widest">Prazno</span>
@@ -288,6 +326,13 @@ const MatchesTab = ({
                                 </div>
                                 {groupStandings.map((p, idx) => {
                                   const isAdvancing = idx < (activeCategory?.advancingPlayers ?? 2);
+                                  
+                                  const clubName = (p.club || '').trim();
+                                  const isDuplicateClub = clubName && 
+                                                         clubName.toLowerCase() !== 'individual' && 
+                                                         clubName.toLowerCase() !== 'bez kluba' && 
+                                                         clubsInGroup.filter(c => c === clubName.toLowerCase()).length > 1;
+
                                   return (
                                     <div key={p.id} className={`grid grid-cols-12 gap-2 items-center py-2 px-2 rounded-lg text-[10px] transition-all duration-200 border ${
                                       isAdvancing 
@@ -315,7 +360,15 @@ const MatchesTab = ({
                                         ) : (
                                           <span className={`font-black w-4 text-center ${isAdvancing ? 'text-emerald-500' : 'text-slate-700'}`}>{idx + 1}</span>
                                         )}
-                                        <div className="truncate text-white font-bold uppercase">{p.name}</div>
+                                        <div className="truncate">
+                                          <div className="flex items-center gap-1.5 leading-tight">
+                                            <div className="text-white font-bold uppercase truncate">{p.name}</div>
+                                            {isDuplicateClub && activeCategory?.status === 'draft' && (
+                                              <AlertTriangle size={9} className="text-yellow-500 shrink-0" />
+                                            )}
+                                          </div>
+                                          <div className="text-[7px] text-slate-500 font-bold uppercase truncate">{p.club || 'Bez kluba'}</div>
+                                        </div>
                                       </div>
                                       <div className="col-span-1 text-center font-bold text-slate-400">{p.played}</div>
                                       <div className="col-span-1 text-center font-bold text-slate-400">{p.won}</div>
@@ -340,9 +393,14 @@ const MatchesTab = ({
                                             <div className="hidden lg:flex items-center justify-between p-4 gap-4">
                                                 <div className="flex-1 space-y-3">
                                                     <div className="flex justify-between items-center">
-                                                        <span className={`text-[11px] font-bold truncate ${match.status === 'completed' && match.player1Score > match.player2Score ? 'text-white' : 'text-slate-500'}`}>
-                                                            {match.player1.name}
-                                                        </span>
+                                                        <div className="flex flex-col truncate pr-2">
+                                                          <span className={`text-[11px] font-bold truncate ${match.status === 'completed' && match.player1Score > match.player2Score ? 'text-white' : 'text-slate-500'}`}>
+                                                              {match.player1.name}
+                                                          </span>
+                                                          <span className="text-[7px] text-slate-600 font-bold uppercase truncate">
+                                                              {allPlayers.find(p => p.id === match.player1.id)?.club || 'Individual'}
+                                                          </span>
+                                                        </div>
                                                         {match.sets?.length > 0 && (
                                                             <div className="flex gap-1 ml-4 ring-1 ring-slate-800 rounded px-1 py-0.5 bg-black/20">
                                                                 {match.sets.map((set, sIdx) => (
@@ -356,9 +414,14 @@ const MatchesTab = ({
                                                         )}
                                                     </div>
                                                     <div className="flex justify-between items-center">
-                                                        <span className={`text-[11px] font-bold truncate ${match.status === 'completed' && match.player2Score > match.player1Score ? 'text-white' : 'text-slate-500'}`}>
-                                                            {match.player2.name}
-                                                        </span>
+                                                        <div className="flex flex-col truncate pr-2">
+                                                          <span className={`text-[11px] font-bold truncate ${match.status === 'completed' && match.player2Score > match.player1Score ? 'text-white' : 'text-slate-500'}`}>
+                                                              {match.player2.name}
+                                                          </span>
+                                                          <span className="text-[7px] text-slate-600 font-bold uppercase truncate">
+                                                              {allPlayers.find(p => p.id === match.player2.id)?.club || 'Individual'}
+                                                          </span>
+                                                        </div>
                                                         {match.sets?.length > 0 && (
                                                             <div className="flex gap-1 ml-4 ring-1 ring-slate-800 rounded px-1 py-0.5 bg-black/20">
                                                                 {match.sets.map((set, sIdx) => (
@@ -378,7 +441,12 @@ const MatchesTab = ({
                                                         <span className="text-[10px] text-slate-600">:</span>
                                                         <span className="text-sm font-black text-white">{match.player2Score ?? 0}</span>
                                                     </div>
-                                                    <button onClick={() => { setEditingMatch(match); setShowMatchModal(true); }} className="text-[9px] font-black uppercase text-blue-500 hover:text-blue-400">Zapiši</button>
+                                                    <div className="flex items-center gap-2">
+                                                        <button onClick={() => { setEditingMatch(match); setShowMatchModal(true); }} className="text-[9px] font-black uppercase text-blue-500 hover:text-blue-400">Zapiši</button>
+                                                        <button onClick={(e) => { e.stopPropagation(); handleDeleteMatch(match.id); }} className="text-[9px] font-black uppercase text-red-500 hover:text-red-400" title="Obriši meč">
+                                                            <Trash2 size={12} />
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
 
@@ -387,17 +455,28 @@ const MatchesTab = ({
                                                 <div className="flex justify-between items-center bg-black/20 p-2 rounded-xl">
                                                     <div className="flex-1 space-y-1">
                                                         <div className="flex justify-between items-center">
-                                                            <span className="text-[10px] font-bold text-white truncate max-w-[100px]">{match.player1.name}</span>
+                                                            <div className="flex flex-col truncate pr-2">
+                                                              <span className="text-[10px] font-bold text-white truncate max-w-[100px]">{match.player1.name}</span>
+                                                              <span className="text-[7px] text-slate-500 font-bold uppercase truncate">{allPlayers.find(p => p.id === match.player1.id)?.club || 'Individual'}</span>
+                                                            </div>
                                                             <span className="text-xs font-black text-white">{match.player1Score ?? 0}</span>
                                                         </div>
                                                         <div className="flex justify-between items-center">
-                                                            <span className="text-[10px] font-bold text-white truncate max-w-[100px]">{match.player2.name}</span>
+                                                            <div className="flex flex-col truncate pr-2">
+                                                              <span className="text-[10px] font-bold text-white truncate max-w-[100px]">{match.player2.name}</span>
+                                                              <span className="text-[7px] text-slate-500 font-bold uppercase truncate">{allPlayers.find(p => p.id === match.player2.id)?.club || 'Individual'}</span>
+                                                            </div>
                                                             <span className="text-xs font-black text-white">{match.player2Score ?? 0}</span>
                                                         </div>
                                                     </div>
-                                                    <button onClick={() => { setEditingMatch(match); setShowMatchModal(true); }} className="ml-4 w-10 h-10 bg-blue-600/20 text-blue-400 rounded-xl flex items-center justify-center">
-                                                        <Edit2 size={16} />
-                                                    </button>
+                                                    <div className="flex items-center gap-2">
+                                                        <button onClick={() => { setEditingMatch(match); setShowMatchModal(true); }} className="w-10 h-10 bg-blue-600/20 text-blue-400 rounded-xl flex items-center justify-center">
+                                                            <Edit2 size={16} />
+                                                        </button>
+                                                        <button onClick={(e) => { e.stopPropagation(); handleDeleteMatch(match.id); }} className="w-10 h-10 bg-red-600/20 text-red-400 rounded-xl flex items-center justify-center" title="Obriši meč">
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -444,6 +523,7 @@ const MatchesTab = ({
                           <td className="px-6 py-5 font-semibold text-white">
                             <div className="flex flex-col">
                               <span>{match.player1.name}</span>
+                              <span className="text-[8px] text-slate-500 font-bold uppercase truncate">{allPlayers.find(p => p.id === match.player1.id)?.club || 'Individual'}</span>
                               {match.sets?.length > 0 && (
                                 <span className="text-[9px] text-slate-500 font-bold">
                                   ({match.sets.map(s => s.p1).join(', ')})
@@ -471,6 +551,7 @@ const MatchesTab = ({
                           <td className="px-6 py-5 font-semibold text-white">
                             <div className="flex flex-col">
                               <span>{match.player2.name}</span>
+                              <span className="text-[8px] text-slate-500 font-bold uppercase truncate">{allPlayers.find(p => p.id === match.player2.id)?.club || 'Individual'}</span>
                               {match.sets?.length > 0 && (
                                 <span className="text-[9px] text-slate-500 font-bold">
                                   ({match.sets.map(s => s.p2).join(', ')})

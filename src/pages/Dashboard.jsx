@@ -27,7 +27,6 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       if (!userData) return;
-      if (!userData.organizationId && userData.role !== 'super_admin') return;
 
       try {
         let playersQ, compsQ;
@@ -36,8 +35,8 @@ const Dashboard = () => {
           playersQ = query(collection(db, "players"));
           compsQ = query(collection(db, "competitions"));
         } else {
-          playersQ = query(collection(db, "players"), where("organizationId", "==", userData.organizationId));
-          compsQ = query(collection(db, "competitions"), where("organizationId", "==", userData.organizationId));
+          playersQ = query(collection(db, "players"), where("ownerUid", "==", userData.uid));
+          compsQ = query(collection(db, "competitions"), where("ownerUid", "==", userData.uid));
         }
         
         const [playersSnap, compsSnap] = await Promise.all([

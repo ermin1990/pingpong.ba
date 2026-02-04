@@ -19,15 +19,14 @@ const Players = () => {
 
   useEffect(() => {
     if (!userData) return;
-    if (!userData.organizationId && userData.role !== 'super_admin') return;
 
     let q;
     if (userData.role === 'super_admin') {
-      q = query(collection(db, "players")); // Super admin vidi sve? Ili samo one bez org?
+      q = query(collection(db, "players"));
     } else {
       q = query(
         collection(db, "players"),
-        where("organizationId", "==", userData.organizationId)
+        where("ownerUid", "==", userData.uid)
       );
     }
 
@@ -47,18 +46,14 @@ const Players = () => {
     e.preventDefault();
     if (!name.trim()) return;
     
-    if (!userData?.organizationId && userData.role !== 'super_admin') {
-      alert("Greška: Nemate dodijeljenu organizaciju.");
-      return;
-    }
-
     setIsSubmitting(true);
     try {
       await addDoc(collection(db, "players"), {
         name: name.trim(),
         email: email.trim(),
         club: club.trim(),
-        organizationId: userData.organizationId || "SUPER_ADMIN",
+        ownerUid: userData.uid,
+        ownerEmail: userData.email,
         createdAt: new Date(),
         matchesPlayed: 0,
         wins: 0
@@ -77,11 +72,6 @@ const Players = () => {
     e.preventDefault();
     if (!bulkText.trim()) return;
 
-    if (!userData?.organizationId && userData.role !== 'super_admin') {
-      alert("Greška: Nemate dodijeljenu organizaciju.");
-      return;
-    }
-
     setIsSubmitting(true);
     try {
       const batch = writeBatch(db);
@@ -96,7 +86,8 @@ const Players = () => {
           batch.set(playerRef, {
             name: playerName,
             club: playerClub || '',
-            organizationId: userData.organizationId || "SUPER_ADMIN",
+            ownerUid: userData.uid,
+            ownerEmail: userData.email,
             createdAt: new Date(),
             matchesPlayed: 0,
             wins: 0

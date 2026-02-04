@@ -1,9 +1,12 @@
-import { Trophy, X, Save, Settings2, CheckCircle, Clock, Plus } from 'lucide-react';
+import { Trophy, X, Save, Settings2, CheckCircle, Clock, Plus, Trash2, AlertTriangle } from 'lucide-react';
 
 const SettingsTab = ({ 
   activeCategory, 
   handleUpdateSettings,
-  handleToggleStage
+  handleToggleStage,
+  handleDeleteCompetition,
+  isSuperAdmin,
+  isOwner
 }) => {
   const isGroupsCompleted = activeCategory?.stages?.groups?.completed || false;
 
@@ -111,6 +114,38 @@ const SettingsTab = ({
         <Plus size={32} className="mx-auto text-slate-700 mb-4" />
         <p className="text-xs font-black text-slate-600 uppercase tracking-widest">Dodatne postavke uskoro...</p>
       </div>
+
+      {/* Danger Zone - Delete Competition */}
+      {(isSuperAdmin || isOwner) && (
+        <div className="bg-red-950/20 border-2 border-red-900/30 rounded-3xl p-8">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-12 h-12 bg-red-500/10 rounded-2xl flex items-center justify-center text-red-500">
+              <AlertTriangle size={24} />
+            </div>
+            <div>
+              <h3 className="text-xl font-black text-red-500 uppercase italic tracking-tighter">Zona Opasnosti</h3>
+              <p className="text-red-400/70 text-xs font-bold uppercase tracking-widest">Brisanje takmičenja je trajna akcija</p>
+            </div>
+          </div>
+          
+          <div className="bg-slate-950/50 border border-red-900/20 rounded-2xl p-6 mb-6">
+            <p className="text-sm text-slate-400 mb-2">Ova akcija će trajno obrisati:</p>
+            <ul className="text-xs text-slate-500 space-y-1 list-disc list-inside">
+              <li>Sve kategorije</li>
+              <li>Sve mečeve i rezultate</li>
+              <li>Sve grupne faze i knockout bracke</li>
+              <li>Cijelo takmičenje</li>
+            </ul>
+          </div>
+          
+          <button 
+            onClick={handleDeleteCompetition}
+            className="w-full bg-red-600 hover:bg-red-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-red-500/20 active:scale-95 flex items-center justify-center gap-2"
+          >
+            <Trash2 size={16} /> Obriši Takmičenje
+          </button>
+        </div>
+      )}
     </div>
   );
 };

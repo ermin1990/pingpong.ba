@@ -40,15 +40,15 @@ const SettingsPage = () => {
           </div>
         </div>
 
-        {/* Organization Section */}
+        {/* User Profile Section */}
         <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-8 backdrop-blur-xl">
           <div className="flex items-center gap-4 mb-8">
             <div className="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500">
               <Building size={24} />
             </div>
             <div>
-              <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">Organizacija</h3>
-              <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Podaci o vašem klubu ili savezu</p>
+              <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">Profil Korisnika</h3>
+              <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Podaci o vašem profilu</p>
             </div>
           </div>
 
@@ -59,11 +59,11 @@ const SettingsPage = () => {
                     <Shield size={20} />
                   </div>
                   <div>
-                    <p className="text-white font-black uppercase text-sm">{userData?.organizationName || 'Moja Organizacija'}</p>
-                    <p className="text-[10px] text-slate-500 font-bold uppercase">ID: {userData?.organizationId || 'Nije dodijeljeno'}</p>
+                    <p className="text-white font-black uppercase text-sm">{userData?.displayName || 'Korisnik'}</p>
+                    <p className="text-[10px] text-slate-500 font-bold uppercase italic">{userData?.email}</p>
                   </div>
                 </div>
-                <span className="text-[10px] bg-emerald-500/10 text-emerald-500 px-3 py-1 rounded-full font-black uppercase">Aktivno</span>
+                <span className="text-[10px] bg-emerald-500/10 text-emerald-500 px-3 py-1 rounded-full font-black uppercase">{userData?.role || 'User'}</span>
              </div>
           </div>
         </div>

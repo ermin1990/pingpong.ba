@@ -1,4 +1,4 @@
-import { Search, Plus, Target, CheckCircle } from 'lucide-react';
+import { Search, Plus, Target, CheckCircle, Users } from 'lucide-react';
 
 const PlayersTab = ({ 
   activeCategory, 
@@ -65,7 +65,22 @@ const PlayersTab = ({
           </div>
           
           <div className="grid grid-cols-1 gap-2 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-            {allPlayers
+            {allPlayers.length === 0 ? (
+              <div className="text-center py-8 bg-slate-900 rounded-xl border border-slate-800">
+                <Users className="w-10 h-10 mx-auto mb-2 text-slate-700" />
+                <p className="text-sm text-slate-500">Nema igrača u organizaciji.</p>
+                <p className="text-xs text-slate-600 mt-1">Dodajte igrače na stranici "Igrači".</p>
+              </div>
+            ) : allPlayers
+              .filter(p => !showOnlySelected || selectedPlayers.includes(p.id))
+              .filter(p => !searchTerm || p.name.toLowerCase().includes(searchTerm.toLowerCase()) || (p.club && p.club.toLowerCase().includes(searchTerm.toLowerCase())))
+              .length === 0 ? (
+              <div className="text-center py-8 bg-slate-900 rounded-xl border border-slate-800">
+                <Search className="w-10 h-10 mx-auto mb-2 text-slate-700" />
+                <p className="text-sm text-slate-500">Nema rezultata pretrage.</p>
+              </div>
+            ) : (
+              allPlayers
               .filter(p => !showOnlySelected || selectedPlayers.includes(p.id))
               .filter(p => !searchTerm || p.name.toLowerCase().includes(searchTerm.toLowerCase()) || (p.club && p.club.toLowerCase().includes(searchTerm.toLowerCase())))
               .map(player => {
@@ -102,7 +117,8 @@ const PlayersTab = ({
                     </div>
                   </div>
                 );
-              })}
+              })
+            )}
           </div>
         </div>
       </div>
