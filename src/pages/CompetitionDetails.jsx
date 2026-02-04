@@ -316,9 +316,10 @@ const CompetitionDetails = () => {
     }
   };
 
-  const togglePlayerSelection = (playerId) => {
+  const togglePlayerSelection = async (playerId) => {
     if (activeCategory?.status !== 'draft') return;
 
+    let newSelected;
     // Check if adding a player (not removing)
     if (!selectedPlayers.includes(playerId)) {
       if (!isSuperAdmin && planDetails?.playersLimit) {
@@ -327,22 +328,44 @@ const CompetitionDetails = () => {
             return;
          }
       }
+      newSelected = [...selectedPlayers, playerId];
+    } else {
+      newSelected = selectedPlayers.filter(pid => pid !== playerId);
     }
     
-    setSelectedPlayers(prev => 
-      prev.includes(playerId) 
-        ? prev.filter(pid => pid !== playerId) 
-        : [...prev, playerId]
-    );
+    setSelectedPlayers(newSelected);
+
+    // Auto-save to Firestore
+    try {
+      const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
+      await updateDoc(catRef, {
+        playerIds: newSelected,
+        updatedAt: serverTimestamp()
+      });
+    } catch (err) {
+      console.error("Greška pri spašavanju selekcije:", err);
+    }
   };
 
-  const togglePlayerSeed = (playerId) => {
+  const togglePlayerSeed = async (playerId) => {
     if (activeCategory?.status !== 'draft') return;
-    setSeededPlayers(prev => 
-      prev.includes(playerId) 
-        ? prev.filter(pid => pid !== playerId) 
-        : [...prev, playerId]
-    );
+    
+    const newSeeding = seededPlayers.includes(playerId) 
+      ? seededPlayers.filter(pid => pid !== playerId) 
+      : [...seededPlayers, playerId];
+      
+    setSeededPlayers(newSeeding);
+
+    // Auto-save to Firestore
+    try {
+      const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
+      await updateDoc(catRef, {
+        seededPlayerIds: newSeeding,
+        updatedAt: serverTimestamp()
+      });
+    } catch (err) {
+      console.error("Greška pri spašavanju nosioca:", err);
+    }
   };
 
   const startEditingPlayer = (player) => {
@@ -1012,6 +1035,7 @@ const CompetitionDetails = () => {
       batch.update(catRef, {
         status: 'active',
         playerIds: selectedPlayers,
+        seededPlayerIds: seededPlayers,
         groupConfig: groupConfigObj,
         updatedAt: serverTimestamp()
       });
@@ -1254,39 +1278,65 @@ const CompetitionDetails = () => {
     }
   };
 
+  const saveGroupConfig = async (currentGroups) => {
+    if (!selectedCategoryId || !currentGroups) return;
+    try {
+      const groupConfigObj = {};
+      currentGroups.forEach((g, idx) => {
+        groupConfigObj[idx] = g.map(p => p.id);
+      });
+
+      const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
+      await updateDoc(catRef, {
+        groupConfig: groupConfigObj,
+        updatedAt: serverTimestamp()
+      });
+    } catch (err) {
+      console.error("Error saving group config:", err);
+    }
+  };
+
   const movePlayerToGroup = (playerId, targetGroupIdx) => {
     // Check players per group limit
     if (!isSuperAdmin && planDetails) {
       const targetGroup = groups[targetGroupIdx];
       const limit = planDetails.playersPerGroupLimit || 16;
-      const alreadyInGroup = targetGroup.some(p => p.id === playerId);
-      if (!alreadyInGroup && targetGroup.length >= limit) {
+      const alreadyInGroup = targetGroup?.some(p => p.id === playerId);
+      if (!alreadyInGroup && targetGroup?.length >= limit) {
         alert(`Dostigli ste limit od ${limit} igrača po grupi za vaš plan.`);
         return;
       }
     }
 
-    setGroups(prev => {
-      // 1. Ukloni igrača iz svih trenutnih grupa
-      const newGroups = prev.map(g => g.filter(p => p.id !== playerId));
-      
-      // 2. Pronađi igrača
-      const player = allPlayers.find(p => p.id === playerId);
-      if (player) {
-        // 3. Dodaj ga u ciljanu grupu
-        newGroups[targetGroupIdx].push(player);
-        
-        // 4. Auto-selekcija ako nije bio selektovan
-        if (!selectedPlayers.includes(playerId)) {
-          setSelectedPlayers(prevS => [...prevS, playerId]);
-        }
-      }
-      return newGroups;
-    });
+    // 1. Pronađi igrača
+    const player = allPlayers.find(p => p.id === playerId);
+    if (!player) return;
+
+    // 2. Napravi nove grupe i ukloni igrača iz svih trenutnih grupa
+    const newGroups = groups.map(g => g.filter(p => p.id !== playerId));
+    
+    // 3. Dodaj ga u ciljanu grupu
+    if (newGroups[targetGroupIdx]) {
+      newGroups[targetGroupIdx].push(player);
+    }
+    
+    setGroups(newGroups);
+    saveGroupConfig(newGroups);
+
+    // 4. Auto-selekcija ako nije bio selektovan
+    if (!selectedPlayers.includes(playerId)) {
+      const newSelected = [...selectedPlayers, playerId];
+      setSelectedPlayers(newSelected);
+      // Save selection too
+      const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
+      updateDoc(catRef, { playerIds: newSelected });
+    }
   };
 
   const removePlayerFromGroups = (playerId) => {
-    setGroups(prev => prev.map(g => g.filter(p => p.id !== playerId)));
+    const cleanedGroups = groups.map(g => g.filter(p => p.id !== playerId));
+    setGroups(cleanedGroups);
+    saveGroupConfig(cleanedGroups);
   };
 
   const handleAutoAssignGroups = () => {
