@@ -325,7 +325,15 @@ const MatchesTab = ({
 
                             {activeCategory?.status === 'draft' && (
                               <div className="mb-6 space-y-2">
-                                {group.map(p => {
+                                {[...group]
+                                  .sort((a, b) => {
+                                    const aSeeded = seededPlayerIds.includes(a.id);
+                                    const bSeeded = seededPlayerIds.includes(b.id);
+                                    if (aSeeded && !bSeeded) return -1;
+                                    if (!aSeeded && bSeeded) return 1;
+                                    return 0;
+                                  })
+                                  .map(p => {
                                   const clubName = (p.club || '').trim();
                                   const isDuplicateClub = clubName && 
                                                          clubName.toLowerCase() !== 'individual' && 
@@ -520,14 +528,24 @@ const MatchesTab = ({
                                                     <div className="flex-1 space-y-1">
                                                         <div className="flex justify-between items-center">
                                                             <div className="flex flex-col truncate pr-2">
-                                                              <span className="text-[10px] font-bold text-slate-900 dark:text-white truncate max-w-[100px]">{match.player1.name}</span>
+                                                              <div className="flex items-center gap-1.5">
+                                                                <span className="text-[10px] font-bold text-slate-900 dark:text-white truncate max-w-[100px]">{match.player1.name}</span>
+                                                                {seededPlayerIds.includes(match.player1.id) && (
+                                                                  <Star size={8} className="text-amber-500 fill-amber-500" />
+                                                                )}
+                                                              </div>
                                                               <span className="text-[7px] text-slate-500 font-bold uppercase truncate">{allPlayers.find(p => p.id === match.player1.id)?.club || 'Individual'}</span>
                                                             </div>
                                                             <span className="text-xs font-black text-slate-900 dark:text-white">{match.player1Score ?? 0}</span>
                                                         </div>
                                                         <div className="flex justify-between items-center">
                                                             <div className="flex flex-col truncate pr-2">
-                                                              <span className="text-[10px] font-bold text-slate-900 dark:text-white truncate max-w-[100px]">{match.player2.name}</span>
+                                                              <div className="flex items-center gap-1.5">
+                                                                <span className="text-[10px] font-bold text-slate-900 dark:text-white truncate max-w-[100px]">{match.player2.name}</span>
+                                                                {seededPlayerIds.includes(match.player2.id) && (
+                                                                  <Star size={8} className="text-amber-500 fill-amber-500" />
+                                                                )}
+                                                              </div>
                                                               <span className="text-[7px] text-slate-500 font-bold uppercase truncate">{allPlayers.find(p => p.id === match.player2.id)?.club || 'Individual'}</span>
                                                             </div>
                                                             <span className="text-xs font-black text-slate-900 dark:text-white">{match.player2Score ?? 0}</span>
@@ -586,7 +604,12 @@ const MatchesTab = ({
                           </td>
                           <td className="px-6 py-5 font-semibold text-slate-900 dark:text-white">
                             <div className="flex flex-col">
-                              <span>{match.player1.name}</span>
+                              <div className="flex items-center gap-1.5">
+                                <span>{match.player1.name}</span>
+                                {seededPlayerIds.includes(match.player1.id) && (
+                                  <Star size={10} className="text-amber-500 fill-amber-500" />
+                                )}
+                              </div>
                               <span className="text-[8px] text-slate-500 font-bold uppercase truncate">{allPlayers.find(p => p.id === match.player1.id)?.club || 'Individual'}</span>
                               {match.sets?.length > 0 && (
                                 <span className="text-[9px] text-slate-500 dark:text-slate-400 font-bold">
@@ -614,7 +637,12 @@ const MatchesTab = ({
                           </td>
                           <td className="px-6 py-5 font-semibold text-slate-900 dark:text-white">
                             <div className="flex flex-col">
-                              <span>{match.player2.name}</span>
+                              <div className="flex items-center gap-1.5">
+                                <span>{match.player2.name}</span>
+                                {seededPlayerIds.includes(match.player2.id) && (
+                                  <Star size={10} className="text-amber-500 fill-amber-500" />
+                                )}
+                              </div>
                               <span className="text-[8px] text-slate-500 font-bold uppercase truncate">{allPlayers.find(p => p.id === match.player2.id)?.club || 'Individual'}</span>
                               {match.sets?.length > 0 && (
                                 <span className="text-[9px] text-slate-500 dark:text-slate-400 font-bold">

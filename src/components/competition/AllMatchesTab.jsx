@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Search, Trash2, AlertTriangle, Edit2, X } from 'lucide-react';
+import { Search, Trash2, AlertTriangle, Edit2, X, Star } from 'lucide-react';
 
 const AllMatchesTab = ({ 
   allMatches, 
@@ -175,6 +175,7 @@ const AllMatchesTab = ({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredMatches.map(match => {
             const category = categories.find(c => c.id === match.categoryId);
+            const seededIds = category?.seededPlayerIds || [];
             const p1Win = match.status === 'completed' && match.player1Score > match.player2Score;
             const p2Win = match.status === 'completed' && match.player2Score > match.player1Score;
 
@@ -197,22 +198,24 @@ const AllMatchesTab = ({
                 </div>
 
                 {/* Players & Scores */}
-                <div className="space-y-2 mb-4">
+                <div className="space-y-3 mb-4">
                   <div className="flex justify-between items-center">
-                    <span className={`text-sm font-bold truncate ${p1Win ? 'text-emerald-600 dark:text-green-400' : 'text-slate-500 dark:text-slate-400'}`}>
-                      {match.player1?.name || 'TBD'}
-                    </span>
-                    <span className={`text-lg font-bold ml-2 ${p1Win ? 'text-slate-900 dark:text-white' : 'text-slate-300 dark:text-slate-600'}`}>
-                      {match.player1Score || 0}
-                    </span>
+                    <div className="flex items-center gap-2 truncate">
+                      <span className={`text-xs font-bold truncate ${p1Win ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500'}`}>
+                        {match.player1?.name || 'TBD'}
+                      </span>
+                      {seededIds.includes(match.player1?.id) && <Star size={10} className="text-amber-500 fill-amber-500" />}
+                    </div>
+                    <span className="text-sm font-black text-slate-900 dark:text-white">{match.player1Score || 0}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className={`text-sm font-bold truncate ${p2Win ? 'text-emerald-600 dark:text-green-400' : 'text-slate-500 dark:text-slate-400'}`}>
-                      {match.player2?.name || 'TBD'}
-                    </span>
-                    <span className={`text-lg font-bold ml-2 ${p2Win ? 'text-slate-900 dark:text-white' : 'text-slate-300 dark:text-slate-600'}`}>
-                      {match.player2Score || 0}
-                    </span>
+                    <div className="flex items-center gap-2 truncate">
+                      <span className={`text-xs font-bold truncate ${p2Win ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500'}`}>
+                        {match.player2?.name || 'TBD'}
+                      </span>
+                      {seededIds.includes(match.player2?.id) && <Star size={10} className="text-amber-500 fill-amber-500" />}
+                    </div>
+                    <span className="text-sm font-black text-slate-900 dark:text-white">{match.player2Score || 0}</span>
                   </div>
                 </div>
 

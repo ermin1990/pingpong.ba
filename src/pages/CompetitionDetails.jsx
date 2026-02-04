@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase/config';
@@ -100,6 +100,7 @@ const CompetitionDetails = () => {
   const [groups, setGroups] = useState([]); // Array of arrays of player objects
   const [groupTabs, setGroupTabs] = useState({}); // { groupIdx: 'players' | 'table' | 'matches' }
   const [manualOrders, setManualOrders] = useState({}); // Ručni poredak igrača po grupama
+  const lastCategoryIdRef = useRef('');
 
   // State za uređivanje igrača
   const [editingPlayer, setEditingPlayer] = useState(null);
@@ -268,8 +269,14 @@ const CompetitionDetails = () => {
   // Kada se promijeni kategorija, resetuj selekciju igrača na one koji su već u kategoriji
   useEffect(() => {
     if (selectedCategoryId && activeCategory) {
-      setSelectedPlayers(activeCategory.playerIds || []);
-      setSeededPlayers(activeCategory.seededPlayerIds || []);
+      // Only reset the local state if specifically switching to a NEW category
+      if (lastCategoryIdRef.current !== selectedCategoryId) {
+        setSelectedPlayers(activeCategory.playerIds || []);
+        setSeededPlayers(activeCategory.seededPlayerIds || []);
+        lastCategoryIdRef.current = selectedCategoryId;
+      }
+    } else if (!selectedCategoryId) {
+      lastCategoryIdRef.current = '';
     }
   }, [selectedCategoryId, activeCategory]);
 
@@ -317,8 +324,6 @@ const CompetitionDetails = () => {
   };
 
   const togglePlayerSelection = (playerId) => {
-    if (activeCategory?.status !== 'draft') return;
-
     // Check if adding a player (not removing)
     if (!selectedPlayers.includes(playerId)) {
       if (!isSuperAdmin && planDetails?.playersLimit) {
@@ -337,7 +342,6 @@ const CompetitionDetails = () => {
   };
 
   const togglePlayerSeed = (playerId) => {
-    if (activeCategory?.status !== 'draft') return;
     setSeededPlayers(prev => 
       prev.includes(playerId) 
         ? prev.filter(pid => pid !== playerId) 

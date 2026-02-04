@@ -1,4 +1,4 @@
-import { Search, X, Edit2 } from 'lucide-react';
+import { Search, X, Edit2, Star } from 'lucide-react';
 
 const GlobalMatchSearch = ({ 
   matchSearchQuery, 
@@ -42,7 +42,9 @@ const GlobalMatchSearch = ({
           {filteredGlobalMatches.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
               {filteredGlobalMatches.map(match => {
-                const catName = categories.find(c => c.id === match.categoryId)?.name || 'Kategorija';
+                const category = categories.find(c => c.id === match.categoryId);
+                const catName = category?.name || 'Kategorija';
+                const seededIds = category?.seededPlayerIds || [];
                 return (
                   <div 
                     key={match.id}
@@ -63,11 +65,17 @@ const GlobalMatchSearch = ({
                     </div>
                     <div className="space-y-2">
                       <div className="flex justify-between items-center">
-                        <span className={`text-xs font-bold ${match.status === 'completed' && match.player1Score > match.player2Score ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500'}`}>{match.player1.name}</span>
+                        <div className="flex items-center gap-1.5 truncate">
+                          <span className={`text-xs font-bold truncate ${match.status === 'completed' && match.player1Score > match.player2Score ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500'}`}>{match.player1.name}</span>
+                          {seededIds.includes(match.player1.id) && <Star size={9} className="text-amber-500 fill-amber-500" />}
+                        </div>
                         <span className="text-sm font-black text-slate-900 dark:text-white">{match.player1Score || 0}</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className={`text-xs font-bold ${match.status === 'completed' && match.player2Score > match.player1Score ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500'}`}>{match.player2.name}</span>
+                        <div className="flex items-center gap-1.5 truncate">
+                          <span className={`text-xs font-bold truncate ${match.status === 'completed' && match.player2Score > match.player1Score ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500'}`}>{match.player2.name}</span>
+                          {seededIds.includes(match.player2.id) && <Star size={9} className="text-amber-500 fill-amber-500" />}
+                        </div>
                         <span className="text-sm font-black text-slate-900 dark:text-white">{match.player2Score || 0}</span>
                       </div>
                     </div>
