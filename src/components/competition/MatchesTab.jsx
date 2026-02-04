@@ -65,7 +65,7 @@ const MatchesTab = ({
         
         {/* Draft Sidebar */}
         {activeCategory?.status === 'draft' && (
-          <div className="lg:col-span-1 space-y-4">
+          <div className="lg:col-span-1 space-y-4 lg:sticky lg:top-24 self-start">
             <div className="flex items-center gap-2 mb-2 px-1 text-slate-500 dark:text-slate-400">
               <Users size={14} />
               <span className="text-[10px] font-black uppercase tracking-widest">Preostali Igrači</span>
@@ -396,7 +396,7 @@ const MatchesTab = ({
                                     <div key={p.id} className={`grid grid-cols-12 gap-2 items-center py-2 px-2 rounded-lg text-[10px] transition-all duration-200 border ${
                                       isAdvancing 
                                         ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20 hover:bg-emerald-100 dark:hover:bg-emerald-500/20' 
-                                        : 'bg-slate-50/50 dark:bg-slate-950/30 border-transparent hover:bg-slate-100 dark:hover:bg-slate-800/40 hover:border-slate-200 dark:hover:border-slate-800'
+                                        : 'bg-slate-100 dark:bg-slate-950/30 border-transparent hover:bg-slate-200 dark:hover:bg-slate-800/40 hover:border-slate-300 dark:hover:border-slate-800'
                                     }`}>
                                       <div className="col-span-6 flex items-center space-x-2 truncate">
                                         {isManualEdit ? (
@@ -450,7 +450,7 @@ const MatchesTab = ({
                                 </h5>
                                 <div className="space-y-3">
                                     {groupMatches.map((match) => (
-                                        <div key={match.id} className="bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800/50 rounded-xl overflow-hidden hover:border-slate-300 dark:hover:border-slate-700 transition-all shadow-sm dark:shadow-none">
+                                        <div key={match.id} className="bg-slate-100 dark:bg-slate-950/40 border border-slate-300 dark:border-slate-800/50 rounded-xl overflow-hidden hover:border-slate-400 dark:hover:border-slate-700 transition-all shadow-sm dark:shadow-none">
                                             {/* Desktop Match Layout */}
                                             <div className="hidden lg:flex items-center justify-between p-4 gap-4">
                                                 <div className="flex-1 space-y-3">
@@ -469,9 +469,9 @@ const MatchesTab = ({
                                                           </span>
                                                         </div>
                                                         {match.sets?.length > 0 && (
-                                                            <div className="flex gap-1 ml-4 ring-1 ring-slate-200 dark:ring-slate-800 rounded px-1 py-0.5 bg-white dark:bg-black/20">
+                                                            <div className="flex gap-1 ml-4 ring-1 ring-slate-300 dark:ring-slate-800 rounded px-1 py-0.5 bg-white dark:bg-black/20">
                                                                 {match.sets.map((set, sIdx) => (
-                                                                    <div key={sIdx} className="w-5 text-center border-r last:border-0 border-slate-200 dark:border-slate-800/50">
+                                                                    <div key={sIdx} className="w-5 text-center border-r last:border-0 border-slate-300 dark:border-slate-800/50">
                                                                         <span className={`text-[10px] font-bold ${match.status === 'completed' && set.p1 > set.p2 ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-600'}`}>
                                                                             {set.p1 ?? '-'}
                                                                         </span>
@@ -495,9 +495,9 @@ const MatchesTab = ({
                                                           </span>
                                                         </div>
                                                         {match.sets?.length > 0 && (
-                                                            <div className="flex gap-1 ml-4 ring-1 ring-slate-200 dark:ring-slate-800 rounded px-1 py-0.5 bg-white dark:bg-black/20">
+                                                            <div className="flex gap-1 ml-4 ring-1 ring-slate-300 dark:ring-slate-800 rounded px-1 py-0.5 bg-white dark:bg-black/20">
                                                                 {match.sets.map((set, sIdx) => (
-                                                                    <div key={sIdx} className="w-5 text-center border-r last:border-0 border-slate-200 dark:border-slate-800/50">
+                                                                    <div key={sIdx} className="w-5 text-center border-r last:border-0 border-slate-300 dark:border-slate-800/50">
                                                                         <span className={`text-[10px] font-bold ${match.status === 'completed' && set.p2 > set.p1 ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-600'}`}>
                                                                             {set.p2 ?? '-'}
                                                                         </span>
@@ -588,7 +588,7 @@ const MatchesTab = ({
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm text-left border-collapse">
                     <thead>
-                      <tr className="bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 uppercase text-[11px] font-bold tracking-wider">
+                      <tr className="bg-slate-100 dark:bg-slate-950 border-b border-slate-300 dark:border-slate-800 text-slate-600 dark:text-slate-400 uppercase text-[11px] font-bold tracking-wider">
                         <th className="px-6 py-4">Kolo</th>
                         <th className="px-6 py-4">Igrač 1</th>
                         <th className="px-6 py-4 text-center">Rezultat</th>
@@ -622,14 +622,14 @@ const MatchesTab = ({
                             <div className="flex items-center justify-center gap-2">
                               <input 
                                 type="number" 
-                                className="w-12 h-12 text-center bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl font-bold text-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all shadow-sm dark:shadow-none" 
+                                className="w-12 h-12 text-center bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl font-bold text-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all shadow-sm dark:shadow-none" 
                                 value={match.player1Score || 0}
                                 onChange={(e) => handleScoreChange(match.id, 'player1', e.target.value)}
                               />
-                              <span className="text-slate-300 dark:text-slate-600 font-bold">:</span>
+                              <span className="text-slate-500 dark:text-slate-600 font-bold">:</span>
                               <input 
                                 type="number" 
-                                className="w-12 h-12 text-center bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl font-bold text-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all shadow-sm dark:shadow-none" 
+                                className="w-12 h-12 text-center bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl font-bold text-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all shadow-sm dark:shadow-none" 
                                 value={match.player2Score || 0}
                                 onChange={(e) => handleScoreChange(match.id, 'player2', e.target.value)}
                               />

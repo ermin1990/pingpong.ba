@@ -175,6 +175,48 @@ const MatchUpdateModal = ({
                 </div>
               </div>
 
+              {((editingMatch.player1Score || 0) + (editingMatch.player2Score || 0)) > 0 && (
+                <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-800">
+                  <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-3 text-center">Poeni po setovima</p>
+                  <div className="flex flex-col gap-2">
+                    {Array.from({ length: (editingMatch.player1Score || 0) + (editingMatch.player2Score || 0) }).map((_, idx) => (
+                      <div key={idx} className="flex items-center gap-4">
+                        <span className="text-[10px] font-bold text-slate-400 w-12 text-right">Set {idx + 1}</span>
+                        <div className="flex items-center gap-2 flex-1">
+                          <input 
+                            type="number"
+                            className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-2 text-center font-bold text-slate-900 dark:text-white outline-none focus:border-blue-500 transition-all"
+                            value={editingMatch.sets?.[idx]?.p1 ?? ''}
+                            onChange={(e) => {
+                                const newP1 = parseInt(e.target.value) || 0;
+                                const currentSets = [...(editingMatch.sets || [])];
+                                if (!currentSets[idx]) currentSets[idx] = { p1: 0, p2: 0 };
+                                currentSets[idx] = { ...currentSets[idx], p1: newP1 };
+                                setEditingMatch({ ...editingMatch, sets: currentSets });
+                            }}
+                            placeholder="0"
+                          />
+                          <span className="text-slate-300 font-bold">:</span>
+                          <input 
+                            type="number"
+                            className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-2 text-center font-bold text-slate-900 dark:text-white outline-none focus:border-blue-500 transition-all"
+                            value={editingMatch.sets?.[idx]?.p2 ?? ''}
+                            onChange={(e) => {
+                                const newP2 = parseInt(e.target.value) || 0;
+                                const currentSets = [...(editingMatch.sets || [])];
+                                if (!currentSets[idx]) currentSets[idx] = { p1: 0, p2: 0 };
+                                currentSets[idx] = { ...currentSets[idx], p2: newP2 };
+                                setEditingMatch({ ...editingMatch, sets: currentSets });
+                            }}
+                            placeholder="0"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="pt-4">
                 <button 
                   onClick={() => {

@@ -1,0 +1,48 @@
+[
+  {
+    "name": "Jednokratni",
+    "price": "50 KM / turnir",
+    "periodDays": 0,
+    "tournamentsLimit": 1,
+    "groupsLimit": 15,
+    "playersPerGroupLimit": 50,
+    "features": [
+      "1 turnir",
+      "Do 15 kategorija",
+      "Raspored mečeva",
+      "Live rezultati",
+      "Tabele"
+    ]
+  },
+  {
+    "name": "Paket 5",
+    "price": "200 KM / paket",
+    "badge": "NAJPOPULARNIJE",
+    "periodDays": 0,
+    "tournamentsLimit": 5,
+    "groupsLimit": 999,
+    "playersPerGroupLimit": 999,
+    "features": [
+      "5 turnira",
+      {"text": "Neograničeno kategorija", "unlimited": true},
+      "Sve iz Basic",
+      "Statistike igrača",
+      "Prioritetna podrška"
+    ]
+  },
+  {
+    "name": "Godišnji",
+    "price": "500 KM / godina",
+    "periodDays": 365,
+    "tournamentsLimit": 999,
+    "groupsLimit": 999,
+    "playersPerGroupLimit": 999,
+    "features": [
+      {"text": "Neograničeno turnira", "unlimited": true},
+      {"text": "Neograničeno kategorija", "unlimited": true},
+      "Sve iz Standard",
+      "Custom Branding",
+      "Arhiva rezultata"
+    ]
+  }
+]

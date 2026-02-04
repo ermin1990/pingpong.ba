@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { db } from '../firebase/config';
 import { collection, getDocs, query, orderBy, updateDoc, doc, addDoc, deleteDoc } from 'firebase/firestore';
 import { Shield, Building2, Users, Crown, CheckCircle, XCircle, Plus, Mail, Trash2, Clock, Phone, User, Trophy, Edit2, Layout } from 'lucide-react';
-import plansSeed from '../../plans_seed.json';
 
 const SuperAdminDashboard = () => {
   const { userData, isSuperAdmin } = useAuth();
@@ -18,7 +17,6 @@ const SuperAdminDashboard = () => {
   const [newPlan, setNewPlan] = useState({ name: '', price: '', periodDays: 30, tournamentsLimit: 1, groupsLimit: 5, playersPerGroupLimit: 12, features: [] });
   const [editingPlan, setEditingPlan] = useState(null);
   const [featureInput, setFeatureInput] = useState('');
-  const [featureUnlimited, setFeatureUnlimited] = useState(false);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('profiles'); // 'profiles' | 'requests'
   const [editingUser, setEditingUser] = useState(null);
@@ -228,14 +226,12 @@ const SuperAdminDashboard = () => {
   const handleAddFeature = (e) => {
     e.preventDefault();
     if (!featureInput.trim()) return;
-    const newFeature = { text: featureInput.trim(), unlimited: featureUnlimited };
     if (editingPlan) {
-      setEditingPlan(prev => ({ ...prev, features: [...(prev.features || []), newFeature] }));
+      setEditingPlan(prev => ({ ...prev, features: [...(prev.features || []), featureInput.trim()] }));
     } else {
-      setNewPlan(prev => ({ ...prev, features: [...prev.features, newFeature] }));
+      setNewPlan(prev => ({ ...prev, features: [...prev.features, featureInput.trim()] }));
     }
     setFeatureInput('');
-    setFeatureUnlimited(false);
   };
 
   const handleRemoveFeature = (index) => {
@@ -322,21 +318,49 @@ const SuperAdminDashboard = () => {
     }
   };
 
-  const seedInitialPlansDB = async () => {
+  const seedInitialPlans = async () => {
     if (!confirm('Dodati početne planove (Jednokratni, Paket 5, Godišnji)?')) return;
     try {
-      for (const planData of plansSeed) {
-        await addDoc(collection(db, 'plans'), {
-          ...planData,
+      const initialPlans = [
+        {
+          name: "Jednokratni",
+          price: "50 KM",
+          periodDays: 0,
+          tournamentsLimit: 1,
+          groupsLimit: 15,
+          playersPerGroupLimit: 50,
+          features: ["1 turnir", "Do 15 kategorija", "Raspored mečeva", "Live rezultati", "Tabele"],
           createdAt: new Date()
-        });
+        },
+        {
+          name: "Paket 5",
+          price: "200 KM",
+          periodDays: 0,
+          tournamentsLimit: 5,
+          groupsLimit: 999,
+          playersPerGroupLimit: 999,
+          features: ["5 turnira", "Neograničeno kategorija", "Sve iz Basic", "Statistike igrača", "Prioritetna podrška"],
+          createdAt: new Date()
+        },
+        {
+          name: "Godišnji",
+          price: "500 KM",
+          periodDays: 365,
+          tournamentsLimit: 999,
+          groupsLimit: 999,
+          playersPerGroupLimit: 999,
+          features: ["Neograničeno turnira", "Neograničeno kategorija", "Sve iz Standard", "Custom Branding", "Arhiva rezultata"],
+          createdAt: new Date()
+        }
+      ];
+
+      for (const plan of initialPlans) {
+        const pRef = await addDoc(collection(db, 'plans'), plan);
+        setPlans(prev => [{ id: pRef.id, ...plan }, ...prev]);
       }
-      // Refresh plans list
-      const plansSnap = await getDocs(query(collection(db, 'plans'), orderBy('createdAt', 'desc')));
-      setPlans(plansSnap.docs.map(d => ({ id: d.id, ...d.data() })));
-      alert('Početni planovi su dodani!');
+      alert('Planovi uspješno dodani!');
     } catch (err) {
-      console.error('Greška pri dodavanju planova:', err);
+      console.error('Greška pri seed-ovanju planova:', err);
       alert('Greška pri dodavanju planova.');
     }
   };
@@ -501,14 +525,14 @@ const SuperAdminDashboard = () => {
                   <div className="flex gap-3">
                     <button 
                       onClick={() => handleApproveRequest(request)}
-                      className="flex-1 bg-emerald-600 hover:bg-emerald-700 px-6 py-3 rounded-xl font-bold text-white flex items-center justify-center gap-2 transition shadow-md hover:shadow-lg"
+                      className="flex-1 bg-green-600 hover:bg-green-700 px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition"
                     >
                       <CheckCircle className="w-5 h-5" />
                       Odobri Zahtjev
                     </button>
                     <button 
                       onClick={() => handleRejectRequest(request.id)}
-                      className="flex-1 bg-red-600 hover:bg-red-700 px-6 py-3 rounded-xl font-bold text-white flex items-center justify-center gap-2 transition shadow-md hover:shadow-lg"
+                      className="flex-1 bg-red-600 hover:bg-red-700 px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition"
                     >
                       <XCircle className="w-5 h-5" />
                       Odbij
@@ -627,7 +651,7 @@ const SuperAdminDashboard = () => {
                       <td className="px-5 py-3 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <select
-                            className="bg-white dark:bg-gray-800 border-2 border-slate-300 dark:border-gray-700 text-xs rounded-lg px-2 py-1 text-slate-800 dark:text-gray-200"
+                            className="bg-slate-100 dark:bg-gray-800 border border-slate-300 dark:border-gray-700 text-xs rounded-lg px-2 py-1 text-slate-800 dark:text-gray-200"
                             value={userPlanSelections[user.id] || user.subscriptionPlanId || ''}
                             onChange={(e) => setUserPlanSelections(prev => ({ ...prev, [user.id]: e.target.value }))}
                           >
@@ -637,7 +661,7 @@ const SuperAdminDashboard = () => {
                             ))}
                           </select>
                           <button onClick={() => assignPlanToUser(user.id, userPlanSelections[user.id] || user.subscriptionPlanId)} className="p-1.5 rounded-lg bg-emerald-600 text-slate-900 dark:text-white hover:bg-emerald-700 transition-all shadow-md">Dodijeli</button>
-                          <button onClick={() => openEditSubscription(user)} className="p-1.5 rounded-lg bg-slate-200 dark:bg-gray-800 text-slate-700 dark:text-gray-400 hover:bg-slate-300 dark:hover:bg-gray-700 hover:bg-blue-600 hover:text-slate-900 dark:text-white transition-all shadow-md">Edit</button>
+                          <button onClick={() => openEditSubscription(user)} className="p-1.5 rounded-lg bg-slate-100 dark:bg-gray-800 text-slate-600 dark:text-gray-400 hover:bg-blue-600 hover:text-slate-900 dark:text-white transition-all shadow-md">Edit</button>
                           <button 
                             onClick={() => {
                               if(confirm("Obrisati profil korisnika? Podaci u bazi će ostati ali on gubi pristup.")) {
@@ -645,7 +669,7 @@ const SuperAdminDashboard = () => {
                                 setUsers(prev => prev.filter(u => u.id !== user.id));
                               }
                             }}
-                            className="p-1.5 rounded-lg bg-slate-200 dark:bg-gray-800 text-slate-700 dark:text-gray-400 hover:bg-slate-300 dark:hover:bg-gray-700 hover:bg-red-600 hover:text-slate-900 dark:text-white transition-all shadow-md"
+                            className="p-1.5 rounded-lg bg-slate-100 dark:bg-gray-800 text-slate-600 dark:text-gray-400 hover:bg-red-600 hover:text-slate-900 dark:text-white transition-all shadow-md"
                           >
                             <Trash2 size= {12} />
                           </button>
@@ -664,20 +688,20 @@ const SuperAdminDashboard = () => {
       {activeTab === 'users' && (
         <div className="grid lg:grid-cols-4 gap-6">
           <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-gray-900 border-2 border-slate-300 dark:border-gray-800 rounded-xl p-5 shadow-lg">
-              <h2 className="text-sm font-black italic flex items-center gap-2 mb-4 uppercase text-slate-900 dark:text-white">
-                <Plus size={16} className="text-emerald-600 dark:text-emerald-500" />
+            <div className="bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 rounded-xl p-5 shadow-2xl">
+              <h2 className="text-sm font-black italic flex items-center gap-2 mb-4 uppercase">
+                <Plus size={16} className="text-emerald-500" />
                 Dodaj
               </h2>
               <form onSubmit={handleAddWhitelist} className="space-y-3">
                 <input 
                   type="email" 
                   placeholder="Email adresa"
-                  className="w-full bg-white dark:bg-gray-800 border-2 border-slate-300 dark:border-gray-700 rounded-lg px-4 py-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-gray-500 focus:border-blue-600 dark:focus:border-emerald-500 focus:ring-2 focus:ring-blue-100 dark:focus:ring-emerald-500/20 outline-none transition-all text-xs"
+                  className="w-full bg-slate-100 dark:bg-gray-800 border border-slate-300 dark:border-gray-700 rounded-lg px-4 py-3 focus:border-emerald-500 outline-none transition-all text-xs"
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
                 />
-                <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase tracking-widest py-3 rounded-lg text-[10px] transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg">
+                <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-slate-900 dark:text-white font-black uppercase tracking-widest py-3 rounded-lg text-[10px] transition-all flex items-center justify-center gap-2">
                   <CheckCircle size={14} />
                   Odobri
                 </button>
@@ -698,7 +722,7 @@ const SuperAdminDashboard = () => {
                   return (
                     <div key={user.id} className="p-4 hover:bg-emerald-500/[0.02] transition-colors flex items-center justify-between group">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-white dark:bg-gray-800 border-2 border-slate-300 dark:border-gray-700 flex items-center justify-center text-slate-500 dark:text-gray-500 group-hover:text-emerald-600 dark:text-emerald-400 group-hover:border-emerald-500/30 transition-all">
+                        <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-gray-800 border border-slate-300 dark:border-gray-700 flex items-center justify-center text-slate-500 dark:text-gray-500 group-hover:text-emerald-600 dark:text-emerald-400 group-hover:border-emerald-500/30 transition-all">
                           <User size={16} />
                         </div>
                         <div>
@@ -785,7 +809,7 @@ const SuperAdminDashboard = () => {
                         </a>
                         <button 
                           onClick={() => handleDeleteCompetition(comp.id)}
-                          className="p-1.5 rounded-lg bg-slate-200 dark:bg-gray-800 text-slate-700 dark:text-gray-400 hover:bg-slate-300 dark:hover:bg-gray-700 hover:bg-red-600 hover:text-slate-900 dark:text-white transition-all shadow-md"
+                          className="p-1.5 rounded-lg bg-slate-100 dark:bg-gray-800 text-slate-600 dark:text-gray-400 hover:bg-red-600 hover:text-slate-900 dark:text-white transition-all shadow-md"
                           title="Obriši"
                         >
                           <Trash2 size={12} />
@@ -813,7 +837,7 @@ const SuperAdminDashboard = () => {
                 <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                   <p className="text-xs text-blue-800 dark:text-blue-300 mb-3">Nema planova u bazi. Želite li dodati početne planove?</p>
                   <button 
-                    onClick={seedInitialPlansDB}
+                    onClick={seedInitialPlans}
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition-all"
                   >
                     Dodaj početne planove
@@ -821,167 +845,123 @@ const SuperAdminDashboard = () => {
                 </div>
               )}
               
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase text-slate-500 dark:text-gray-500 tracking-widest pl-1">Osnovne informacije</label>
-                    <div className="grid grid-cols-1 gap-2">
-                      <input 
-                        type="text"
-                        placeholder="Naziv plana (npr. Pro)"
-                        className="w-full bg-white dark:bg-gray-800 border-2 border-slate-300 dark:border-gray-700 rounded-lg px-3 py-2.5 focus:border-blue-600 dark:focus:border-emerald-500 outline-none transition-all text-xs"
-                        value={editingPlan ? editingPlan.name : newPlan.name}
-                        onChange={(e) => editingPlan ? setEditingPlan(prev => ({ ...prev, name: e.target.value })) : setNewPlan(prev => ({ ...prev, name: e.target.value }))}
-                      />
-                      <input 
-                        type="text"
-                        placeholder="Cijena (npr. 50 KM / turnir)"
-                        className="w-full bg-white dark:bg-gray-800 border-2 border-slate-300 dark:border-gray-700 rounded-lg px-3 py-2.5 focus:border-blue-600 dark:focus:border-emerald-500 outline-none transition-all text-xs"
-                        value={editingPlan ? editingPlan.price : newPlan.price}
-                        onChange={(e) => editingPlan ? setEditingPlan(prev => ({ ...prev, price: e.target.value })) : setNewPlan(prev => ({ ...prev, price: e.target.value }))}
-                      />
-                    </div>
-                  </div>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-slate-500 dark:text-gray-500 tracking-widest">Osnovne informacije</label>
+                  <input 
+                    type="text"
+                    placeholder="Naziv plana (npr. Pro)"
+                    className="w-full bg-slate-100 dark:bg-gray-800 border border-slate-300 dark:border-gray-700 rounded-lg px-4 py-3 focus:border-emerald-500 outline-none transition-all text-xs"
+                    value={editingPlan ? editingPlan.name : newPlan.name}
+                    onChange={(e) => editingPlan ? setEditingPlan(prev => ({ ...prev, name: e.target.value })) : setNewPlan(prev => ({ ...prev, name: e.target.value }))}
+                  />
+                  <input 
+                    type="text"
+                    placeholder="Cijena (npr. 50 KM / turnir)"
+                    className="w-full bg-slate-100 dark:bg-gray-800 border border-slate-300 dark:border-gray-700 rounded-lg px-4 py-3 focus:border-emerald-500 outline-none transition-all text-xs"
+                    value={editingPlan ? editingPlan.price : newPlan.price}
+                    onChange={(e) => editingPlan ? setEditingPlan(prev => ({ ...prev, price: e.target.value })) : setNewPlan(prev => ({ ...prev, price: e.target.value }))}
+                  />
+                </div>
                 
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase text-slate-500 dark:text-gray-500 tracking-widest pl-1">Ograničenja (∞ = 999)</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="space-y-1">
-                        <span className="text-[9px] text-gray-500 uppercase font-bold pl-1 tracking-tight">Turniri/Lige</span>
-                        <div className="flex">
-                          <input 
-                            type="number"
-                            className="w-full bg-white dark:bg-gray-800 border-2 border-r-0 border-slate-300 dark:border-gray-700 rounded-l-lg px-2 py-2 focus:border-blue-600 dark:focus:border-emerald-500 outline-none transition-all text-xs"
-                            value={editingPlan ? editingPlan.tournamentsLimit : newPlan.tournamentsLimit}
-                            onChange={(e) => editingPlan ? setEditingPlan(prev => ({ ...prev, tournamentsLimit: e.target.value })) : setNewPlan(prev => ({ ...prev, tournamentsLimit: e.target.value }))}
-                          />
-                          <button 
-                            type="button"
-                            onClick={() => editingPlan ? setEditingPlan(prev => ({ ...prev, tournamentsLimit: 999 })) : setNewPlan(prev => ({ ...prev, tournamentsLimit: 999 }))}
-                            className="px-2.5 bg-slate-100 dark:bg-gray-800 border-2 border-slate-300 dark:border-gray-700 rounded-r-lg text-xs hover:bg-emerald-600 hover:text-white transition-all font-bold"
-                          >
-                            ∞
-                          </button>
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        <span className="text-[9px] text-gray-500 uppercase font-bold pl-1 tracking-tight">Trajanje (dani)</span>
-                        <div className="flex">
-                          <input 
-                            type="number"
-                            className="w-full bg-white dark:bg-gray-800 border-2 border-r-0 border-slate-300 dark:border-gray-700 rounded-l-lg px-2 py-2 focus:border-blue-600 dark:focus:border-emerald-500 outline-none transition-all text-xs"
-                            value={editingPlan ? editingPlan.periodDays : newPlan.periodDays}
-                            onChange={(e) => editingPlan ? setEditingPlan(prev => ({ ...prev, periodDays: e.target.value })) : setNewPlan(prev => ({ ...prev, periodDays: e.target.value }))}
-                          />
-                          <button 
-                            type="button"
-                            onClick={() => editingPlan ? setEditingPlan(prev => ({ ...prev, periodDays: 999 })) : setNewPlan(prev => ({ ...prev, periodDays: 999 }))}
-                            className="px-2.5 bg-slate-100 dark:bg-gray-800 border-2 border-slate-300 dark:border-gray-700 rounded-r-lg text-xs hover:bg-emerald-600 hover:text-white transition-all font-bold"
-                          >
-                            ∞
-                          </button>
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        <span className="text-[9px] text-gray-500 uppercase font-bold pl-1 tracking-tight">Limit grupa</span>
-                        <div className="flex">
-                          <input 
-                            type="number"
-                            className="w-full bg-white dark:bg-gray-800 border-2 border-r-0 border-slate-300 dark:border-gray-700 rounded-l-lg px-2 py-2 focus:border-blue-600 dark:focus:border-emerald-500 outline-none transition-all text-xs"
-                            value={editingPlan ? editingPlan.groupsLimit : newPlan.groupsLimit}
-                            onChange={(e) => editingPlan ? setEditingPlan(prev => ({ ...prev, groupsLimit: e.target.value })) : setNewPlan(prev => ({ ...prev, groupsLimit: e.target.value }))}
-                          />
-                          <button 
-                            type="button"
-                            onClick={() => editingPlan ? setEditingPlan(prev => ({ ...prev, groupsLimit: 999 })) : setNewPlan(prev => ({ ...prev, groupsLimit: 999 }))}
-                            className="px-2.5 bg-slate-100 dark:bg-gray-800 border-2 border-slate-300 dark:border-gray-700 rounded-r-lg text-xs hover:bg-emerald-600 hover:text-white transition-all font-bold"
-                          >
-                            ∞
-                          </button>
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        <span className="text-[9px] text-gray-500 uppercase font-bold pl-1 tracking-tight">Igrača/grupa</span>
-                        <div className="flex">
-                          <input 
-                            type="number"
-                            className="w-full bg-white dark:bg-gray-800 border-2 border-r-0 border-slate-300 dark:border-gray-700 rounded-l-lg px-2 py-2 focus:border-blue-600 dark:focus:border-emerald-500 outline-none transition-all text-xs"
-                            value={editingPlan ? editingPlan.playersPerGroupLimit : newPlan.playersPerGroupLimit}
-                            onChange={(e) => editingPlan ? setEditingPlan(prev => ({ ...prev, playersPerGroupLimit: e.target.value })) : setNewPlan(prev => ({ ...prev, playersPerGroupLimit: e.target.value }))}
-                          />
-                          <button 
-                            type="button"
-                            onClick={() => editingPlan ? setEditingPlan(prev => ({ ...prev, playersPerGroupLimit: 999 })) : setNewPlan(prev => ({ ...prev, playersPerGroupLimit: 999 }))}
-                            className="px-2.5 bg-slate-100 dark:bg-gray-800 border-2 border-slate-300 dark:border-gray-700 rounded-r-lg text-xs hover:bg-emerald-600 hover:text-white transition-all font-bold"
-                          >
-                            ∞
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase text-slate-500 dark:text-gray-500 tracking-widest pl-1">Stavke / Opcije</label>
-                    <form onSubmit={handleAddFeature} className="flex items-center gap-1.5 bg-slate-50 dark:bg-gray-800/50 p-1.5 rounded-lg border-2 border-slate-200 dark:border-gray-800">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-slate-500 dark:text-gray-500 tracking-widest">Ograničenja</label>
+                  <div className="grid grid-cols-1 gap-2">
+                    <div className="space-y-1">
+                      <span className="text-[9px] text-gray-600 uppercase font-bold">Ukupni limit (Turniri i Lige)</span>
                       <input 
-                        type="text"
-                        placeholder="Dodaj..."
-                        className="flex-1 bg-transparent border-none focus:ring-0 outline-none text-xs px-1"
-                        value={featureInput}
-                        onChange={(e) => setFeatureInput(e.target.value)}
+                        type="number"
+                        placeholder="Npr. 5"
+                        className="w-full bg-slate-100 dark:bg-gray-800 border border-slate-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:border-emerald-500 outline-none transition-all text-xs"
+                        value={editingPlan ? editingPlan.tournamentsLimit : newPlan.tournamentsLimit}
+                        onChange={(e) => editingPlan ? setEditingPlan(prev => ({ ...prev, tournamentsLimit: e.target.value })) : setNewPlan(prev => ({ ...prev, tournamentsLimit: e.target.value }))}
                       />
-                      <label className="flex items-center gap-1 text-[10px] text-slate-600 dark:text-gray-400 cursor-pointer hover:text-emerald-600 transition-colors">
-                        <input 
-                          type="checkbox"
-                          checked={featureUnlimited}
-                          onChange={(e) => setFeatureUnlimited(e.target.checked)}
-                          className="w-3.5 h-3.5 text-emerald-600 bg-white dark:bg-gray-900 border-slate-300 dark:border-gray-700 rounded focus:ring-emerald-500/20"
-                        />
-                        ∞
-                      </label>
-                      <button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white p-1.5 rounded-md transition-all">
-                        <Plus size={14} />
-                      </button>
-                    </form>
-                  
-                    <div className="space-y-1 max-h-[160px] overflow-y-auto pr-1 custom-scrollbar">
-                      {(editingPlan ? editingPlan.features : newPlan.features).map((feature, idx) => (
-                        <div key={idx} className="flex items-center justify-between bg-white dark:bg-gray-800 border border-slate-200 dark:border-gray-700 rounded-lg px-2.5 py-2 group shadow-sm">
-                          <span className="text-[11px] text-slate-700 dark:text-gray-300 leading-tight pr-2 flex items-center gap-1.5">
-                            {typeof feature === 'object' && feature.unlimited && <Crown size={10} className="text-amber-500 shrink-0" />}
-                            <span className="truncate">{typeof feature === 'string' ? feature : feature.text}</span>
-                          </span>
-                          <button 
-                            onClick={() => handleRemoveFeature(idx)}
-                            className="text-slate-400 hover:text-red-500 transition-colors shrink-0"
-                          >
-                            <XCircle size= {12} />
-                          </button>
-                        </div>
-                      ))}
-                      {(editingPlan ? editingPlan.features : newPlan.features).length === 0 && (
-                        <div className="text-[10px] text-slate-400 italic py-4 text-center border-2 border-dashed border-slate-100 dark:border-gray-800 rounded-lg">Prazna lista stavki</div>
-                      )}
                     </div>
                   </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <span className="text-[9px] text-gray-600 uppercase font-bold">Trajanje (dana)</span>
+                      <input 
+                        type="number"
+                        placeholder="Npr. 30"
+                        className="w-full bg-slate-100 dark:bg-gray-800 border border-slate-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:border-emerald-500 outline-none transition-all text-xs"
+                        value={editingPlan ? editingPlan.periodDays : newPlan.periodDays}
+                        onChange={(e) => editingPlan ? setEditingPlan(prev => ({ ...prev, periodDays: e.target.value })) : setNewPlan(prev => ({ ...prev, periodDays: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[9px] text-gray-600 uppercase font-bold">Limit grupa</span>
+                      <input 
+                        type="number"
+                        placeholder="Npr. 8"
+                        className="w-full bg-slate-100 dark:bg-gray-800 border border-slate-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:border-emerald-500 outline-none transition-all text-xs"
+                        value={editingPlan ? editingPlan.groupsLimit : newPlan.groupsLimit}
+                        onChange={(e) => editingPlan ? setEditingPlan(prev => ({ ...prev, groupsLimit: e.target.value })) : setNewPlan(prev => ({ ...prev, groupsLimit: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[9px] text-gray-600 uppercase font-bold">Igrača po grupi</span>
+                      <input 
+                        type="number"
+                        placeholder="Npr. 12"
+                        className="w-full bg-slate-100 dark:bg-gray-800 border border-slate-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:border-emerald-500 outline-none transition-all text-xs"
+                        value={editingPlan ? editingPlan.playersPerGroupLimit : newPlan.playersPerGroupLimit}
+                        onChange={(e) => editingPlan ? setEditingPlan(prev => ({ ...prev, playersPerGroupLimit: e.target.value })) : setNewPlan(prev => ({ ...prev, playersPerGroupLimit: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                </div>
 
-                  <div className="pt-2 flex gap-2">
-                    <button 
-                      onClick={handleCreateOrUpdatePlan}
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase tracking-widest py-3 rounded-xl text-[10px] transition-all shadow-lg shadow-blue-900/10 active:scale-95"
-                    >
-                      {editingPlan ? 'Spremi Izmjene' : 'Kreiraj Plan'}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-slate-500 dark:text-gray-500 tracking-widest">Stavke / Opcije</label>
+                  <form onSubmit={handleAddFeature} className="flex gap-2">
+                    <input 
+                      type="text"
+                      placeholder="Dodaj stavku..."
+                      className="flex-1 bg-slate-100 dark:bg-gray-800 border border-slate-300 dark:border-gray-700 rounded-lg px-3 py-2 focus:border-emerald-500 outline-none transition-all text-xs"
+                      value={featureInput}
+                      onChange={(e) => setFeatureInput(e.target.value)}
+                    />
+                    <button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-slate-900 dark:text-white p-2 rounded-lg transition-all">
+                      <Plus size={16} />
                     </button>
-                    {editingPlan && (
-                      <button 
-                        onClick={cancelEditPlan}
-                        className="bg-slate-100 dark:bg-gray-800 hover:bg-slate-200 dark:hover:bg-gray-700 text-slate-600 dark:text-gray-400 px-4 rounded-xl transition-all"
-                      >
-                        <XCircle size={18} />
-                      </button>
+                  </form>
+                  
+                  <div className="space-y-1 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
+                    {(editingPlan ? editingPlan.features : newPlan.features).map((feature, idx) => (
+                      <div key={idx} className="flex items-center justify-between bg-slate-100 dark:bg-gray-800/50 border border-slate-300 dark:border-gray-700/50 rounded-lg px-3 py-1.5 group">
+                        <span className="text-[11px] text-slate-700 dark:text-gray-300 leading-tight pr-2">{feature}</span>
+                        <button 
+                          onClick={() => handleRemoveFeature(idx)}
+                          className="text-gray-600 hover:text-red-500 transition-colors"
+                        >
+                          <XCircle size= {12} />
+                        </button>
+                      </div>
+                    ))}
+                    {(editingPlan ? editingPlan.features : newPlan.features).length === 0 && (
+                      <div className="text-[10px] text-gray-600 italic py-2">Nema dodanih stavki.</div>
                     )}
                   </div>
                 </div>
+
+                <div className="pt-4 flex gap-2">
+                  <button 
+                    onClick={handleCreateOrUpdatePlan}
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-slate-900 dark:text-white font-black uppercase tracking-widest py-3 rounded-lg text-[10px] transition-all shadow-lg shadow-emerald-900/20"
+                  >
+                    {editingPlan ? 'Spremi Izmjene' : 'Kreiraj Plan'}
+                  </button>
+                  {editingPlan && (
+                    <button 
+                      onClick={cancelEditPlan}
+                      className="bg-slate-100 dark:bg-gray-800 hover:bg-gray-700 text-slate-600 dark:text-gray-400 p-3 rounded-lg transition-all"
+                    >
+                      <XCircle size={16} />
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -994,65 +974,51 @@ const SuperAdminDashboard = () => {
                 </div>
               )}
               {plans.map(plan => (
-                <div key={plan.id} className="bg-white dark:bg-gray-900 border-2 border-slate-300 dark:border-gray-800 rounded-2xl overflow-hidden hover:border-teal-500 dark:hover:border-emerald-500/30 hover:shadow-lg transition-all flex flex-col group relative">
-                  {plan.badge && (
-                    <div className="absolute -top-3 -right-3 z-10">
-                      <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[8px] font-black uppercase px-3 py-1.5 rounded-full shadow-lg border-2 border-white dark:border-gray-900 tracking-wider">
-                        {plan.badge}
-                      </div>
-                    </div>
-                  )}
-                  <div className="p-6 border-b-2 border-slate-200 dark:border-gray-800">
+                <div key={plan.id} className="bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 rounded-2xl overflow-hidden hover:border-emerald-500/30 transition-all flex flex-col group relative">
+                  <div className="p-6 border-b border-slate-200 dark:border-gray-800">
                     <div className="flex justify-between items-start mb-4">
                       <div>
-                        <h3 className="text-xl font-black text-slate-900 dark:text-white group-hover:text-teal-700 dark:group-hover:text-emerald-400 transition-colors">{plan.name}</h3>
-                        <div className="text-teal-600 dark:text-emerald-500 font-black text-lg mt-1">{plan.price || 'Gratis'}</div>
+                        <h3 className="text-xl font-black text-slate-900 dark:text-white group-hover:text-emerald-600 dark:text-emerald-400 transition-colors">{plan.name}</h3>
+                        <div className="text-emerald-500 font-black text-lg mt-1">{plan.price || 'Gratis'}</div>
                       </div>
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                        <button onClick={() => startEditPlan(plan)} className="p-2 rounded-lg bg-blue-50 dark:bg-gray-800 text-blue-700 dark:text-blue-400 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-500 dark:hover:text-white transition-all border-2 border-transparent hover:border-blue-600">
+                        <button onClick={() => startEditPlan(plan)} className="p-2 rounded-lg bg-slate-100 dark:bg-gray-800 text-blue-600 dark:text-blue-400 hover:bg-blue-500 hover:text-slate-900 dark:text-white transition-all">
                           <Edit2 size={14} />
                         </button>
-                        <button onClick={() => handleDeletePlan(plan.id)} className="p-2 rounded-lg bg-red-50 dark:bg-gray-800 text-red-700 dark:text-red-400 hover:bg-red-600 hover:text-white dark:hover:bg-red-500 dark:hover:text-white transition-all border-2 border-transparent hover:border-red-600">
+                        <button onClick={() => handleDeletePlan(plan.id)} className="p-2 rounded-lg bg-slate-100 dark:bg-gray-800 text-red-400 hover:bg-red-500 hover:text-slate-900 dark:text-white transition-all">
                           <Trash2 size={14} />
                         </button>
                       </div>
                     </div>
                     
-                    <div className="flex gap-4 text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-gray-500">
+                    <div className="flex gap-4 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-gray-500">
                       <div className="flex items-center gap-1.5">
-                        <Clock size={12} className="text-slate-500 dark:text-gray-700" />
-                        {plan.periodDays >= 365 ? 'Neograničeno' : `${plan.periodDays || 0} Dana`}
+                        <Clock size={12} className="text-slate-400 dark:text-gray-700" />
+                        {plan.periodDays || 0} Dana
                       </div>
                       <div className="flex items-center gap-1.5" title="Ukupni limit turnira i liga">
-                        <Trophy size={12} className="text-slate-500 dark:text-gray-700" />
-                        {plan.tournamentsLimit >= 99 ? 'Neograničeno' : `${plan.tournamentsLimit || 0} Turnira/Liga`}
+                        <Trophy size={12} className="text-slate-400 dark:text-gray-700" />
+                        {plan.tournamentsLimit || 0} Turnira/Liga
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <Layout size={12} className="text-slate-500 dark:text-gray-700" />
-                        {plan.groupsLimit >= 99 ? 'Neograničeno' : `${plan.groupsLimit || 0} Grupa`}
+                        <Layout size={12} className="text-slate-400 dark:text-gray-700" />
+                        {plan.groupsLimit || 0} Grupa
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <Users size={12} className="text-slate-500 dark:text-gray-700" />
-                        {plan.playersPerGroupLimit >= 99 ? 'Neograničeno' : `${plan.playersPerGroupLimit || 0} Igrača`}
+                        <Users size={12} className="text-slate-400 dark:text-gray-700" />
+                        {plan.playersPerGroupLimit || 0} Igrača
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-6 bg-slate-50 dark:bg-gray-950/20 flex-1 border-t-2 border-slate-100 dark:border-transparent">
+                  <div className="p-6 bg-slate-50 dark:bg-gray-950/20 flex-1">
                     <div className="space-y-2.5">
                       {(plan.features || []).map((feature, fidx) => (
                         <div key={fidx} className="flex items-start gap-2.5">
                           <div className="mt-1">
-                            {typeof feature === 'object' && feature.unlimited ? (
-                              <Crown size={12} className="text-amber-600 dark:text-amber-400" />
-                            ) : (
-                              <CheckCircle size={12} className="text-teal-600 dark:text-emerald-500" />
-                            )}
+                            <CheckCircle size={12} className="text-emerald-500" />
                           </div>
-                          <span className="text-slate-700 dark:text-gray-400 text-xs font-medium leading-tight">
-                            {typeof feature === 'string' ? feature : feature.text}
-                            {typeof feature === 'object' && feature.unlimited && <span className="text-amber-600 dark:text-amber-400 font-bold ml-1">(∞)</span>}
-                          </span>
+                          <span className="text-slate-600 dark:text-gray-400 text-xs font-medium leading-tight">{feature}</span>
                         </div>
                       ))}
                     </div>

@@ -143,12 +143,7 @@ const PublicCompetition = () => {
         if (compDoc) {
           const compData = { id: compDoc.id, ...compDoc.data() };
           
-          // Sigurnosna provjera: ako nije javno, ne prikazuj (osim ako nema slug, ali slug je javni identifikator)
-          if (!compData.isPublic && compData.slug !== slug) {
-             // Možda dopustiti ako je ID? Korisnik je rekao "ako je korisnik uključi"
-             // Za sada ćemo dopustiti sve koji imaju direktan link, ali isPublic bi trebao biti glavni
-          }
-
+          // Uvijek postavi competition podatke, pa ćemo kasnije provjeriti isPublic
           setCompetition(compData);
 
           // Fetch full player data for this organization

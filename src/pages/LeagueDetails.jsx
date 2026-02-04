@@ -107,22 +107,48 @@ const LeagueDetails = () => {
     return () => unsubscribe();
   }, [id]);
 
-  const togglePlayerSelection = (playerId) => {
+  const togglePlayerSelection = async (playerId) => {
     if (league?.status !== 'draft') return;
-    setSelectedPlayers(prev => 
-      prev.includes(playerId) 
-        ? prev.filter(pid => pid !== playerId) 
-        : [...prev, playerId]
-    );
+    
+    let newSelected;
+    if (selectedPlayers.includes(playerId)) {
+      newSelected = selectedPlayers.filter(pid => pid !== playerId);
+    } else {
+      newSelected = [...selectedPlayers, playerId];
+    }
+    
+    setSelectedPlayers(newSelected);
+
+    try {
+      await updateDoc(doc(db, "competitions", id), {
+        playerIds: newSelected,
+        updatedAt: serverTimestamp()
+      });
+    } catch (err) {
+      console.error("Error saving selection:", err);
+    }
   };
 
-  const togglePlayerSeed = (playerId) => {
+  const togglePlayerSeed = async (playerId) => {
     if (league?.status !== 'draft') return;
-    setSeededPlayers(prev => 
-      prev.includes(playerId) 
-        ? prev.filter(pid => pid !== playerId) 
-        : [...prev, playerId]
-    );
+    
+    let newSeeded;
+    if (seededPlayers.includes(playerId)) {
+      newSeeded = seededPlayers.filter(pid => pid !== playerId);
+    } else {
+      newSeeded = [...seededPlayers, playerId];
+    }
+    
+    setSeededPlayers(newSeeded);
+
+    try {
+      await updateDoc(doc(db, "competitions", id), {
+        seededPlayerIds: newSeeded,
+        updatedAt: serverTimestamp()
+      });
+    } catch (err) {
+      console.error("Error saving seed:", err);
+    }
   };
 
   const startEditingPlayer = (player) => {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, UserPlus, FileText, ExternalLink } from 'lucide-react';
+import { X, UserPlus, FileText, ExternalLink, Globe, Lock } from 'lucide-react';
 
 const CompetitionSettingsModal = ({
   showCompSettings,
@@ -14,7 +14,7 @@ const CompetitionSettingsModal = ({
   handleUpdateCompetition,
   savingComp,
   isPublic,
-  setIsPublic
+  handleTogglePublic
 }) => {
   if (!showCompSettings || !competition) return null;
 
@@ -90,7 +90,7 @@ const CompetitionSettingsModal = ({
                   </p>
                 </div>
                 <button 
-                  onClick={() => setIsPublic(!isPublic)}
+                  onClick={() => handleTogglePublic(!isPublic)}
                   className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
                     isPublic 
                       ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20 hover:bg-emerald-500' 

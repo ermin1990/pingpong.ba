@@ -590,7 +590,7 @@ const KnockoutTab = ({
                           return (
                             <div 
                               key={match.id}
-                              className={`group relative bg-white dark:bg-slate-950 hover:bg-slate-50 dark:hover:bg-slate-900/80 rounded-2xl border transition-all duration-300 hover:scale-[1.05] shadow-sm dark:shadow-lg cursor-pointer flex flex-col overflow-hidden ${isMatchReady ? 'border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-500/50' : 'border-dashed border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500'}`}
+                              className={`group relative bg-slate-100 dark:bg-slate-950 hover:bg-slate-200 dark:hover:bg-slate-900/80 rounded-2xl border transition-all duration-300 hover:scale-[1.05] shadow-sm dark:shadow-lg cursor-pointer flex flex-col overflow-hidden ${isMatchReady ? 'border-slate-300 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-500/50' : 'border-dashed border-slate-400 dark:border-slate-700 hover:border-slate-500 dark:hover:border-slate-500'}`}
                               style={{ minHeight: '100px' }}
                             >
                               {/* Match Action Buttons - Top Right */}
@@ -620,7 +620,7 @@ const KnockoutTab = ({
 
                               {/* Player 1 Row */}
                               <div 
-                                className="flex items-center justify-between p-3 flex-1 group/p1 border-b border-slate-100 dark:border-slate-800/50 hover:bg-blue-500/5 transition-colors"
+                                className="flex items-center justify-between p-3 flex-1 group/p1 border-b border-slate-300 dark:border-slate-800/50 hover:bg-blue-500/5 transition-colors"
                                 onDragOver={(e) => {
                                   e.preventDefault();
                                   e.dataTransfer.dropEffect = 'copy';
@@ -656,7 +656,7 @@ const KnockoutTab = ({
                                     )}
                                   </div>
                                 </div>
-                                <div className={`w-7 h-7 flex items-center justify-center rounded-lg text-xs font-black transition-all ${p1Winner ? 'bg-emerald-500 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 group-hover/p1:bg-slate-200 dark:group-hover/p1:bg-slate-700'}`}>
+                                <div className={`w-7 h-7 flex items-center justify-center rounded-lg text-xs font-black transition-all ${p1Winner ? 'bg-emerald-500 text-white' : 'bg-white border border-slate-200 dark:border-0 dark:bg-slate-800 text-slate-600 dark:text-slate-500 group-hover/p1:bg-slate-50 dark:group-hover/p1:bg-slate-700'}`}>
                                   {match.player1Score ?? 0}
                                 </div>
                               </div>
@@ -699,7 +699,7 @@ const KnockoutTab = ({
                                     )}
                                   </div>
                                 </div>
-                                <div className={`w-7 h-7 flex items-center justify-center rounded-lg text-xs font-black transition-all ${p2Winner ? 'bg-emerald-500 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 group-hover/p2:bg-slate-200 dark:group-hover/p2:bg-slate-700'}`}>
+                                <div className={`w-7 h-7 flex items-center justify-center rounded-lg text-xs font-black transition-all ${p2Winner ? 'bg-emerald-500 text-white' : 'bg-white border border-slate-200 dark:border-0 dark:bg-slate-800 text-slate-600 dark:text-slate-500 group-hover/p2:bg-slate-50 dark:group-hover/p2:bg-slate-700'}`}>
                                   {match.player2Score ?? 0}
                                 </div>
                               </div>
@@ -759,8 +759,8 @@ const KnockoutTab = ({
       {/* Manual Match Modal */}
       {showManualModal && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 dark:bg-black/90 backdrop-blur-md transition-all">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900/50">
+          <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-slate-300 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900/50">
               <h3 className="text-slate-900 dark:text-white font-black uppercase italic tracking-tighter text-lg">Ručno kreiranje meča</h3>
               <button onClick={() => setShowManualModal(false)} className="text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"><X size={20} /></button>
             </div>

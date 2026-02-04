@@ -323,7 +323,10 @@ const CompetitionDetails = () => {
     }
   };
 
-  const togglePlayerSelection = (playerId) => {
+  const togglePlayerSelection = async (playerId) => {
+    if (activeCategory?.status !== 'draft') return;
+
+    let newSelected;
     // Check if adding a player (not removing)
     if (!selectedPlayers.includes(playerId)) {
       if (!isSuperAdmin && planDetails?.playersLimit) {
@@ -332,21 +335,44 @@ const CompetitionDetails = () => {
             return;
          }
       }
+      newSelected = [...selectedPlayers, playerId];
+    } else {
+      newSelected = selectedPlayers.filter(pid => pid !== playerId);
     }
     
-    setSelectedPlayers(prev => 
-      prev.includes(playerId) 
-        ? prev.filter(pid => pid !== playerId) 
-        : [...prev, playerId]
-    );
+    setSelectedPlayers(newSelected);
+
+    // Auto-save to Firestore
+    try {
+      const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
+      await updateDoc(catRef, {
+        playerIds: newSelected,
+        updatedAt: serverTimestamp()
+      });
+    } catch (err) {
+      console.error("Greška pri spašavanju selekcije:", err);
+    }
   };
 
-  const togglePlayerSeed = (playerId) => {
-    setSeededPlayers(prev => 
-      prev.includes(playerId) 
-        ? prev.filter(pid => pid !== playerId) 
-        : [...prev, playerId]
-    );
+  const togglePlayerSeed = async (playerId) => {
+    if (activeCategory?.status !== 'draft') return;
+    
+    const newSeeding = seededPlayers.includes(playerId) 
+      ? seededPlayers.filter(pid => pid !== playerId) 
+      : [...seededPlayers, playerId];
+      
+    setSeededPlayers(newSeeding);
+
+    // Auto-save to Firestore
+    try {
+      const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
+      await updateDoc(catRef, {
+        seededPlayerIds: newSeeding,
+        updatedAt: serverTimestamp()
+      });
+    } catch (err) {
+      console.error("Greška pri spašavanju nosioca:", err);
+    }
   };
 
   const startEditingPlayer = (player) => {
@@ -1016,6 +1042,7 @@ const CompetitionDetails = () => {
       batch.update(catRef, {
         status: 'active',
         playerIds: selectedPlayers,
+        seededPlayerIds: seededPlayers,
         groupConfig: groupConfigObj,
         updatedAt: serverTimestamp()
       });
@@ -1052,7 +1079,7 @@ const CompetitionDetails = () => {
         player2Score: match.player2Score || 0,
         sets: match.sets || [],
         status: match.status || 'completed',
-        round: match.round || 1,
+        round: match.round !== undefined ? match.round : 1,
         roundName: match.roundName || '',
         bracketIndex: match.bracketIndex || 0,
         updatedAt: serverTimestamp()
@@ -1074,21 +1101,47 @@ const CompetitionDetails = () => {
           const currentRound = Number(match.round);
           const currentIndex = Number(match.bracketIndex ?? 0);
           
-          const nextRound = currentRound + 1;
-          
-          // Formula koja osigurava da pobjednici iz gornjeg dijela (lijevi) ostaju u gornjem, 
-          // a iz donjeg (desni) u donjem dijelu žrijeba.
-          const nextIndex = Math.floor(currentIndex / 2);
-          const nextSlot = (currentIndex % 2 === 0) ? 'player1' : 'player2';
+          let nextMatch = null;
+          let nextSlot = null;
 
-          // Nađi meč u idućoj rundi - otpornija pretraga
-          const nextMatch = matches.find(m => 
-            m.isKnockout && 
-            Number(m.round) === nextRound && 
-            Number(m.bracketIndex ?? 0) === nextIndex
-          );
+          // Ako je Baraž (Round 0), traži prvi TBD slot u Rundi 1 prema bracketIndex-u
+          if (currentRound === 0) {
+             // Uzmi sve mečeve iz Round 1, sortirane po bracketIndex
+             const round1Matches = matches
+                .filter(m => m.isKnockout && Number(m.round) === 1)
+                .sort((a,b) => (a.bracketIndex || 0) - (b.bracketIndex || 0));
+             
+             // Napravi listu svih TBD slotova u Round 1
+             const availableSlots = [];
+             for (const m of round1Matches) {
+                 if (!m.player1 || m.player1.id === 'tbd') {
+                     availableSlots.push({ match: m, slot: 'player1', bracketIndex: m.bracketIndex || 0 });
+                 }
+                 if (!m.player2 || m.player2.id === 'tbd') {
+                     availableSlots.push({ match: m, slot: 'player2', bracketIndex: m.bracketIndex || 0 });
+                 }
+             }
+             
+             // Mapiranje: Baraž meč sa bracketIndex X ide u X-ti slot u listi TBD slotova
+             if (currentIndex < availableSlots.length) {
+                 const targetSlot = availableSlots[currentIndex];
+                 nextMatch = targetSlot.match;
+                 nextSlot = targetSlot.slot;
+             }
+          } else {
+             // Standardna logika za ostale runde
+             const nextRound = currentRound + 1;
+             const nextIndex = Math.floor(currentIndex / 2);
+             nextSlot = (currentIndex % 2 === 0) ? 'player1' : 'player2';
 
-          if (nextMatch) {
+             nextMatch = matches.find(m => 
+                m.isKnockout && 
+                Number(m.round) === nextRound && 
+                Number(m.bracketIndex ?? 0) === nextIndex
+             );
+          }
+
+          if (nextMatch && nextSlot) {
             const nextMatchRef = doc(db, "matches", nextMatch.id);
             const winnerData = { id: winner.id, name: winner.name };
             
@@ -1105,7 +1158,7 @@ const CompetitionDetails = () => {
               return m;
             }));
           } else {
-            console.log("Nije pronađen naredni meč za round:", nextRound, "indeks:", nextIndex);
+            console.log("Nije pronađen naredni meč/slot za round:", currentRound + 1);
           }
         }
       }
@@ -1258,39 +1311,65 @@ const CompetitionDetails = () => {
     }
   };
 
+  const saveGroupConfig = async (currentGroups) => {
+    if (!selectedCategoryId || !currentGroups) return;
+    try {
+      const groupConfigObj = {};
+      currentGroups.forEach((g, idx) => {
+        groupConfigObj[idx] = g.map(p => p.id);
+      });
+
+      const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
+      await updateDoc(catRef, {
+        groupConfig: groupConfigObj,
+        updatedAt: serverTimestamp()
+      });
+    } catch (err) {
+      console.error("Error saving group config:", err);
+    }
+  };
+
   const movePlayerToGroup = (playerId, targetGroupIdx) => {
     // Check players per group limit
     if (!isSuperAdmin && planDetails) {
       const targetGroup = groups[targetGroupIdx];
       const limit = planDetails.playersPerGroupLimit || 16;
-      const alreadyInGroup = targetGroup.some(p => p.id === playerId);
-      if (!alreadyInGroup && targetGroup.length >= limit) {
+      const alreadyInGroup = targetGroup?.some(p => p.id === playerId);
+      if (!alreadyInGroup && targetGroup?.length >= limit) {
         alert(`Dostigli ste limit od ${limit} igrača po grupi za vaš plan.`);
         return;
       }
     }
 
-    setGroups(prev => {
-      // 1. Ukloni igrača iz svih trenutnih grupa
-      const newGroups = prev.map(g => g.filter(p => p.id !== playerId));
-      
-      // 2. Pronađi igrača
-      const player = allPlayers.find(p => p.id === playerId);
-      if (player) {
-        // 3. Dodaj ga u ciljanu grupu
-        newGroups[targetGroupIdx].push(player);
-        
-        // 4. Auto-selekcija ako nije bio selektovan
-        if (!selectedPlayers.includes(playerId)) {
-          setSelectedPlayers(prevS => [...prevS, playerId]);
-        }
-      }
-      return newGroups;
-    });
+    // 1. Pronađi igrača
+    const player = allPlayers.find(p => p.id === playerId);
+    if (!player) return;
+
+    // 2. Napravi nove grupe i ukloni igrača iz svih trenutnih grupa
+    const newGroups = groups.map(g => g.filter(p => p.id !== playerId));
+    
+    // 3. Dodaj ga u ciljanu grupu
+    if (newGroups[targetGroupIdx]) {
+      newGroups[targetGroupIdx].push(player);
+    }
+    
+    setGroups(newGroups);
+    saveGroupConfig(newGroups);
+
+    // 4. Auto-selekcija ako nije bio selektovan
+    if (!selectedPlayers.includes(playerId)) {
+      const newSelected = [...selectedPlayers, playerId];
+      setSelectedPlayers(newSelected);
+      // Save selection too
+      const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
+      updateDoc(catRef, { playerIds: newSelected });
+    }
   };
 
   const removePlayerFromGroups = (playerId) => {
-    setGroups(prev => prev.map(g => g.filter(p => p.id !== playerId)));
+    const cleanedGroups = groups.map(g => g.filter(p => p.id !== playerId));
+    setGroups(cleanedGroups);
+    saveGroupConfig(cleanedGroups);
   };
 
   const handleAutoAssignGroups = () => {
@@ -1526,15 +1605,14 @@ const CompetitionDetails = () => {
         name: compName.trim(),
         slug: slugVal,
         collaborators: collaborators,
-        isPublic: isPublic,
+        // isPublic is updated separately now
         updatedAt: serverTimestamp()
       });
       setCompetition(prev => ({ 
         ...prev, 
         name: compName.trim(), 
         slug: slugVal,
-        collaborators: collaborators,
-        isPublic: isPublic
+        collaborators: collaborators
       }));
       setShowCompSettings(false);
       alert("Takmičenje ažurirano!");
@@ -1543,6 +1621,24 @@ const CompetitionDetails = () => {
     } finally {
       setSavingComp(false);
     }
+  };
+
+  const handleTogglePublic = async (newState) => {
+      setIsPublic(newState);
+      // Optimistic update locally
+      setCompetition(prev => ({ ...prev, isPublic: newState }));
+      
+      try {
+          await updateDoc(doc(db, "competitions", id), {
+              isPublic: newState
+          });
+      } catch (err) {
+          console.error("Failed to toggle public status", err);
+          // Revert on error
+          setIsPublic(!newState);
+          setCompetition(prev => ({ ...prev, isPublic: !newState }));
+          alert("Greška pri promjeni statusa.");
+      }
   };
 
   const activeCategoryId = selectedCategoryId;
@@ -1742,7 +1838,7 @@ const CompetitionDetails = () => {
           handleUpdateCompetition={handleUpdateCompetition}
           savingComp={savingComp}
           isPublic={isPublic}
-          setIsPublic={setIsPublic}
+          handleTogglePublic={handleTogglePublic}
         />
       )}
 
