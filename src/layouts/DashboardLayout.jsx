@@ -1,10 +1,12 @@
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { LayoutDashboard, Users, Trophy, Settings, LogOut, Menu, X, Shield, ChevronLeft, ChevronRight, User } from 'lucide-react';
+import { LayoutDashboard, Users, Trophy, Settings, LogOut, Menu, X, Shield, ChevronLeft, ChevronRight, User, Sun, Moon } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 const DashboardLayout = ({ children, title }) => {
   const { user, userData, loading, isSuperAdmin, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
@@ -46,18 +48,18 @@ const DashboardLayout = ({ children, title }) => {
   };
 
   return (
-    <div className="flex h-screen bg-[#070b14] text-slate-200">
+    <div className="flex h-screen bg-slate-50 dark:bg-[#070b14] text-slate-900 dark:text-slate-200 transition-colors duration-300">
       {/* Mobile Sidebar Toggle */}
       <button 
         onClick={() => setSidebarOpen(!isSidebarOpen)}
-        className="fixed top-4 left-4 z-50 p-2.5 bg-slate-900 border border-slate-800 rounded-xl lg:hidden text-slate-400"
+        className="fixed top-4 left-4 z-50 p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl lg:hidden text-slate-500 dark:text-slate-400"
       >
         {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
       </button>
 
       {/* Sidebar */}
       <aside className={`
-        fixed inset-y-0 left-0 z-40 bg-slate-950 border-r border-slate-900 transition-all duration-300 lg:static
+        fixed inset-y-0 left-0 z-40 bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-900 transition-all duration-300 lg:static
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         ${isSidebarCollapsed ? 'lg:w-20' : 'lg:w-64 w-64'}
       `}>
@@ -77,8 +79,8 @@ const DashboardLayout = ({ children, title }) => {
               </div>
               {!isSidebarCollapsed && (
                 <div className="overflow-hidden whitespace-nowrap">
-                  <div className="text-xl font-bold text-white tracking-tight">PINGPONG.BA</div>
-                  <div className="text-[10px] text-blue-500 font-bold uppercase tracking-wider"></div>
+                  <div className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">PINGPONG.BA</div>
+                  <div className="text-[10px] text-blue-600 dark:text-blue-500 font-bold uppercase tracking-wider"></div>
                 </div>
               )}
             </div>
@@ -89,9 +91,9 @@ const DashboardLayout = ({ children, title }) => {
                   to={item.href}
                   key={item.href}
                   title={isSidebarCollapsed ? item.label : ''}
-                  className={`flex items-center gap-3 py-3 text-slate-400 hover:text-white hover:bg-slate-900 rounded-xl transition-all ${isSidebarCollapsed ? 'justify-center px-0' : 'px-4'}`}
+                  className={`flex items-center gap-3 py-3 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-900 rounded-xl transition-all ${isSidebarCollapsed ? 'justify-center px-0' : 'px-4'}`}
                 >
-                  <span className={`${isSidebarCollapsed ? '' : 'text-slate-500'}`}>{item.icon}</span>
+                  <span className={`${isSidebarCollapsed ? '' : 'text-slate-500 dark:text-slate-500'}`}>{item.icon}</span>
                   {!isSidebarCollapsed && <span className="text-sm font-medium">{item.label}</span>}
                 </Link>
               ))}
@@ -114,14 +116,25 @@ const DashboardLayout = ({ children, title }) => {
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto p-6 lg:p-10">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
-          <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">{title}</h1>
-          <div className="flex items-center gap-4 bg-slate-900/50 p-2 pl-4 rounded-full border border-slate-800">
-            <div className="text-right">
-              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-none">{userData?.role === 'super_admin' ? 'Super Admin' : 'Administrator'}</div>
-              <div className="text-xs text-slate-300 font-medium">{user.email}</div>
-            </div>
-            <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-xs font-bold text-blue-400 border border-slate-700">
-              {user.email.charAt(0).toUpperCase()}
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">{title}</h1>
+          
+          <div className="flex items-center gap-3">
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors shadow-sm dark:shadow-none"
+              title={theme === 'dark' ? 'Prebaci na svijetlu temu' : 'Prebaci na tamnu temu'}
+            >
+              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+
+            <div className="flex items-center gap-4 bg-white dark:bg-slate-900/50 p-2 pl-4 rounded-full border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-none">
+              <div className="text-right">
+                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-none">{userData?.role === 'super_admin' ? 'Super Admin' : 'Administrator'}</div>
+                <div className="text-xs text-slate-700 dark:text-slate-300 font-medium">{user.email}</div>
+              </div>
+              <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-bold text-blue-600 dark:text-blue-400 border border-slate-200 dark:border-slate-700">
+                {user.email.charAt(0).toUpperCase()}
+              </div>
             </div>
           </div>
         </div>

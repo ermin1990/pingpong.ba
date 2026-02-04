@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import AuthProvider from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { auth, db } from './firebase/config';
 import DashboardLayout from './layouts/DashboardLayout';
 import { useState, lazy, Suspense } from 'react';
@@ -316,43 +317,45 @@ const Unauthorized = () => {
 export function App() {
   return (
     <AuthProvider>
-      <div className="min-h-screen bg-[#0f172a] text-slate-200 font-sans selection:bg-blue-500/30">
-        <BrowserRouter>
-          <Suspense fallback={<div className="p-8 text-center">Učitavanje...</div>}>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/unauthorized" element={<Unauthorized />} />
+      <ThemeProvider>
+        <div className="min-h-screen bg-slate-50 dark:bg-[#0f172a] text-slate-900 dark:text-slate-200 font-sans selection:bg-blue-500/30 transition-colors duration-300">
+          <BrowserRouter>
+            <Suspense fallback={<div className="p-8 text-center">Učitavanje...</div>}>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/unauthorized" element={<Unauthorized />} />
 
-              <Route path="/admin/dashboard" element={<Dashboard />} />
-              <Route path="/admin/super-admin" element={<SuperAdminDashboard />} />
-              <Route path="/admin/players" element={<Players />} />
-              <Route path="/admin/competitions" element={<Competitions />} />
-              <Route path="/admin/competitions/:id" element={<CompetitionDetails />} />
-              <Route path="/admin/leagues" element={<Leagues />} />
-              <Route path="/admin/leagues/:id" element={<LeagueDetails />} />
-              <Route path="/admin/settings" element={<SettingsPage />} />
-              <Route path="/admin/profile" element={<MyProfile />} />
-              
-              {/* Legacy support - redirects */}
-              <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
-              <Route path="/super-admin" element={<Navigate to="/admin/super-admin" replace />} />
-              <Route path="/players" element={<Navigate to="/admin/players" replace />} />
-              <Route path="/competitions" element={<Navigate to="/admin/competitions" replace />} />
-              <Route path="/settings" element={<Navigate to="/admin/settings" replace />} />
-              <Route path="/profile" element={<Navigate to="/admin/profile" replace />} />
+                <Route path="/admin/dashboard" element={<Dashboard />} />
+                <Route path="/admin/super-admin" element={<SuperAdminDashboard />} />
+                <Route path="/admin/players" element={<Players />} />
+                <Route path="/admin/competitions" element={<Competitions />} />
+                <Route path="/admin/competitions/:id" element={<CompetitionDetails />} />
+                <Route path="/admin/leagues" element={<Leagues />} />
+                <Route path="/admin/leagues/:id" element={<LeagueDetails />} />
+                <Route path="/admin/settings" element={<SettingsPage />} />
+                <Route path="/admin/profile" element={<MyProfile />} />
+                
+                {/* Legacy support - redirects */}
+                <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
+                <Route path="/super-admin" element={<Navigate to="/admin/super-admin" replace />} />
+                <Route path="/players" element={<Navigate to="/admin/players" replace />} />
+                <Route path="/competitions" element={<Navigate to="/admin/competitions" replace />} />
+                <Route path="/settings" element={<Navigate to="/admin/settings" replace />} />
+                <Route path="/profile" element={<Navigate to="/admin/profile" replace />} />
 
-              <Route path="/p/:slug" element={<PublicCompetition />} />
-              <Route path="/p/help" element={<PublicOverview />} />
-              <Route path="/explore" element={<Explore />} />
+                <Route path="/p/:slug" element={<PublicCompetition />} />
+                <Route path="/p/help" element={<PublicOverview />} />
+                <Route path="/explore" element={<Explore />} />
 
-              {/* Catch-all route: Redirect to home for any undefined path */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </Suspense>
-        </BrowserRouter>
-      </div>
+                {/* Catch-all route: Redirect to home for any undefined path */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </Suspense>
+          </BrowserRouter>
+        </div>
+      </ThemeProvider>
     </AuthProvider>
   );
 }
