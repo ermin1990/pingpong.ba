@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { 
   Users, Search, CheckCircle, PlayCircle, X, LayoutGrid, Edit2, 
   ChevronDown, ArrowUp, ArrowDown, ListOrdered, Zap, RotateCcw, Trash2,
-  AlertTriangle 
+  AlertTriangle, Star
 } from 'lucide-react';
 
 const MatchesTab = ({ 
@@ -33,6 +33,7 @@ const MatchesTab = ({
   handleAutoAssignGroups
 }) => {
   const [manualEditingGroups, setManualEditingGroups] = useState({});
+  const seededPlayerIds = activeCategory?.seededPlayerIds || [];
   const isGroupsCompleted = activeCategory?.stages?.groups?.completed || false;
 
   const moveManual = (groupIdx, playerIdx, direction, currentStandings) => {
@@ -82,6 +83,13 @@ const MatchesTab = ({
                 .filter(p => !showOnlySelected || selectedPlayers.includes(p.id))
                 .filter(p => !assignedPlayerIds.includes(p.id))
                 .filter(p => !searchTerm || p.name.toLowerCase().includes(searchTerm.toLowerCase()))
+                .sort((a, b) => {
+                  const aSeeded = seededPlayerIds.includes(a.id);
+                  const bSeeded = seededPlayerIds.includes(b.id);
+                  if (aSeeded && !bSeeded) return -1;
+                  if (!aSeeded && bSeeded) return 1;
+                  return 0;
+                })
                 .map(player => (
                   <div 
                     key={player.id}
@@ -92,7 +100,12 @@ const MatchesTab = ({
                     }}
                     className="bg-slate-950/40 border border-slate-800 p-2.5 rounded-xl cursor-grab active:cursor-grabbing hover:border-blue-500/30 transition-all text-slate-300"
                   >
-                    <p className="font-bold text-[10px] truncate uppercase">{player.name}</p>
+                    <div className="flex items-center justify-between gap-1">
+                      <p className="font-bold text-[10px] truncate uppercase">{player.name}</p>
+                      {seededPlayerIds.includes(player.id) && (
+                        <Star size={10} className="text-yellow-500 fill-yellow-500 shrink-0" />
+                      )}
+                    </div>
                     <p className="text-[8px] text-slate-600 truncate uppercase mt-0.5">{player.club || 'Bez kluba'}</p>
                   </div>
               ))}
@@ -109,7 +122,7 @@ const MatchesTab = ({
         {/* Main Schedule Area */}
         <div className={`${activeCategory?.status === 'draft' ? 'lg:col-span-3' : 'w-full'} space-y-12`}>
           {/* Quick status bar above groups */}
-          {activeCategory?.status !== 'draft' && activeCategory?.format === 'groups_knockout' && (
+          {activeCategory?.status !== 'draft' && (activeCategory?.format === 'groups_knockout' || activeCategory?.format === 'round_robin') && (
             <div className={`mb-8 p-6 rounded-3xl border transition-all duration-500 backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-6 ${
               isGroupsCompleted 
               ? 'bg-emerald-500/10 border-emerald-500/20 shadow-[0_0_30px_rgba(16,185,129,0.05)]' 
@@ -123,11 +136,11 @@ const MatchesTab = ({
                 </div>
                 <div>
                   <h4 className="text-xl font-black text-white uppercase italic tracking-tighter">
-                    Grupna faza {isGroupsCompleted ? 'je uspješno završena' : 'je u toku'}
+                    {(activeCategory?.format === 'round_robin' ? 'Liga' : 'Grupna faza')} {isGroupsCompleted ? 'je uspješno završena' : 'je u toku'}
                   </h4>
                   <p className={`text-[10px] font-bold uppercase tracking-[0.2em] mt-1 ${isGroupsCompleted ? 'text-emerald-500/70' : 'text-indigo-200'}`}>
                     {isGroupsCompleted 
-                      ? 'Rezultati su zaključani. Možete generisati knockout žrijeb u sljedećem tabu.' 
+                      ? (activeCategory?.format === 'round_robin' ? 'Liga je završena. Konačan poredak je dostupan.' : 'Rezultati su zaključani. Možete generisati knockout žrijeb u sljedećem tabu.')
                       : 'Nakon što svi mečevi budu gotovi, kliknite na dugme za potvrdu završetka.'}
                   </p>
                 </div>
@@ -147,20 +160,20 @@ const MatchesTab = ({
                     : 'bg-white text-indigo-600 hover:bg-indigo-50 shadow-white/10'
                   }`}
                 >
-                  {isGroupsCompleted ? 'Ponovo otvori grupe' : 'Završi grupnu fazu'}
+                  {isGroupsCompleted ? (activeCategory?.format === 'round_robin' ? 'Otvori ligu' : 'Ponovo otvori grupe') : (activeCategory?.format === 'round_robin' ? 'Završi ligu' : 'Završi grupnu fazu')}
                 </button>
               </div>
             </div>
           )}
 
-          {activeCategory?.format === 'groups_knockout' && groups.length > 0 ? (
+          {(activeCategory?.format === 'groups_knockout' || activeCategory?.format === 'round_robin') && groups.length > 0 ? (
             <div className="space-y-12">
               <div className="flex items-center justify-between px-1">
                 <div className="space-y-1">
-                  <h3 className="text-xl font-black text-white uppercase tracking-tighter italic">Raspored po grupama</h3>
+                  <h3 className="text-xl font-black text-white uppercase tracking-tighter italic">{activeCategory?.format === 'round_robin' ? 'Raspored Lige' : 'Raspored po grupama'}</h3>
                   <div className="text-[9px] text-slate-500 font-black uppercase tracking-[0.2em] flex items-center gap-2">
                     <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></div>
-                    {activeCategory?.status === 'draft' ? 'Prevucite igrače u željene grupe' : 'Pregled tabela i rezultata po grupama'}
+                    {activeCategory?.status === 'draft' ? 'Prevucite igrače u željene grupe' : (activeCategory?.format === 'round_robin' ? 'Pregled tabele i rezultata' : 'Pregled tabela i rezultata po grupama')}
                   </div>
                 </div>
                 
@@ -206,20 +219,28 @@ const MatchesTab = ({
               </div>
               
               {/* Render helper for brackets */}
-              {[
-                { title: "Gornji Žrijeb", color: "bg-blue-500", groups: groups.slice(0, Math.ceil(groups.length / 2)), offset: 0 },
-                { title: "Donji Žrijeb", color: "bg-indigo-500", groups: groups.slice(Math.ceil(groups.length / 2)), offset: Math.ceil(groups.length / 2) }
-              ].map((bracket, bIdx) => (
+              {(activeCategory?.format === 'round_robin' ? 
+                [{ title: "Tabela i mečevi", color: "bg-blue-600", groups: groups, offset: 0 }] : 
+                [
+                  { title: "Gornji Žrijeb", color: "bg-blue-500", groups: groups.slice(0, Math.ceil(groups.length / 2)), offset: 0 },
+                  { title: "Donji Žrijeb", color: "bg-indigo-500", groups: groups.slice(Math.ceil(groups.length / 2)), offset: Math.ceil(groups.length / 2) }
+                ]
+              ).map((bracket, bIdx) => (
                 <div key={bIdx} className={`space-y-6 ${bIdx > 0 ? 'pt-10 border-t border-slate-800/50' : ''}`}>
                    <div className="flex items-center gap-2 px-1">
                       <div className={`h-6 w-1 ${bracket.color} rounded-full`}></div>
                       <h4 className="text-sm font-bold text-white uppercase tracking-[0.2em]">{bracket.title}</h4>
                    </div>
 
-                   <div className={`grid grid-cols-1 ${activeCategory?.status === 'draft' ? 'xl:grid-cols-2' : 'md:grid-cols-2'} gap-4 md:gap-6`}>
+                   <div className={`grid grid-cols-1 ${activeCategory?.status === 'draft' || activeCategory?.format === 'round_robin' ? 'xl:grid-cols-1' : 'md:grid-cols-2'} gap-4 md:gap-6`}>
                       {bracket.groups.map((group, localIdx) => {
                         const gIdx = localIdx + bracket.offset;
-                        const groupMatches = matches.filter(m => m.groupId === gIdx);
+                        const groupMatches = matches.filter(m => {
+                           if (m.groupId === gIdx) return true;
+                           // Fallback za stare zapise lige (Round Robin)
+                           if (activeCategory?.format === 'round_robin' && gIdx === 0 && (m.groupId === undefined || m.groupId === null)) return true;
+                           return false;
+                        });
                         const autoStandings = calculateStandings(gIdx);
                         
                         // Handle Manual Order
@@ -251,12 +272,14 @@ const MatchesTab = ({
                               const playerId = e.dataTransfer.getData('playerId');
                               if (playerId) movePlayerToGroup(playerId, gIdx);
                             }}
-                            className={`bg-slate-900/40 backdrop-blur-xl rounded-2xl p-4 md:p-6 border shadow-xl flex flex-col transition-all duration-300 ${hasSameClub && activeCategory?.status === 'draft' ? 'border-yellow-500/30' : 'border-slate-800'}`}
+                            className={`bg-slate-900/40 backdrop-blur-xl rounded-2xl p-4 md:p-6 border shadow-xl flex flex-col transition-all duration-300 ${hasSameClub && activeCategory?.status === 'draft' && activeCategory?.format !== 'round_robin' ? 'border-yellow-500/30' : 'border-slate-800'}`}
                           >
                             <div className="flex justify-between items-center mb-4 px-1">
                               <div className="flex items-center gap-3">
-                                <h4 className="text-xl font-black text-white italic">#{String.fromCharCode(65 + gIdx)}</h4>
-                                {hasSameClub && activeCategory?.status === 'draft' && (
+                                <h4 className="text-xl font-black text-white italic">
+                                   {activeCategory?.format === 'round_robin' ? 'LIGA' : `#${String.fromCharCode(65 + gIdx)}`}
+                                </h4>
+                                {hasSameClub && activeCategory?.status === 'draft' && activeCategory?.format !== 'round_robin' && (
                                   <div className="flex items-center gap-1 bg-yellow-500/10 text-yellow-500 px-2 py-0.5 rounded-full border border-yellow-500/20 animate-pulse" title="Igrači iz istog kluba su u ovoj grupi!">
                                     <AlertTriangle size={10} />
                                     <span className="text-[7px] font-black uppercase tracking-tighter">Isti Klub</span>
@@ -289,6 +312,9 @@ const MatchesTab = ({
                                       <div className="truncate flex-1">
                                         <div className="flex items-center gap-2">
                                           <p className="font-bold text-white text-[10px] truncate uppercase">{p.name}</p>
+                                          {seededPlayerIds.includes(p.id) && (
+                                            <Star size={10} className="text-amber-500 fill-amber-500" />
+                                          )}
                                           {isDuplicateClub && <AlertTriangle size={10} className="text-yellow-500 shrink-0" />}
                                         </div>
                                         <p className="text-[8px] text-slate-500 font-bold uppercase truncate">{p.club || 'Bez kluba'}</p>
@@ -321,7 +347,7 @@ const MatchesTab = ({
                                   <div className="col-span-1 text-center">P</div>
                                   <div className="col-span-1 text-center">I</div>
                                   <div className="col-span-1 text-center">Set±</div>
-                                  <div className="col-span-1 text-center">Gem±</div>
+                                  <div className="col-span-1 text-center">Poen±</div>
                                   <div className="col-span-2 text-center text-blue-500">B</div>
                                 </div>
                                 {groupStandings.map((p, idx) => {
@@ -363,6 +389,9 @@ const MatchesTab = ({
                                         <div className="truncate">
                                           <div className="flex items-center gap-1.5 leading-tight">
                                             <div className="text-white font-bold uppercase truncate">{p.name}</div>
+                                            {seededPlayerIds.includes(p.id) && (
+                                              <Star size={9} className="text-amber-500 fill-amber-500" />
+                                            )}
                                             {isDuplicateClub && activeCategory?.status === 'draft' && (
                                               <AlertTriangle size={9} className="text-yellow-500 shrink-0" />
                                             )}
@@ -394,9 +423,14 @@ const MatchesTab = ({
                                                 <div className="flex-1 space-y-3">
                                                     <div className="flex justify-between items-center">
                                                         <div className="flex flex-col truncate pr-2">
-                                                          <span className={`text-[11px] font-bold truncate ${match.status === 'completed' && match.player1Score > match.player2Score ? 'text-white' : 'text-slate-500'}`}>
-                                                              {match.player1.name}
-                                                          </span>
+                                                          <div className="flex items-center gap-1.5">
+                                                            <span className={`text-[11px] font-bold truncate ${match.status === 'completed' && match.player1Score > match.player2Score ? 'text-white' : 'text-slate-500'}`}>
+                                                                {match.player1.name}
+                                                            </span>
+                                                            {seededPlayerIds.includes(match.player1.id) && (
+                                                              <Star size={9} className="text-amber-500 fill-amber-500" />
+                                                            )}
+                                                          </div>
                                                           <span className="text-[7px] text-slate-600 font-bold uppercase truncate">
                                                               {allPlayers.find(p => p.id === match.player1.id)?.club || 'Individual'}
                                                           </span>
@@ -415,9 +449,14 @@ const MatchesTab = ({
                                                     </div>
                                                     <div className="flex justify-between items-center">
                                                         <div className="flex flex-col truncate pr-2">
-                                                          <span className={`text-[11px] font-bold truncate ${match.status === 'completed' && match.player2Score > match.player1Score ? 'text-white' : 'text-slate-500'}`}>
-                                                              {match.player2.name}
-                                                          </span>
+                                                          <div className="flex items-center gap-1.5">
+                                                            <span className={`text-[11px] font-bold truncate ${match.status === 'completed' && match.player2Score > match.player1Score ? 'text-white' : 'text-slate-500'}`}>
+                                                                {match.player2.name}
+                                                            </span>
+                                                            {seededPlayerIds.includes(match.player2.id) && (
+                                                              <Star size={9} className="text-amber-500 fill-amber-500" />
+                                                            )}
+                                                          </div>
                                                           <span className="text-[7px] text-slate-600 font-bold uppercase truncate">
                                                               {allPlayers.find(p => p.id === match.player2.id)?.club || 'Individual'}
                                                           </span>

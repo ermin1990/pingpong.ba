@@ -63,6 +63,7 @@ const CompetitionDetails = () => {
   };
 
   const [selectedPlayers, setSelectedPlayers] = useState([]);
+  const [seededPlayers, setSeededPlayers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddPlayer, setShowAddPlayer] = useState(false);
   const [playerFormMode, setPlayerFormMode] = useState('single');
@@ -205,7 +206,6 @@ const CompetitionDetails = () => {
   useEffect(() => {
     if (activeCategory?.groupConfig && allPlayers.length > 0) {
       try {
-        // Podržavamo i stari format (niz) i novi format (objekat/mapa)
         const configData = Array.isArray(activeCategory.groupConfig) 
           ? activeCategory.groupConfig 
           : Object.values(activeCategory.groupConfig);
@@ -218,19 +218,25 @@ const CompetitionDetails = () => {
         console.error("Greška pri učitavanju grupa:", err);
       }
     } else if (activeCategory?.format === 'groups_knockout') {
-      // Inicijalizuj prazne grupe ako nema konfiguracije
-      if (groups.length === 0) {
-        setGroups([[], []]); // Podrazumijevano 2 grupe
+      if (groups.length === 0) setGroups([[], []]); 
+    } else if (activeCategory?.format === 'round_robin') {
+      // Za ligu (Round Robin) - u draftu automatski sinhronizuj sve selektovane igrače u jednu grupu
+      if (activeCategory.status === 'draft') {
+        const participants = allPlayers.filter(p => selectedPlayers.includes(p.id));
+        setGroups([participants]);
+      } else {
+        if (groups.length === 0) setGroups([[]]);
       }
     } else {
-      setGroups([]);
+      if (groups.length > 0) setGroups([]);
     }
-  }, [selectedCategoryId, activeCategory?.groupConfig, allPlayers.length]);
+  }, [selectedCategoryId, activeCategory?.groupConfig, activeCategory?.format, allPlayers.length, activeCategory?.status, (activeCategory?.format === 'round_robin' && activeCategory.status === 'draft' ? selectedPlayers.length : null)]);
 
   // Kada se promijeni kategorija, resetuj selekciju igrača na one koji su već u kategoriji
   useEffect(() => {
     if (selectedCategoryId && activeCategory) {
       setSelectedPlayers(activeCategory.playerIds || []);
+      setSeededPlayers(activeCategory.seededPlayerIds || []);
     }
   }, [selectedCategoryId, activeCategory]);
 
@@ -254,16 +260,26 @@ const CompetitionDetails = () => {
     if (!newCategoryName.trim()) return;
 
     try {
-      await addDoc(collection(db, "competitions", id, "categories"), {
+      console.log("Dodajem kategoriju u takmičenje:", id);
+      const catData = {
         name: newCategoryName.trim(),
         format: newCategoryFormat,
         status: 'draft',
         createdAt: serverTimestamp(),
-        playerIds: []
-      });
+        playerIds: [],
+        seededPlayerIds: [],
+        advancingPlayers: 2,
+        setsToWin: 2,
+        winPoints: 2,
+        lossPoints: 1
+      };
+
+      await addDoc(collection(db, "competitions", id, "categories"), catData);
       setNewCategoryName('');
+      console.log("Kategorija uspješno dodana");
     } catch (err) {
-      alert("Greška pri kreiranju kategorije.");
+      console.error("Greška pri kreiranju kategorije:", err);
+      alert(`Greška pri kreiranju kategorije: ${err.message}`);
     }
   };
 
@@ -277,31 +293,43 @@ const CompetitionDetails = () => {
     );
   };
 
+  const togglePlayerSeed = (playerId) => {
+    if (activeCategory?.status !== 'draft') return;
+    setSeededPlayers(prev => 
+      prev.includes(playerId) 
+        ? prev.filter(pid => pid !== playerId) 
+        : [...prev, playerId]
+    );
+  };
+
   const saveSelectedPlayers = async () => {
     if (!selectedCategoryId) return;
     try {
       const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
       await updateDoc(catRef, {
         playerIds: selectedPlayers,
+        seededPlayerIds: seededPlayers,
         updatedAt: serverTimestamp()
       });
-      alert("Lista igrača sačuvana.");
+      // Maknut alert za spašavanje igrača
     } catch (err) {
       alert("Greška pri spašavanju igrača.");
     }
   };
 
-  const handleUpdateSettings = async (winPts, lossPts, advancingPlayers = 2) => {
+  const handleUpdateSettings = async (settings) => {
     if (!selectedCategoryId) return;
     try {
+      const { winPoints, lossPoints, advancingPlayers, setsToWin } = settings;
       const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
       await updateDoc(catRef, {
-        winPoints: Number(winPts),
-        lossPoints: Number(lossPts),
+        winPoints: Number(winPoints),
+        lossPoints: Number(lossPoints),
         advancingPlayers: Number(advancingPlayers),
+        setsToWin: Number(setsToWin || 2),
         updatedAt: serverTimestamp()
       });
-      alert("Postavke sačuvane.");
+      // Maknut alert za postavke
     } catch (err) {
       alert("Greška pri spašavanju postavki.");
     }
@@ -491,15 +519,89 @@ const CompetitionDetails = () => {
       const allAdvancing = [];
 
       // 1. Prikupi pobjednike iz svih grupa
+      const rank1 = [];
+      const rank2 = [];
+      const others = [];
+
       groups.forEach((group, idx) => {
         const standings = calculateStandings(idx);
         const winners = standings.slice(0, advancingCount).map(p => ({
           ...p,
           fromGroup: String.fromCharCode(65 + idx),
-          rank: standings.indexOf(p) + 1
+          rankInGroup: standings.indexOf(p) + 1,
+          isStarred: seededPlayers.includes(p.id)
         }));
-        allAdvancing.push(...winners);
+        
+        winners.forEach(p => {
+          if (p.rankInGroup === 1) rank1.push(p);
+          else if (p.rankInGroup === 2) rank2.push(p);
+          else others.push(p);
+        });
       });
+
+      // Seeding: Prvo rasporedi zvjezdice (nosioce) među prvoplasirane
+      const seededRank1 = rank1.filter(p => p.isStarred).sort(() => Math.random() - 0.5);
+      const regularRank1 = rank1.filter(p => !p.isStarred).sort(() => Math.random() - 0.5);
+      
+      // Rasporedi nosioce na suprotne krajeve SortedRank1 (0, last, mid...)
+      const sortedRank1 = new Array(rank1.length);
+      let seededIdx = 0;
+      
+      // Dinamičke prioritetne pozicije za teniski žrijeb
+      // FIX: Seed 1 na indeks 0 (Gornja polovina), Seed 2 na indeks rank1.length-1 (Donja polovina)
+      const getPriorityPositions = (len) => {
+        if (len <= 1) return [0];
+        
+        const result = [0, len - 1]; // Uvijek prvi i zadnji su top prioriteti (suprotne strane)
+        
+        if (len > 2) {
+          const mid = Math.floor(len / 2);
+          result.push(mid); // Treći nosilac u sredinu donjeg dijela gornje polovine ili početak donje
+          if (len > 3) {
+            result.push(Math.floor(len * 0.75)); // Četvrti
+          }
+        }
+
+        // Dodaj ostale pozicije koje nisu već u listi
+        for (let i = 0; i < len; i++) {
+          if (!result.includes(i)) result.push(i);
+        }
+        return result;
+      };
+      
+      const priorityPositions = getPriorityPositions(rank1.length);
+      
+      priorityPositions.forEach(pos => {
+        if (pos < sortedRank1.length && seededIdx < seededRank1.length && !sortedRank1[pos]) {
+          sortedRank1[pos] = seededRank1[seededIdx++];
+        }
+      });
+      
+      // Popuni ostala mjesta u rank1
+      let regularIdx = 0;
+      for (let i = 0; i < sortedRank1.length; i++) {
+        if (!sortedRank1[i]) {
+          if (regularIdx < regularRank1.length) {
+            sortedRank1[i] = regularRank1[regularIdx++];
+          } else if (seededIdx < seededRank1.length) {
+            sortedRank1[i] = seededRank1[seededIdx++];
+          }
+        }
+      }
+
+      // Za drugoplasirane: cilj je da ne sretnu igrača iz svoje grupe odmah
+      // Rotiramo drugoplasirane za pola
+      const shiftedRank2 = [...rank2];
+      if (shiftedRank2.length > 1) {
+        const half = Math.ceil(shiftedRank2.length / 2);
+        for(let j=0; j<half; j++) shiftedRank2.push(shiftedRank2.shift());
+      }
+
+      // Spajamo u finalnu listu: [Rank1..., Others..., Rank2_Reversed...]
+      // Tako će Match 0 biti Rank1[0] vs Rank2_Reversed[0] (što je Rank2[last nakon rotacije])
+      allAdvancing.push(...sortedRank1.filter(Boolean));
+      allAdvancing.push(...others);
+      allAdvancing.push(...[...shiftedRank2].reverse());
 
       if (allAdvancing.length < 2) {
         alert("Nema dovoljno igrača za knockout fazu.");
@@ -572,17 +674,20 @@ const CompetitionDetails = () => {
             // Specijalni seeding za 4 igrača (A1 vs B2, B1 vs A2)
             if (groups.length === 2 && advancingCount === 2) {
               if (i === 0) {
-                matchData.player1 = allAdvancing.find(p => p.fromGroup === 'A' && p.rank === 1) || { id: 'tbd', name: 'TBD' };
-                matchData.player2 = allAdvancing.find(p => p.fromGroup === 'B' && p.rank === 2) || { id: 'tbd', name: 'TBD' };
+                matchData.player1 = allAdvancing.find(p => p.fromGroup === 'A' && p.rankInGroup === 1) || { id: 'tbd', name: 'TBD' };
+                matchData.player2 = allAdvancing.find(p => p.fromGroup === 'B' && p.rankInGroup === 2) || { id: 'tbd', name: 'TBD' };
               } else {
-                matchData.player1 = allAdvancing.find(p => p.fromGroup === 'B' && p.rank === 1) || { id: 'tbd', name: 'TBD' };
-                matchData.player2 = allAdvancing.find(p => p.fromGroup === 'A' && p.rank === 2) || { id: 'tbd', name: 'TBD' };
+                matchData.player1 = allAdvancing.find(p => p.fromGroup === 'B' && p.rankInGroup === 1) || { id: 'tbd', name: 'TBD' };
+                matchData.player2 = allAdvancing.find(p => p.fromGroup === 'A' && p.rankInGroup === 2) || { id: 'tbd', name: 'TBD' };
               }
             } else {
               // Standardni seeding (1. vs zadnji, 2. vs predzadnji...)
+              // allAdvancing je [Rank1..., Others..., Rank2_Reversed...]
+              // Match 0: allAdvancing[0] (Rank1[0]) vs allAdvancing[last] (Rank2[last])
               if (allAdvancing[i]) matchData.player1 = allAdvancing[i];
-              const oppIdx = totalAdvancing - 1 - i;
-              if (allAdvancing[oppIdx] && oppIdx > i) {
+              
+              const oppIdx = (matchesInFirstRound * 2) - 1 - i;
+              if (allAdvancing[oppIdx]) {
                 matchData.player2 = allAdvancing[oppIdx];
               }
             }
@@ -766,6 +871,8 @@ const CompetitionDetails = () => {
               ...match,
               competitionId: id,
               categoryId: selectedCategoryId,
+              groupId: 0, // Za ligu stavljamo pod grupu 0
+              groupName: 'Liga',
               ownerUid: competition?.ownerUid || userData?.uid || '',
               ownerEmail: competition?.ownerEmail || userData?.email || '',
               createdAt: serverTimestamp()
@@ -780,22 +887,20 @@ const CompetitionDetails = () => {
       // Firestore ne dozvoljava ugniježdene nizove (arrays within arrays).
       // Pretvaramo grupe u objekat/mapu gdje su ključevi indeksi grupa.
       const groupConfigObj = {};
-      if (activeCategory.format === 'groups_knockout') {
-        groups.forEach((g, idx) => {
-          groupConfigObj[idx] = g.map(p => p.id);
-        });
-      }
+      groups.forEach((g, idx) => {
+        groupConfigObj[idx] = g.map(p => p.id);
+      });
 
       batch.update(catRef, {
         status: 'active',
         playerIds: selectedPlayers,
-        groupConfig: activeCategory.format === 'groups_knockout' ? groupConfigObj : null,
+        groupConfig: groupConfigObj,
         updatedAt: serverTimestamp()
       });
 
       await batch.commit();
       setActiveTab('matches');
-      alert("Raspored za kategoriju uspješno generisan!");
+      // Maknut alert
     } catch (err) {
       console.error(err);
       alert("Greška pri generisanju mečeva.");
@@ -817,17 +922,17 @@ const CompetitionDetails = () => {
     try {
       const matchRef = doc(db, "matches", match.id);
       
-      // 1. Spasi trenutni meč
+      // 1. Spasi trenutni meč - respektujemo status koji je poslan iz modala
       await updateDoc(matchRef, {
         player1Score: match.player1Score || 0,
         player2Score: match.player2Score || 0,
         sets: match.sets || [],
-        status: 'completed',
+        status: match.status || 'completed',
         updatedAt: serverTimestamp()
       });
 
-      // 2. AUTOMATSKO NAPREDOVANJE
-      if (match.isKnockout && match.roundName !== 'Finale') {
+      // 2. AUTOMATSKO NAPREDOVANJE - samo ako je meč stvarno GOTOV
+      if (match.status === 'completed' && match.isKnockout && match.roundName !== 'Finale') {
         const s1 = Number(match.player1Score || 0);
         const s2 = Number(match.player2Score || 0);
         
@@ -877,8 +982,7 @@ const CompetitionDetails = () => {
           }
         }
       }
-
-      alert("Rezultat sačuvan! Pobjednik je prošao dalje.");
+      // Maknuti alerti za uspješno spašavanje meča
     } catch (err) {
       console.error(err);
       alert("Greška pri spašavanju rezultata.");
@@ -926,7 +1030,7 @@ const CompetitionDetails = () => {
         setSelectedCategoryId(categories[0]?.id || null);
       }
       
-      alert("Kategorija i svi mečevi su uspješno obrisani.");
+      // Maknut alert za uspješno brisanje
     } catch (err) {
       console.error("Error deleting category:", err);
       alert("Greška pri brisanju kategorije.");
@@ -976,7 +1080,7 @@ const CompetitionDetails = () => {
         batch.delete(doc(db, "matches", matchId));
       });
       await batch.commit();
-      alert(`Uspješno obrisano ${matchIds.length} mečeva.`);
+      // Maknut alert
     } catch (err) {
       console.error("Error deleting matches:", err);
       alert("Greška pri brisanju mečeva.");
@@ -989,7 +1093,7 @@ const CompetitionDetails = () => {
     try {
       await deleteDoc(doc(db, "players", playerId));
       setAllPlayers(prev => prev.filter(p => p.id !== playerId));
-      alert("Igrač je uspješno obrisan.");
+      // Maknut alert
     } catch (err) {
       console.error("Error deleting player:", err);
       alert("Greška pri brisanju igrača.");
@@ -1071,23 +1175,54 @@ const CompetitionDetails = () => {
       return;
     }
 
-    // Grupiši neasignirane po klubovima kako bi ih bolje rasporedili
+    // Razdvoji nosioce (seeded) i ostale
+    const seededUnassigned = unassignedPlayers.filter(p => seededPlayers.includes(p.id));
+    const regularUnassigned = unassignedPlayers.filter(p => !seededPlayers.includes(p.id));
+
+    const newGroups = groups.map(g => [...g]);
+
+    // 1. Prvo rasporedi nosioce (seeded) u različite grupe
+    seededUnassigned.forEach(player => {
+      let bestGroupIdx = 0;
+      let minSeedsInGroup = Infinity;
+      let minTotalInGroup = Infinity;
+
+      // Randomize redoslijed grupa
+      const groupIndices = Array.from({length: newGroups.length}, (_, i) => i).sort(() => Math.random() - 0.5);
+
+      groupIndices.forEach(idx => {
+        const group = newGroups[idx];
+        const seedsCount = group.filter(p => seededPlayers.includes(p.id)).length;
+        
+        if (seedsCount < minSeedsInGroup) {
+          minSeedsInGroup = seedsCount;
+          minTotalInGroup = group.length;
+          bestGroupIdx = idx;
+        } else if (seedsCount === minSeedsInGroup) {
+          if (group.length < minTotalInGroup) {
+            minTotalInGroup = group.length;
+            bestGroupIdx = idx;
+          }
+        }
+      });
+      newGroups[bestGroupIdx].push(player);
+    });
+
+    // 2. Rasporedi ostale igrače po klubovima (postojeća logika)
     const byClub = {};
-    unassignedPlayers.forEach(p => {
+    regularUnassigned.forEach(p => {
       const club = (p.club || 'Individual').trim().toLowerCase();
       const normalizedClub = (club === 'bez kluba' || club === '') ? 'individual' : club;
       if (!byClub[normalizedClub]) byClub[normalizedClub] = [];
       byClub[normalizedClub].push(p);
     });
 
-    // Sortiraj klubove po veličini da bi "teže" slučajeve prvo riješili
+    // Sortiraj klubove po veličini
     const sortedClubs = Object.keys(byClub).sort((a, b) => {
       if (a === 'individual') return 1;
       if (b === 'individual') return -1;
       return byClub[b].length - byClub[a].length;
     });
-
-    const newGroups = groups.map(g => [...g]);
 
     sortedClubs.forEach(clubName => {
       const clubPlayers = byClub[clubName];
@@ -1331,7 +1466,9 @@ const CompetitionDetails = () => {
             setShowOnlySelected={setShowOnlySelected}
             allPlayers={allPlayers}
             selectedPlayers={selectedPlayers}
+            seededPlayers={seededPlayers}
             togglePlayerSelection={togglePlayerSelection}
+            togglePlayerSeed={togglePlayerSeed}
             assignedPlayerIds={assignedPlayerIds}
             saveSelectedPlayers={saveSelectedPlayers}
             setShowAddPlayer={setShowAddPlayer}
@@ -1442,6 +1579,7 @@ const CompetitionDetails = () => {
         setEditingMatch={setEditingMatch}
         setShowMatchModal={setShowMatchModal}
         saveMatchResult={saveMatchResult}
+        activeCategory={activeCategory}
       />
 
       <CompetitionSettingsModal 
@@ -1457,6 +1595,108 @@ const CompetitionDetails = () => {
         handleUpdateCompetition={handleUpdateCompetition}
         savingComp={savingComp}
       />
+
+      {/* Add Player Modal */}
+      {showAddPlayer && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+          <div className="bg-slate-900 border border-slate-800 rounded-[32px] w-full max-w-md overflow-hidden shadow-2xl">
+            <div className="p-8 border-b border-slate-800 flex justify-between items-center">
+              <div>
+                <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">Novi Igrač(i)</h3>
+                <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">Dodajte direktno u sistem</p>
+              </div>
+              <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
+                <button 
+                  onClick={() => setPlayerFormMode('single')}
+                  className={`p-2 rounded-lg transition-all ${playerFormMode === 'single' ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'text-slate-500 hover:text-white'}`}
+                >
+                  <UserPlus size={18} />
+                </button>
+                <button 
+                  onClick={() => setPlayerFormMode('bulk')}
+                  className={`p-2 rounded-lg transition-all ${playerFormMode === 'bulk' ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'text-slate-500 hover:text-white'}`}
+                >
+                  <FileText size={18} />
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-8">
+              {playerFormMode === 'single' ? (
+                <form onSubmit={handleQuickAddPlayer} className="space-y-5">
+                  <div className="space-y-2">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Ime i Prezime</label>
+                      <input 
+                      required
+                      className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-blue-500 transition-all placeholder:text-slate-700"
+                      placeholder="npr. Edin Džeko"
+                      value={newPlayerName}
+                      onChange={(e) => setNewPlayerName(e.target.value)}
+                      />
+                  </div>
+                  <div className="space-y-2">
+                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Klub (opciono)</label>
+                      <input 
+                      className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-blue-500 transition-all placeholder:text-slate-700"
+                      placeholder="npr. STK Spin"
+                      value={newPlayerClub}
+                      onChange={(e) => setNewPlayerClub(e.target.value)}
+                      />
+                  </div>
+                  <div className="flex gap-3 pt-2">
+                    <button 
+                      type="button"
+                      onClick={() => setShowAddPlayer(false)}
+                      className="flex-1 py-4 text-slate-500 font-bold text-xs uppercase tracking-widest hover:text-white transition-all"
+                    >
+                      Otkaži
+                    </button>
+                    <button 
+                      type="submit"
+                      className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20 active:scale-95"
+                    >
+                      Dodaj Igrača
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <form onSubmit={handleQuickBulkAdd} className="space-y-5">
+                  <div className="space-y-2">
+                      <div className="flex justify-between items-center ml-1">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Lista igrača</label>
+                        <span className="text-[9px] text-blue-500 font-bold uppercase">Format: Ime, Klub;</span>
+                      </div>
+                      <textarea 
+                      required
+                      rows={6}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 text-white font-mono text-xs focus:outline-none focus:border-blue-500 transition-all placeholder:text-slate-800 resize-none"
+                      placeholder="Haris Tabaković, STK Spin;&#10;Ermin H., STK Sarajevo;"
+                      value={bulkPlayerText}
+                      onChange={(e) => setBulkPlayerText(e.target.value)}
+                      />
+                  </div>
+                  <div className="flex gap-3 pt-2">
+                    <button 
+                      type="button"
+                      onClick={() => setShowAddPlayer(false)}
+                      className="flex-1 py-4 text-slate-500 font-bold text-xs uppercase tracking-widest hover:text-white transition-all"
+                    >
+                      Otkaži
+                    </button>
+                    <button 
+                      type="submit"
+                      disabled={generating}
+                      className={`flex-1 ${generating ? 'bg-slate-800' : 'bg-white text-slate-900 hover:bg-blue-500 hover:text-white'} py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95`}
+                    >
+                      {generating ? 'Procesiranje...' : 'Uvezi Listu'}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 };

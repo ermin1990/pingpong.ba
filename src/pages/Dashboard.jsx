@@ -69,13 +69,22 @@ const Dashboard = () => {
               Prijavljeni ste kao: <span className="text-blue-400 font-semibold">{userData?.role === 'super_admin' ? 'Super Admin' : 'Organizator'}</span>
             </p>
           </div>
-          <button 
-            onClick={() => navigate('/competitions')}
-            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-sm transition-all shadow-lg active:scale-95 flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Novo Takmičenje
-          </button>
+          <div className="flex gap-3">
+            <button 
+              onClick={() => navigate('/leagues')}
+              className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold text-sm transition-all shadow-lg active:scale-95 flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Nova Liga (Berger)
+            </button>
+            <button 
+              onClick={() => navigate('/competitions')}
+              className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-sm transition-all shadow-lg active:scale-95 flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Novo Takmičenje
+            </button>
+          </div>
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

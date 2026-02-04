@@ -299,7 +299,7 @@ const SuperAdminDashboard = () => {
                     </span>
                   </div>
 
-                  <div className="grid md:grid-cols-3 gap-4 mb-6">
+                  <div className="grid md:grid-cols-4 gap-4 mb-6">
                     <div className="bg-gray-800/50 p-4 rounded-xl">
                       <div className="text-xs text-gray-500 mb-1">Kontakt Osoba</div>
                       <div className="font-bold flex items-center gap-2">
@@ -308,14 +308,29 @@ const SuperAdminDashboard = () => {
                       </div>
                     </div>
                     <div className="bg-gray-800/50 p-4 rounded-xl">
-                      <div className="text-xs text-gray-500 mb-1">Odabrani Plan</div>
-                      <div className="font-bold text-blue-400 uppercase">{request.selectedPlan}</div>
+                      <div className="text-xs text-gray-500 mb-1">Grad</div>
+                      <div className="font-bold flex items-center gap-2 text-indigo-400">
+                        {request.city || 'N/A'}
+                      </div>
+                    </div>
+                    <div className="bg-gray-800/50 p-4 rounded-xl">
+                      <div className="text-xs text-gray-500 mb-1">Status Zahtjeva</div>
+                      <div className="font-bold text-yellow-500 uppercase">{request.selectedPlan}</div>
                     </div>
                     <div className="bg-gray-800/50 p-4 rounded-xl">
                       <div className="text-xs text-gray-500 mb-1">Datum Zahtjeva</div>
-                      <div className="font-bold">{request.createdAt?.toDate().toLocaleDateString()}</div>
+                      <div className="font-bold">
+                        {request.createdAt?.toDate ? request.createdAt.toDate().toLocaleDateString() : 'Nedavno'}
+                      </div>
                     </div>
                   </div>
+
+                  {request.message && (
+                    <div className="bg-blue-600/5 border border-blue-500/10 p-4 rounded-xl mb-6">
+                       <div className="text-[10px] text-blue-400 font-black uppercase mb-2 tracking-widest">Poruka korisnika:</div>
+                       <p className="text-sm text-gray-300 italic">"{request.message}"</p>
+                    </div>
+                  )}
 
                   <div className="flex gap-3">
                     <button 

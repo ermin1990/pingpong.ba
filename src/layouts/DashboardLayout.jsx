@@ -31,7 +31,8 @@ const DashboardLayout = ({ children, title }) => {
 
   const navItems = [
     { icon: <LayoutDashboard size={20} />, label: 'Dashboard', href: '/dashboard' },
-    { icon: <Trophy size={20} />, label: 'Takmičenja', href: '/competitions' },
+    { icon: <Trophy size={20} />, label: 'Turniri', href: '/competitions' },
+    { icon: <Trophy size={20} className="text-emerald-500" />, label: 'Lige (Berger)', href: '/leagues' },
     { icon: <Users size={20} />, label: 'Igrači', href: '/players' },
     ...(isSuperAdmin ? [
       { icon: <Shield size={20} className="text-yellow-500" />, label: 'Super Admin', href: '/super-admin' }

@@ -45,10 +45,13 @@ const Competitions = () => {
     }
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const list = snapshot.docs.map(doc => ({
+      let list = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
+      // Filtriraj da ne prikazuje Lige na ovoj stranici
+      list = list.filter(comp => comp.type !== 'League');
+      
       setCompetitions(list);
       setLoading(false);
     });
@@ -70,9 +73,9 @@ const Competitions = () => {
         sport,
         type,
         status: 'draft',
-        ownerUid: userData.uid,
-        ownerName: userData.displayName || userData.email,
-        ownerEmail: userData.email,
+        ownerUid: userData.uid || userData.id || '',
+        ownerName: userData.displayName || userData.email || 'Admin',
+        ownerEmail: userData.email || '',
         createdAt: serverTimestamp(),
         participantsCount: 0
       });
@@ -86,21 +89,21 @@ const Competitions = () => {
   };
 
   return (
-    <DashboardLayout title="Takmičenja">
+    <DashboardLayout title="Turniri">
       <div className="max-w-6xl mx-auto space-y-8">
         
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-white tracking-tight">Upravljačka Ploča</h2>
-            <p className="text-slate-500 text-sm">Ukupno {competitions.length} registrovanih takmičenja.</p>
+            <h2 className="text-2xl font-bold text-white tracking-tight">Upravljanje Turnirima</h2>
+            <p className="text-slate-500 text-sm">Ukupno {competitions.length} registrovanih turnira.</p>
           </div>
           
           <button 
             onClick={() => setShowModal(true)}
             className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-bold text-sm transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
           >
-            <Plus size={18} /> Novo Takmičenje
+            <Plus size={18} /> Novi Turnir
           </button>
         </div>
 
@@ -112,13 +115,13 @@ const Competitions = () => {
       ) : competitions.length === 0 ? (
         <div className="bg-slate-900 border border-slate-800 border-dashed rounded-3xl p-20 text-center">
           <Trophy size={48} className="text-slate-800 mx-auto mb-6" />
-          <h3 className="text-xl font-bold text-white mb-2">Nema aktivnih takmičenja</h3>
-          <p className="text-slate-500 mb-8 max-w-sm mx-auto text-sm">Kreirajte svoj prvi turnir ili ligu i započnite sa upravljanjem.</p>
+          <h3 className="text-xl font-bold text-white mb-2">Nema aktivnih turnira</h3>
+          <p className="text-slate-500 mb-8 max-w-sm mx-auto text-sm">Kreirajte svoj prvi turnir i započnite sa upravljanjem.</p>
           <button 
             onClick={() => setShowModal(true)}
             className="bg-slate-800 hover:bg-slate-700 text-white px-8 py-3 rounded-xl font-bold text-sm transition-all"
           >
-            Kreiraj Takmičenje
+            Kreiraj Turnir
           </button>
         </div>
       ) : (
@@ -185,11 +188,11 @@ const Competitions = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/80" onClick={() => setShowModal(false)}></div>
           <div className="relative bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl shadow-2xl p-8 animate-in fade-in zoom-in duration-200">
-            <h2 className="text-2xl font-bold text-white mb-6">Novo Takmičenje</h2>
+            <h2 className="text-2xl font-bold text-white mb-6">Novi Turnir</h2>
             
             <form onSubmit={handleCreate} className="space-y-6">
               <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Naziv Takmičenja</label>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Naziv Turnira</label>
                 <input 
                   type="text" required
                   placeholder="npr. Proljećni Kup 2026"
@@ -200,13 +203,12 @@ const Competitions = () => {
               </div>
 
               <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Format Takmičenja</label>
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Format Turnira</label>
                   <select 
                     className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500 appearance-none shadow-sm"
                     value={type}
                     onChange={(e) => setType(e.target.value)}
                   >
-                    <option value="League">Bergerov Sistem (Liga)</option>
                     <option value="Knockout">Knockout (Eliminacije)</option>
                     <option value="Groups">Grupni Sistem + Knockout</option>
                   </select>

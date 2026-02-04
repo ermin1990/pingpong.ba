@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trophy, Zap, PlayCircle, AlertTriangle, Users, ChevronRight, Clock, Plus, X, Trash2, CheckCircle, GripVertical, ChevronDown, Layout, ChevronLeft, PanelsTopLeft, LayoutGrid } from 'lucide-react';
+import { Trophy, Zap, PlayCircle, AlertTriangle, Users, ChevronRight, Clock, Plus, X, Trash2, CheckCircle, GripVertical, ChevronDown, Layout, ChevronLeft, PanelsTopLeft, LayoutGrid, Star } from 'lucide-react';
 
 const KnockoutTab = ({ 
   activeCategory, 
@@ -17,6 +17,7 @@ const KnockoutTab = ({
   handleGenerateTemplate,
   generating
 }) => {
+  const seededPlayerIds = activeCategory?.seededPlayerIds || [];
   const [showManualModal, setShowManualModal] = React.useState(false);
   const [showSetupModal, setShowSetupModal] = React.useState(false);
   const [editingPlayerSlot, setEditingPlayerSlot] = React.useState(null); // { matchId, playerSlot }
@@ -68,6 +69,11 @@ const KnockoutTab = ({
     const rName = m.roundName || `Runda ${m.round}`;
     if (!rounds[rName]) rounds[rName] = [];
     rounds[rName].push(m);
+  });
+
+  // Sort rounds internally by bracketIndex to ensure visual flow
+  Object.keys(rounds).forEach(rName => {
+    rounds[rName].sort((a, b) => (a.bracketIndex || 0) - (b.bracketIndex || 0));
   });
 
   const roundKeys = Object.keys(rounds).sort((a, b) => {
@@ -230,7 +236,7 @@ const KnockoutTab = ({
       {advancingPool.length > 0 && knockoutMatches.length > 0 && showQualifiersSidebar && (
         <div className="w-full lg:w-72 space-y-4 shrink-0">
           <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800 rounded-3xl p-6 sticky top-24 shadow-2xl">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-2">
               <h4 className="text-xs font-black text-white uppercase italic tracking-widest flex items-center gap-2">
                 <Users size={14} className="text-blue-500" /> Kvalifikovani
               </h4>
@@ -241,6 +247,31 @@ const KnockoutTab = ({
                 <X size={16} />
               </button>
             </div>
+
+            {/* Fill Remaining Button */}
+            {advancingPool.some(p => !placedPlayerIds.has(p.id)) && (
+              <button 
+                onClick={async () => {
+                  const unassigned = advancingPool.filter(p => !placedPlayerIds.has(p.id));
+                  const firstRoundMatches = knockoutMatches.filter(m => m.round === 1).sort((a,b) => a.bracketIndex - b.bracketIndex);
+                  
+                  let pIdx = 0;
+                  for (const m of firstRoundMatches) {
+                    if (pIdx >= unassigned.length) break;
+                    if (m.player1?.id === 'tbd') {
+                      await handleUpdateMatchPlayer(m.id, 1, unassigned[pIdx++]);
+                    }
+                    if (pIdx < unassigned.length && m.player2?.id === 'tbd') {
+                      await handleUpdateMatchPlayer(m.id, 2, unassigned[pIdx++]);
+                    }
+                  }
+                }}
+                className="w-full mb-4 bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-600/30 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all"
+              >
+                <Zap size={12} /> Popuni Prazna Polja
+              </button>
+            )}
+
             <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
               {advancingPool.map(player => {
                 const isAssigned = assignedPlayerIdsInKO.has(player.id);
@@ -253,7 +284,12 @@ const KnockoutTab = ({
                   >
                     <div className="flex items-center justify-between pointer-events-none">
                       <div className="min-w-0 flex-1">
-                        <p className="text-[11px] font-black text-white uppercase truncate">{player.name}</p>
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-[11px] font-black text-white uppercase truncate">{player.name}</p>
+                          {seededPlayerIds.includes(player.id) && (
+                            <Star size={10} className="text-amber-500 fill-amber-500" />
+                          )}
+                        </div>
                         <div className="flex items-center gap-2 mt-1">
                            <span className="text-[8px] font-bold text-blue-400 bg-blue-400/10 px-1.5 py-0.5 rounded uppercase">Grupa {player.fromGroup}</span>
                            <span className="text-[8px] font-bold text-slate-500 italic">#{player.rank}</span>
@@ -443,7 +479,12 @@ const KnockoutTab = ({
                           >
                             <span className="text-[10px] font-black text-emerald-500 w-4">{pIdx + 1}.</span>
                             <div className="flex-1">
-                              <p className="text-[11px] font-bold text-white uppercase">{p.name}</p>
+                              <div className="flex items-center gap-1.5">
+                                <p className="text-[11px] font-bold text-white uppercase">{p.name}</p>
+                                {seededPlayerIds.includes(p.id) && (
+                                  <Star size={10} className="text-amber-500 fill-amber-500" />
+                                )}
+                              </div>
                               <p className="text-[8px] text-slate-600 font-bold uppercase">{p.club || 'Bez kluba'}</p>
                             </div>
                             <GripVertical size={12} className="text-slate-800 group-hover:text-emerald-500/50 transition-colors" />
@@ -524,9 +565,12 @@ const KnockoutTab = ({
                                 <div className="flex items-center gap-3 min-w-0 flex-1">
                                   <div className={`w-1.5 h-1.5 rounded-full ${p1Winner ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-800'}`}></div>
                                   <div className="flex flex-col truncate">
-                                    <div className={`text-[11px] font-black uppercase truncate transition-colors ${p1Winner ? 'text-emerald-500' : 'text-slate-400 group-hover/p1:text-blue-400'}`}>
+                                    <div className={`text-[11px] font-black uppercase truncate transition-colors flex items-center gap-1.5 ${p1Winner ? 'text-emerald-500' : 'text-slate-400 group-hover/p1:text-blue-400'}`}>
                                       {match.player1?.name || (
                                         <span className="text-slate-700 animate-pulse text-[9px]">Prevucite igrača...</span>
+                                      )}
+                                      {match.player1?.id && seededPlayerIds.includes(match.player1.id) && (
+                                        <Star size={10} className="text-amber-500 fill-amber-500" />
                                       )}
                                     </div>
                                     {match.player1?.id && match.player1.id !== 'tbd' && (
@@ -554,9 +598,12 @@ const KnockoutTab = ({
                                 <div className="flex items-center gap-3 min-w-0 flex-1">
                                   <div className={`w-1.5 h-1.5 rounded-full ${p2Winner ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-800'}`}></div>
                                   <div className="flex flex-col truncate">
-                                    <div className={`text-[11px] font-black uppercase truncate transition-colors ${p2Winner ? 'text-emerald-500' : 'text-slate-400 group-hover/p2:text-blue-400'}`}>
+                                    <div className={`text-[11px] font-black uppercase truncate transition-colors flex items-center gap-1.5 ${p2Winner ? 'text-emerald-500' : 'text-slate-400 group-hover/p2:text-blue-400'}`}>
                                       {match.player2?.name || (
                                         <span className="text-slate-700 animate-pulse text-[9px]">Prevucite igrača...</span>
+                                      )}
+                                      {match.player2?.id && seededPlayerIds.includes(match.player2.id) && (
+                                        <Star size={10} className="text-amber-500 fill-amber-500" />
                                       )}
                                     </div>
                                     {match.player2?.id && match.player2.id !== 'tbd' && (

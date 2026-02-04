@@ -20,8 +20,8 @@ const SettingsTab = ({
               {isGroupsCompleted ? <CheckCircle size={20} /> : <Clock size={20} />}
             </div>
             <div>
-              <h4 className="text-sm font-black text-white uppercase tracking-tighter">Grupna faza je {isGroupsCompleted ? 'završena' : 'u toku'}</h4>
-              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Markiranje završetka omogućava prelazak u knockout</p>
+              <h4 className="text-sm font-black text-white uppercase tracking-tighter">Grupna faza je {isGroupsCompleted ? 'zavr�ena' : 'u toku'}</h4>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Markiranje zavr�etka omogucava prelazak u knockout</p>
             </div>
           </div>
           <button 
@@ -32,7 +32,7 @@ const SettingsTab = ({
               : 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-lg shadow-emerald-500/20'
             }`}
           >
-            {isGroupsCompleted ? 'Ponovo otvori' : 'Završi grupe'}
+            {isGroupsCompleted ? 'Ponovo otvori' : 'Zavr�i grupe'}
           </button>
         </div>
       </div>
@@ -44,7 +44,7 @@ const SettingsTab = ({
           </div>
           <div>
             <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">Postavke Bodovanja</h3>
-            <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Definišite sistem bodovanja za {activeCategory?.name}</p>
+            <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Defini�ite sistem bodovanja za {activeCategory?.name}</p>
           </div>
         </div>
 
@@ -76,7 +76,7 @@ const SettingsTab = ({
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Prolazi igrača dalje</label>
+            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Prolazi igraca dalje</label>
             <div className="relative">
               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600">
                 <Settings2 size={16} />
@@ -90,6 +90,22 @@ const SettingsTab = ({
               />
             </div>
           </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Setova za pobjedu</label>
+            <div className="relative">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600">
+                <Trophy size={16} />
+              </div>
+              <input 
+                type="number"
+                className="w-full bg-slate-950 border border-slate-800 rounded-2xl py-4 pl-12 pr-4 text-white font-black text-lg focus:border-blue-500 outline-none transition-all text-blue-500"
+                defaultValue={activeCategory?.setsToWin ?? 2}
+                placeholder="2"
+                id="setsToWinInput"
+              />
+            </div>
+          </div>
         </div>
 
         <div className="mt-8 pt-8 border-t border-slate-800">
@@ -98,54 +114,20 @@ const SettingsTab = ({
               const win = document.getElementById('winPointsInput').value;
               const loss = document.getElementById('lossPointsInput').value;
               const advancing = document.getElementById('advancingPlayersInput').value;
-              handleUpdateSettings(win, loss, advancing);
+              const sets = document.getElementById('setsToWinInput')?.value || 2;
+              handleUpdateSettings({ 
+                winPoints: win, 
+                lossPoints: loss, 
+                advancingPlayers: advancing,
+                setsToWin: sets
+              });
             }}
             className="w-full bg-white text-slate-900 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-blue-500 hover:text-white transition-all shadow-xl shadow-white/5 active:scale-95 flex items-center justify-center gap-2"
           >
-            <Save size={16} /> Sačuvaj Postavke
-          </button>
-          <p className="text-center text-[9px] text-slate-600 mt-4 uppercase font-bold tracking-tighter">
-            Promjena bodova će automatski ažurirati sve tabele u realnom vremenu.
-          </p>
-        </div>
-      </div>
-
-      <div className="bg-slate-900/20 border-2 border-dashed border-slate-800 rounded-3xl p-12 text-center opacity-40">
-        <Plus size={32} className="mx-auto text-slate-700 mb-4" />
-        <p className="text-xs font-black text-slate-600 uppercase tracking-widest">Dodatne postavke uskoro...</p>
-      </div>
-
-      {/* Danger Zone - Delete Competition */}
-      {(isSuperAdmin || isOwner) && (
-        <div className="bg-red-950/20 border-2 border-red-900/30 rounded-3xl p-8">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-12 h-12 bg-red-500/10 rounded-2xl flex items-center justify-center text-red-500">
-              <AlertTriangle size={24} />
-            </div>
-            <div>
-              <h3 className="text-xl font-black text-red-500 uppercase italic tracking-tighter">Zona Opasnosti</h3>
-              <p className="text-red-400/70 text-xs font-bold uppercase tracking-widest">Brisanje takmičenja je trajna akcija</p>
-            </div>
-          </div>
-          
-          <div className="bg-slate-950/50 border border-red-900/20 rounded-2xl p-6 mb-6">
-            <p className="text-sm text-slate-400 mb-2">Ova akcija će trajno obrisati:</p>
-            <ul className="text-xs text-slate-500 space-y-1 list-disc list-inside">
-              <li>Sve kategorije</li>
-              <li>Sve mečeve i rezultate</li>
-              <li>Sve grupne faze i knockout bracke</li>
-              <li>Cijelo takmičenje</li>
-            </ul>
-          </div>
-          
-          <button 
-            onClick={handleDeleteCompetition}
-            className="w-full bg-red-600 hover:bg-red-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-red-500/20 active:scale-95 flex items-center justify-center gap-2"
-          >
-            <Trash2 size={16} /> Obriši Takmičenje
+            <Save size={16} /> Sacuvaj Postavke
           </button>
         </div>
-      )}
+      </div>
     </div>
   );
 };

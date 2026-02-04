@@ -15,8 +15,11 @@ import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import Players from './pages/Players';
 import Competitions from './pages/Competitions';
 import CompetitionDetails from './pages/CompetitionDetails';
+import Leagues from './pages/Leagues';
+import LeagueDetails from './pages/LeagueDetails';
 import SettingsPage from './pages/SettingsPage';
 import PublicCompetition from './pages/PublicCompetition';
+import Explore from './pages/Explore';
 
 const Unauthorized = () => {
   const [showRequestForm, setShowRequestForm] = useState(false);
@@ -32,31 +35,31 @@ const Unauthorized = () => {
   const plans = [
     {
       id: 'basic',
-      name: 'Basic',
-      price: '29€',
-      period: '/mjesec',
+      name: 'Jednokratni',
+      price: '50 KM',
+      period: '/ turnir',
       tournaments: '1 turnir',
-      categories: 'Do 10 kategorija',
+      categories: 'Do 15 kategorija',
       features: ['Raspored mečeva', 'Live rezultati', 'Tabele']
     },
     {
-      id: 'pro',
-      name: 'Pro',
-      price: '49€',
-      period: '/mjesec',
-      tournaments: '3 turnira',
-      categories: 'Do 15 kategorija',
-      features: ['Sve iz Basic', 'Statistike igrača', 'PDF izvještaji', 'Email notifikacije'],
+      id: 'standard',
+      name: 'Paket 5',
+      price: '200 KM',
+      period: '/ paket',
+      tournaments: '5 turnira',
+      categories: 'Neograničeno',
+      features: ['Sve iz Basic', 'Statistike igrača', 'Prioritetna podrška'],
       popular: true
     },
     {
-      id: 'premium',
-      name: 'Premium',
-      price: '99€',
-      period: '/mjesec',
+      id: 'pro',
+      name: 'Godišnji',
+      price: '500 KM',
+      period: '/ godina',
       tournaments: 'Neograničeno',
       categories: 'Neograničeno',
-      features: ['Sve iz Pro', 'Branded portal', 'API pristup', 'Premium podrška']
+      features: ['Sve iz Standard', 'Custom Branding', 'Arhiva rezultata']
     }
   ];
 
@@ -66,6 +69,19 @@ const Unauthorized = () => {
 
     try {
       const currentUser = auth.currentUser;
+      const selectedPlan = plans.find(p => p.id === formData.plan);
+      
+      const token = import.meta.env.VITE_TELEGRAM_BOT_TOKEN;
+      const chatId = import.meta.env.VITE_TELEGRAM_CHAT_ID;
+      
+      const text = `🚨 *ZAHTJEV IZ SISTEMA (Banned User)* 🚨\n\n` + 
+                   `👤 *Osoba:* ${formData.contactPerson}\n` +
+                   `📧 *Email:* ${currentUser?.email}\n` +
+                   `🏠 *Klub:* ${formData.organizationName}\n` +
+                   `📞 *Telefon:* ${formData.phone}\n` +
+                   `📦 *Plan:* ${selectedPlan?.name} (${selectedPlan?.price})`;
+
+      // 1. Save to Firestore
       await addDoc(collection(db, "access_requests"), {
         email: currentUser?.email,
         organizationName: formData.organizationName,
@@ -74,6 +90,17 @@ const Unauthorized = () => {
         selectedPlan: formData.plan,
         status: 'pending',
         createdAt: serverTimestamp()
+      });
+
+      // 2. Send Telegram
+      await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+              chat_id: chatId,
+              text: text,
+              parse_mode: 'Markdown'
+          })
       });
 
       setSubmitted(true);
@@ -300,8 +327,11 @@ export function App() {
             <Route path="/players" element={<Players />} />
             <Route path="/competitions" element={<Competitions />} />
             <Route path="/competitions/:id" element={<CompetitionDetails />} />
+            <Route path="/leagues" element={<Leagues />} />
+            <Route path="/leagues/:id" element={<LeagueDetails />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/p/:slug" element={<PublicCompetition />} />
+            <Route path="/explore" element={<Explore />} />
             
             {/* Catch-all route: Redirect to home for any undefined path */}
             <Route path="*" element={<Navigate to="/" replace />} />

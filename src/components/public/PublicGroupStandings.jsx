@@ -13,7 +13,7 @@ const PublicGroupStandings = ({ standings, advancingCount }) => {
         <div className="col-span-1 text-center">P</div>
         <div className="col-span-1 text-center">I</div>
         <div className="col-span-1 text-center">S±</div>
-        <div className="col-span-1 text-center">G±</div>
+        <div className="col-span-1 text-center">P±</div>
         <div className="col-span-2 text-center">B</div>
       </div>
 
