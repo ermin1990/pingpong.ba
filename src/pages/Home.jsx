@@ -548,6 +548,55 @@ const Home = () => {
                     </div>
                 </div>
 
+                {/* Team Section */}
+                <div className="mt-32 w-full max-w-6xl mx-auto px-4 pb-20">
+                    <div className="mb-12">
+                        <h3 className="text-3xl md:text-4xl font-black text-center mb-12 text-white italic uppercase tracking-tighter">Tim koji je razvio aplikaciju</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            {/* Developer Card */}
+                            <div className="group bg-gradient-to-br from-blue-500/10 to-purple-500/10 backdrop-blur-sm rounded-[2.5rem] p-8 md:p-10 border border-blue-500/20 hover:border-blue-500/40 transition-all duration-500 hover:shadow-2xl hover:shadow-blue-500/10">
+                                <div className="flex flex-col items-center text-center">
+                                    <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500 shadow-xl shadow-blue-500/20">
+                                        <Zap size={40} className="text-white" />
+                                    </div>
+                                    <h4 className="text-2xl md:text-3xl font-black text-white mb-2 uppercase italic tracking-tighter">Ermin Selimović</h4>
+                                    <p className="text-blue-400 font-black text-xs md:text-sm mb-6 uppercase tracking-[0.2em]">Dizajn & Razvoj</p>
+                                    <p className="text-slate-400 text-base md:text-lg mb-8 leading-relaxed font-medium">
+                                        Full-stack developer i dizajner odgovoran za kompletnu izradu aplikacije,
+                                        od korisničkog interfejsa do strukturne logike sistema.
+                                    </p>
+                                    <div className="flex flex-wrap justify-center gap-4">
+                                        <a href="https://github.com/ermin1990" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-slate-900 border border-slate-800 hover:border-white/20 px-6 py-3 rounded-2xl transition-all group/link">
+                                            <Activity size={18} className="text-slate-400 group-hover/link:text-white" />
+                                            <span className="text-slate-400 group-hover/link:text-white text-sm font-black uppercase tracking-widest">GitHub</span>
+                                        </a>
+                                        <a href="https://instagram.com/infinitycreative.agency" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/20 hover:border-pink-500/40 px-6 py-3 rounded-2xl transition-all group/link">
+                                            <div className="w-5 h-5 flex items-center justify-center text-pink-500 group-hover/link:text-pink-400">
+                                                <Users size={18} />
+                                            </div>
+                                            <span className="text-pink-400 group-hover/link:text-pink-300 text-sm font-black uppercase tracking-widest">Instagram</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Consultant Card */}
+                            <div className="group bg-gradient-to-br from-purple-500/10 to-pink-500/10 backdrop-blur-sm rounded-[2.5rem] p-8 md:p-10 border border-purple-500/20 hover:border-purple-500/40 transition-all duration-500 hover:shadow-2xl hover:shadow-purple-500/10">
+                                <div className="flex flex-col items-center text-center">
+                                    <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-600 rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500 shadow-xl shadow-purple-500/20">
+                                        <Trophy size={40} className="text-white" />
+                                    </div>
+                                    <h4 className="text-2xl md:text-3xl font-black text-white mb-2 uppercase italic tracking-tighter">Sanel Moranjkić</h4>
+                                    <p className="text-purple-400 font-black text-xs md:text-sm mb-6 uppercase tracking-[0.2em]">Analiza & Takmičarska Logika</p>
+                                    <p className="text-slate-400 text-base md:text-lg mb-8 leading-relaxed font-medium">
+                                        Tehnička podrška u razvoju aplikacije i ekspertiza u takmičarskim procesima.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                
             </div>
             
