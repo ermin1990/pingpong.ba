@@ -20,7 +20,7 @@ const Login = () => {
          return;
       }
 
-      const target = userData.role === 'super_admin' ? '/super-admin' : '/dashboard';
+      const target = userData.role === 'super_admin' ? '/admin/super-admin' : '/admin/dashboard';
       navigate(target, { replace: true });
     }
   }, [user, userData, authLoading, navigate]);

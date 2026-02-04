@@ -13,7 +13,11 @@ const Register = () => {
   // Automatski prebaci na dashboard ako je korisnik registrovan/ulogovan
   useEffect(() => {
     if (user && userData) {
-      navigate(userData.role === 'super_admin' ? '/super-admin' : '/dashboard');
+      if (userData.role === 'unauthorized') {
+          navigate('/unauthorized');
+          return;
+      }
+      navigate(userData.role === 'super_admin' ? '/admin/super-admin' : '/admin/dashboard');
     }
   }, [user, userData]);
 

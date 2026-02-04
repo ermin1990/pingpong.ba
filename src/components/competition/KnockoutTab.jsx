@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trophy, Zap, PlayCircle, AlertTriangle, Users, ChevronRight, Clock, Plus, X, Trash2, CheckCircle, GripVertical, ChevronDown, Layout, ChevronLeft, PanelsTopLeft, LayoutGrid, Star } from 'lucide-react';
+import { Trophy, Zap, PlayCircle, AlertTriangle, Users, ChevronRight, Clock, Plus, X, Trash2, CheckCircle, GripVertical, ChevronDown, Layout, ChevronLeft, PanelsTopLeft, LayoutGrid, Star, Edit2, Settings } from 'lucide-react';
 
 const KnockoutTab = ({ 
   activeCategory, 
@@ -15,7 +15,10 @@ const KnockoutTab = ({
   handleUpdateMatchPlayer,
   handleAddManualMatch,
   handleGenerateTemplate,
-  generating
+  generating,
+  saveMatchResult,
+  handleDeleteMatch,
+  handleDeleteAllMatches
 }) => {
   const seededPlayerIds = activeCategory?.seededPlayerIds || [];
   const [showManualModal, setShowManualModal] = React.useState(false);
@@ -156,23 +159,54 @@ const KnockoutTab = ({
     }
   };
 
-  const onAddManual = async () => {
-    const p1 = allPlayers.find(p => p.id === manualMatch.player1Id);
-    const p2 = allPlayers.find(p => p.id === manualMatch.player2Id);
+  const isSlotReserved = (match, slot) => {
+    const prevRound = Number(match.round) - 1;
+    if (prevRound < 0) return false;
     
-    if (!p1 || !p2) {
-      alert("Izaberite oba igrača.");
+    // Pronađi meč iz prethodne runde koji se "ulijeva" u ovaj slot
+    // Slot 1 (player1) dolazi iz bracketIndex * 2
+    // Slot 2 (player2) dolazi iz bracketIndex * 2 + 1
+    const sourceIndex = (slot === 1) ? match.bracketIndex * 2 : match.bracketIndex * 2 + 1;
+    
+    return knockoutMatches.some(m => 
+      Number(m.round) === prevRound && 
+      Number(m.bracketIndex) === sourceIndex
+    );
+  };
+
+  const onAddManual = async () => {
+    // Validacija runda naziva
+    if (!manualMatch.roundName) {
+      alert('Molimo unesite naziv runde.');
       return;
     }
 
+    const p1 = allPlayers.find(p => p.id === manualMatch.player1Id);
+    const p2 = allPlayers.find(p => p.id === manualMatch.player2Id);
+
+    // Ako igrač nije izabran (TBD), kreiramo objekat sa id: 'tbd'
+    const player1 = p1 ? { id: p1.id, name: p1.name } : { id: 'tbd', name: 'TBD' };
+    const player2 = p2 ? { id: p2.id, name: p2.name } : { id: 'tbd', name: 'TBD' };
+
     await handleAddManualMatch({
-      player1: { id: p1.id, name: p1.name },
-      player2: { id: p2.id, name: p2.name },
+      player1,
+      player2,
       roundName: manualMatch.roundName,
-      round: Number(manualMatch.round)
+      round: parseInt(manualMatch.round) || 1,
+      player1Score: 0,
+      player2Score: 0,
+      status: 'pending',
+      isKnockout: true,
+      bracketIndex: rounds[manualMatch.roundName]?.length || 0
     });
+
     setShowManualModal(false);
-    setManualMatch({ player1Id: '', player2Id: '', roundName: 'Polufinale', round: 1 });
+    setManualMatch({
+      player1Id: '',
+      player2Id: '',
+      roundName: manualMatch.roundName,
+      round: manualMatch.round
+    });
   };
 
   const onSelectPlayerForSlot = async (player) => {
@@ -472,9 +506,7 @@ const KnockoutTab = ({
                           <div 
                             key={p.id} 
                             draggable
-                            onDragStart={(e) => {
-                              e.dataTransfer.setData('player', JSON.stringify({ id: p.id, name: p.name }));
-                            }}
+                            onDragStart={(e) => onDragStart(e, p)}
                             className="flex items-center gap-3 bg-slate-950/40 p-2 rounded-xl border border-slate-800/50 cursor-grab active:cursor-grabbing hover:border-emerald-500/30 transition-colors group"
                           >
                             <span className="text-[10px] font-black text-emerald-500 w-4">{pIdx + 1}.</span>
@@ -526,10 +558,22 @@ const KnockoutTab = ({
                 >
                   {roundKeys.map((rName) => (
                     <div key={rName} className="flex flex-col min-w-[240px]">
-                      <div className="text-center mb-8">
+                      <div className="text-center mb-8 flex flex-col items-center gap-2">
                         <h4 className="text-xs font-black text-white uppercase italic tracking-widest border-b border-blue-500/30 pb-2 inline-block px-4">
                           {rName}
                         </h4>
+                        <button
+                          onClick={() => {
+                            if (window.confirm(`Da li ste sigurni da želite obrisati SVE mečeve iz faze: ${rName}?`)) {
+                              const matchIds = rounds[rName].map(m => m.id);
+                              handleDeleteAllMatches(matchIds);
+                            }
+                          }}
+                          className="text-[8px] font-black text-red-500/50 hover:text-red-500 uppercase tracking-widest flex items-center gap-1 transition-colors"
+                          title={`Obriši sve mečeve iz faze ${rName}`}
+                        >
+                          <Trash2 size={10} /> Resetuj Rundu
+                        </button>
                       </div>
                       
                       <div className="flex flex-col justify-around gap-6 flex-1">
@@ -538,24 +582,49 @@ const KnockoutTab = ({
                           const p2Winner = match.status === 'completed' && match.player2Score > match.player1Score;
 
                           const isMatchReady = match.player1?.id && match.player2?.id && match.player1.id !== 'tbd' && match.player2.id !== 'tbd';
+                          const isP1Real = match.player1?.id && match.player1.id !== 'tbd';
+                          const isP2Real = match.player2?.id && match.player2.id !== 'tbd';
+                          // Dozvoli walkover ako imamo jednog pravog igrača a drugi je TBD ili undefined, a meč nije završen
+                          const isWalkoverPossible = match.status !== 'completed' && ((isP1Real && !isP2Real) || (!isP1Real && isP2Real));
 
                           return (
                             <div 
                               key={match.id}
                               className={`group relative bg-slate-950 hover:bg-slate-900/80 rounded-2xl border transition-all duration-300 hover:scale-[1.05] shadow-lg cursor-pointer flex flex-col overflow-hidden ${isMatchReady ? 'border-slate-800 hover:border-blue-500/50' : 'border-dashed border-slate-700 hover:border-slate-500'}`}
                               style={{ minHeight: '100px' }}
-                              onClick={() => {
-                                if (!isMatchReady) {
-                                  // Ako meč nije spreman, klik na bilo koji dio kartice otvara biranje prvog slobodnog slota
-                                  const slot = (!match.player1?.id || match.player1.id === 'tbd') ? 1 : 2;
-                                  setEditingPlayerSlot({ matchId: match.id, playerSlot: slot });
-                                }
-                              }}
                             >
+                              {/* Match Action Buttons - Top Right */}
+                              <div className="absolute top-1 right-1 flex gap-1 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setEditingMatch(match);
+                                    setShowMatchModal(true);
+                                  }}
+                                  className="p-1.5 bg-slate-800/80 hover:bg-blue-600 text-slate-400 hover:text-white rounded-lg transition-all"
+                                  title="Postavke meča"
+                                >
+                                  <Settings size={12} />
+                                </button>
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteMatch(match.id);
+                                  }}
+                                  className="p-1.5 bg-slate-800/80 hover:bg-red-600 text-slate-400 hover:text-white rounded-lg transition-all"
+                                  title="Obriši meč"
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              </div>
+
                               {/* Player 1 Row */}
                               <div 
                                 className="flex items-center justify-between p-3 flex-1 group/p1 border-b border-slate-800/50 hover:bg-blue-500/5 transition-colors"
-                                onDragOver={(e) => e.preventDefault()}
+                                onDragOver={(e) => {
+                                  e.preventDefault();
+                                  e.dataTransfer.dropEffect = 'copy';
+                                }}
                                 onDrop={(e) => onDrop(e, match.id, 1)}
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -564,14 +633,21 @@ const KnockoutTab = ({
                               >
                                 <div className="flex items-center gap-3 min-w-0 flex-1">
                                   <div className={`w-1.5 h-1.5 rounded-full ${p1Winner ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-800'}`}></div>
-                                  <div className="flex flex-col truncate">
+                                  <div className="flex flex-col truncate group/name relative">
                                     <div className={`text-[11px] font-black uppercase truncate transition-colors flex items-center gap-1.5 ${p1Winner ? 'text-emerald-500' : 'text-slate-400 group-hover/p1:text-blue-400'}`}>
                                       {match.player1?.name || (
-                                        <span className="text-slate-700 animate-pulse text-[9px]">Prevucite igrača...</span>
+                                        isSlotReserved(match, 1) ? (
+                                          <span className="text-amber-500/50 text-[9px] italic">Pobjednik prethodne runde</span>
+                                        ) : (
+                                          <span className="text-slate-700 animate-pulse text-[9px]">Direktan prolaz (Prevucite...)</span>
+                                        )
                                       )}
                                       {match.player1?.id && seededPlayerIds.includes(match.player1.id) && (
                                         <Star size={10} className="text-amber-500 fill-amber-500" />
                                       )}
+                                      <div className="hidden group-hover/name:flex absolute -right-6 top-0 bg-blue-600 rounded p-0.5 shadow-lg">
+                                        <Edit2 size={8} className="text-white" />
+                                      </div>
                                     </div>
                                     {match.player1?.id && match.player1.id !== 'tbd' && (
                                        <span className="text-[7px] text-slate-600 font-bold uppercase truncate leading-tight">
@@ -588,7 +664,10 @@ const KnockoutTab = ({
                               {/* Player 2 Row */}
                               <div 
                                 className="flex items-center justify-between p-3 flex-1 group/p2 hover:bg-blue-500/5 transition-colors"
-                                onDragOver={(e) => e.preventDefault()}
+                                onDragOver={(e) => {
+                                  e.preventDefault();
+                                  e.dataTransfer.dropEffect = 'copy';
+                                }}
                                 onDrop={(e) => onDrop(e, match.id, 2)}
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -597,14 +676,21 @@ const KnockoutTab = ({
                               >
                                 <div className="flex items-center gap-3 min-w-0 flex-1">
                                   <div className={`w-1.5 h-1.5 rounded-full ${p2Winner ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-800'}`}></div>
-                                  <div className="flex flex-col truncate">
+                                  <div className="flex flex-col truncate group/name2 relative">
                                     <div className={`text-[11px] font-black uppercase truncate transition-colors flex items-center gap-1.5 ${p2Winner ? 'text-emerald-500' : 'text-slate-400 group-hover/p2:text-blue-400'}`}>
                                       {match.player2?.name || (
-                                        <span className="text-slate-700 animate-pulse text-[9px]">Prevucite igrača...</span>
+                                        isSlotReserved(match, 2) ? (
+                                          <span className="text-amber-500/50 text-[9px] italic">Pobjednik prethodne runde</span>
+                                        ) : (
+                                          <span className="text-slate-700 animate-pulse text-[9px]">Direktan prolaz (Prevucite...)</span>
+                                        )
                                       )}
                                       {match.player2?.id && seededPlayerIds.includes(match.player2.id) && (
                                         <Star size={10} className="text-amber-500 fill-amber-500" />
                                       )}
+                                      <div className="hidden group-hover/name2:flex absolute -right-6 top-0 bg-blue-600 rounded p-0.5 shadow-lg">
+                                        <Edit2 size={8} className="text-white" />
+                                      </div>
                                     </div>
                                     {match.player2?.id && match.player2.id !== 'tbd' && (
                                        <span className="text-[7px] text-slate-600 font-bold uppercase truncate leading-tight">
@@ -620,17 +706,42 @@ const KnockoutTab = ({
 
                               {/* Quick View Results Button Overlay - ONLY show if both players are present */}
                               {isMatchReady && (
-                                <div 
-                                  className="absolute inset-x-0 bottom-0 top-0 opacity-0 group-hover:opacity-100 bg-blue-600/10 flex items-center justify-center transition-opacity z-10"
-                                  onClick={(e) => { 
-                                    e.stopPropagation();
-                                    setEditingMatch(match); 
-                                    setShowMatchModal(true); 
-                                  }}
-                                >
-                                  <div className="bg-blue-600 text-white px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-tighter shadow-lg translate-y-8 group-hover:translate-y-0 transition-transform flex items-center gap-1.5">
+                                <div className="absolute inset-x-0 bottom-0 top-0 opacity-0 group-hover:opacity-100 bg-blue-600/10 flex items-center justify-center transition-opacity z-10 pointer-events-none">
+                                  <button 
+                                    className="bg-blue-600 text-white px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-tighter shadow-lg translate-y-8 group-hover:translate-y-0 transition-transform flex items-center gap-1.5 pointer-events-auto"
+                                    onClick={(e) => { 
+                                      e.stopPropagation();
+                                      setEditingMatch(match); 
+                                      setShowMatchModal(true); 
+                                    }}
+                                  >
                                     <PlayCircle size={10} /> Unos Rezultata
-                                  </div>
+                                  </button>
+                                </div>
+                              )}
+
+                              {isWalkoverPossible && (
+                                <div className="absolute inset-x-0 bottom-0 top-0 opacity-0 group-hover:opacity-100 bg-emerald-600/10 flex items-center justify-center transition-opacity z-10 pointer-events-none">
+                                  <button 
+                                    className="bg-emerald-600 text-white px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-tighter shadow-lg translate-y-8 group-hover:translate-y-0 transition-transform flex items-center gap-1.5 pointer-events-auto"
+                                    onClick={(e) => { 
+                                      e.stopPropagation();
+                                      const winner = isP1Real ? match.player1 : match.player2;
+                                      const setsToWin = activeCategory?.setsToWin || 2; 
+                                      
+                                      if(confirm(`Da li ste sigurni da želite označiti prolaz za igrača ${winner.name}?`)) {
+                                          saveMatchResult({
+                                              ...match,
+                                              player1Score: isP1Real ? setsToWin : 0,
+                                              player2Score: isP2Real ? setsToWin : 0,
+                                              sets: [], 
+                                              status: 'completed'
+                                          });
+                                      }
+                                    }}
+                                  >
+                                    <CheckCircle size={10} /> Prolaz Bez Borbe
+                                  </button>
                                 </div>
                               )}
                             </div>
@@ -765,6 +876,34 @@ const KnockoutTab = ({
             </div>
             
             <div className="p-4 overflow-y-auto">
+              <div className="mb-4">
+                  {/* Prikaz trenutnog igrača ako postoji i opcija brisanja */}
+                  {(() => {
+                    const match = matches.find(m => m.id === editingPlayerSlot.matchId);
+                    const currentPlayer = match?.[editingPlayerSlot.playerSlot === 1 ? 'player1' : 'player2'];
+                    const hasPlayer = currentPlayer && currentPlayer.id && currentPlayer.id !== 'tbd';
+
+                    if (hasPlayer) {
+                      return (
+                        <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 mb-4 flex items-center justify-between">
+                            <div>
+                                <p className="text-[10px] text-red-500 font-bold uppercase tracking-widest mb-1">Trenutni igrač</p>
+                                <p className="text-sm font-black text-white uppercase">{currentPlayer.name}</p>
+                            </div>
+                            <button 
+                                onClick={() => onSelectPlayerForSlot({ id: 'tbd', name: 'TBD' })}
+                                className="bg-red-600 hover:bg-red-500 text-white p-2 rounded-xl transition-colors"
+                                title="Ukloni igrača (Resetuj na TBD)"
+                            >
+                                <Trash2 size={16} />
+                            </button>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+              </div>
+
                <div className="grid grid-cols-1 gap-2">
                   <button 
                     onClick={() => onSelectPlayerForSlot({ id: 'tbd', name: 'TBD' })}
@@ -917,32 +1056,40 @@ const KnockoutTab = ({
                   <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-2xl mb-4">
                     <div className="flex items-center gap-2 mb-3">
                       <Zap size={16} className="text-amber-500" />
-                      <span className="text-xs font-black text-amber-500 uppercase tracking-widest">Baraž (Play-in)</span>
+                      <span className="text-xs font-black text-amber-500 uppercase tracking-widest">Baraž + Glavni Žrijeb</span>
                     </div>
                     <p className="text-[10px] text-slate-400 font-bold uppercase mb-4 leading-relaxed">
-                      Imate <span className="text-white">{count}</span> igrača. Da biste dobili čist žrijeb od <span className="text-white">{powerOf2}</span> igrača, potrebno je odigrati <span className="text-white">{barazMatchesCount}</span> pred-meča.
+                      Imate <span className="text-white">{count}</span> igrača. Sistem će kreirati <span className="text-white">{barazMatchesCount}</span> meča baraža i kompletan kostur od <span className="text-white">{powerOf2}</span> igrača.
                     </p>
                     <button 
                       onClick={async () => {
-                        if (!window.confirm(`Ovo će kreirati ${barazMatchesCount} mečeva baraža. Nastaviti?`)) return;
+                        if (!window.confirm(`Ovo će kreirati ${barazMatchesCount} mečeva baraža i šemu za ${powerOf2} igrača. Nastaviti?`)) return;
+                        
+                        // 1. Kreiraj Baraž mečeve
                         for (let i = 0; i < barazMatchesCount; i++) {
                           await handleAddManualMatch({
                             player1: { id: 'tbd', name: 'TBD' },
                             player2: { id: 'tbd', name: 'TBD' },
                             roundName: 'Baraž',
                             round: 0,
+                            bracketIndex: i,
                             isKnockout: true
                           });
                         }
+                        
+                        // 2. Kreiraj ostatak šeme (Template)
+                        // Koristimo handleGenerateTemplate sa preserveBaraz=true jer smo ih upravo kreirali
+                        handleGenerateTemplate(powerOf2, true);
+                        
                         setShowSetupModal(false);
                       }}
-                      className="w-full bg-amber-500 text-slate-900 py-3 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-amber-400 transition-all flex items-center justify-center gap-2"
+                      className="w-full bg-amber-500 text-slate-900 py-3 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-amber-400 transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20"
                     >
-                      Kreiraj {barazMatchesCount} Meča Baraža
+                      Generiši Kompletnu Šemu
                     </button>
                     <div className="mt-3 flex gap-4 text-[8px] font-black uppercase text-slate-500">
-                      <span>{playersInBaraz} boraca</span>
-                      <span>{byesCount} direktno prolazi</span>
+                      <span>{playersInBaraz} u baražu</span>
+                      <span>{byesCount} direktno u R1</span>
                     </div>
                   </div>
                 );

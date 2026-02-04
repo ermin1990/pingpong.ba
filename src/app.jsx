@@ -2,24 +2,26 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import AuthProvider from './context/AuthContext';
 import { auth, db } from './firebase/config';
 import DashboardLayout from './layouts/DashboardLayout';
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { CreditCard, Building2, Users, Trophy } from 'lucide-react';
 
-// Pages
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
-import SuperAdminDashboard from './pages/SuperAdminDashboard';
-import Players from './pages/Players';
-import Competitions from './pages/Competitions';
-import CompetitionDetails from './pages/CompetitionDetails';
-import Leagues from './pages/Leagues';
-import LeagueDetails from './pages/LeagueDetails';
-import SettingsPage from './pages/SettingsPage';
-import PublicCompetition from './pages/PublicCompetition';
-import Explore from './pages/Explore';
+// Lazy-loaded pages to reduce initial bundle size
+const Home = lazy(() => import('./pages/Home'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const SuperAdminDashboard = lazy(() => import('./pages/SuperAdminDashboard'));
+const Players = lazy(() => import('./pages/Players'));
+const Competitions = lazy(() => import('./pages/Competitions'));
+const CompetitionDetails = lazy(() => import('./pages/CompetitionDetails'));
+const Leagues = lazy(() => import('./pages/Leagues'));
+const LeagueDetails = lazy(() => import('./pages/LeagueDetails'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const PublicCompetition = lazy(() => import('./pages/PublicCompetition'));
+const PublicOverview = lazy(() => import('./pages/PublicOverview'));
+const MyProfile = lazy(() => import('./pages/MyProfile'));
+const Explore = lazy(() => import('./pages/Explore'));
 
 const Unauthorized = () => {
   const [showRequestForm, setShowRequestForm] = useState(false);
@@ -316,26 +318,39 @@ export function App() {
     <AuthProvider>
       <div className="min-h-screen bg-[#0f172a] text-slate-200 font-sans selection:bg-blue-500/30">
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/unauthorized" element={<Unauthorized />} />
-            
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/super-admin" element={<SuperAdminDashboard />} />
-            <Route path="/players" element={<Players />} />
-            <Route path="/competitions" element={<Competitions />} />
-            <Route path="/competitions/:id" element={<CompetitionDetails />} />
-            <Route path="/leagues" element={<Leagues />} />
-            <Route path="/leagues/:id" element={<LeagueDetails />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/p/:slug" element={<PublicCompetition />} />
-            <Route path="/explore" element={<Explore />} />
-            
-            {/* Catch-all route: Redirect to home for any undefined path */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+          <Suspense fallback={<div className="p-8 text-center">Učitavanje...</div>}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/unauthorized" element={<Unauthorized />} />
+
+              <Route path="/admin/dashboard" element={<Dashboard />} />
+              <Route path="/admin/super-admin" element={<SuperAdminDashboard />} />
+              <Route path="/admin/players" element={<Players />} />
+              <Route path="/admin/competitions" element={<Competitions />} />
+              <Route path="/admin/competitions/:id" element={<CompetitionDetails />} />
+              <Route path="/admin/leagues" element={<Leagues />} />
+              <Route path="/admin/leagues/:id" element={<LeagueDetails />} />
+              <Route path="/admin/settings" element={<SettingsPage />} />
+              <Route path="/admin/profile" element={<MyProfile />} />
+              
+              {/* Legacy support - redirects */}
+              <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
+              <Route path="/super-admin" element={<Navigate to="/admin/super-admin" replace />} />
+              <Route path="/players" element={<Navigate to="/admin/players" replace />} />
+              <Route path="/competitions" element={<Navigate to="/admin/competitions" replace />} />
+              <Route path="/settings" element={<Navigate to="/admin/settings" replace />} />
+              <Route path="/profile" element={<Navigate to="/admin/profile" replace />} />
+
+              <Route path="/p/:slug" element={<PublicCompetition />} />
+              <Route path="/p/help" element={<PublicOverview />} />
+              <Route path="/explore" element={<Explore />} />
+
+              {/* Catch-all route: Redirect to home for any undefined path */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
         </BrowserRouter>
       </div>
     </AuthProvider>

@@ -7,7 +7,7 @@ import { Trophy, Plus, Calendar, Target, ChevronRight, ExternalLink } from 'luci
 import DashboardLayout from '../layouts/DashboardLayout';
 
 const Competitions = () => {
-  const { userData } = useAuth();
+  const { user, userData, planDetails, isSuperAdmin } = useAuth(); // Import user, planDetails and isSuperAdmin
   const navigate = useNavigate();
   const [competitions, setCompetitions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -19,18 +19,22 @@ const Competitions = () => {
   const [type, setType] = useState('League');
 
   useEffect(() => {
-    if (!userData) return;
+    if (!user) return; // Use user instead of userData for auth check
 
     let q;
-    if (userData.role === 'super_admin') {
+    const userRole = userData?.role;
+    
+    if (userRole === 'super_admin') {
       q = query(collection(db, "competitions"));
     } else {
       const filters = [];
-      if (userData.uid) {
-        filters.push(where("ownerUid", "==", userData.uid));
+      // Use user.uid for owner check immediately
+      if (user.uid) {
+        filters.push(where("ownerUid", "==", user.uid));
       }
-      if (userData.email) {
-        filters.push(where("collaborators", "array-contains", userData.email));
+      // Only check collaborators if we have email
+      if (user.email) {
+        filters.push(where("collaborators", "array-contains", user.email));
       }
 
       if (filters.length === 0) {
@@ -57,31 +61,50 @@ const Competitions = () => {
     });
 
     return () => unsubscribe();
-  }, [userData]);
+  }, [user, userData]); // Added user dependency
 
   const handleCreate = async (e) => {
     e.preventDefault();
     
-    if (!userData) {
+    if (!userData || !user) {
       alert("Profil se još uvijek učitava. Molimo sačekajte.");
       return;
+    }
+
+    // Check plan limits (super_admin has no limits)
+    if (!isSuperAdmin && planDetails) {
+      try {
+        const { getDocs, query, collection, where } = await import('firebase/firestore');
+        const countQ = query(collection(db, "competitions"), where("ownerUid", "==", user.uid));
+        const countSnap = await getDocs(countQ);
+        const totalCount = countSnap.size;
+        
+        const limit = planDetails.tournamentsLimit || 0;
+        
+        if (totalCount >= limit) {
+          alert(`Dostigli ste limit vašeg plana (${limit} turnira/liga ukupno). Molimo zatražite nadogradnju na profilu.`);
+          return;
+        }
+      } catch (err) {
+        console.error("Greška pri provjeri limita:", err);
+      }
     }
 
     try {
       const docRef = await addDoc(collection(db, "competitions"), {
         name,
         sport,
-        type,
+        type: type === 'League' ? 'Knockout' : type, // Fallback if user didn't change initial state
         status: 'draft',
-        ownerUid: userData.uid || userData.id || '',
-        ownerName: userData.displayName || userData.email || 'Admin',
-        ownerEmail: userData.email || '',
+        ownerUid: user.uid, // Always use user.uid from AuthContext
+        ownerName: userData.displayName || userData.name || userData.email || 'Admin',
+        ownerEmail: userData.email || user.email || '',
         createdAt: serverTimestamp(),
         participantsCount: 0
       });
       setShowModal(false);
       setName('');
-      navigate(`/competitions/${docRef.id}`);
+      navigate(`/admin/competitions/${docRef.id}`);
     } catch (err) {
       console.error("Greška:", err);
       alert(`Greška: ${err.message}`);
@@ -172,7 +195,7 @@ const Competitions = () => {
                   )}
                 </div>
                 <Link 
-                  to={`/competitions/${comp.id}`} 
+                  to={`/admin/competitions/${comp.id}`} 
                   className="bg-slate-800 p-2 rounded-lg text-slate-400 hover:text-white transition-all"
                 >
                   <ChevronRight size={18} />

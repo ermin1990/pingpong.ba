@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase/config';
-import { collection, query, where, onSnapshot, addDoc, serverTimestamp, or } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
 import { Trophy, Plus, Calendar, Target, ChevronRight, ExternalLink, List, Settings, Info, Users } from 'lucide-react';
 import DashboardLayout from '../layouts/DashboardLayout';
 
 const Leagues = () => {
-  const { userData } = useAuth();
+  const { user, userData, planDetails, isSuperAdmin } = useAuth(); // Add user, planDetails and isSuperAdmin
   const navigate = useNavigate();
   const [leagues, setLeagues] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -21,31 +21,17 @@ const Leagues = () => {
   const [pointsLoss, setPointsLoss] = useState(0);
 
   useEffect(() => {
-    if (!userData) return;
+    if (!user) return; // Wait for user auth
 
     let q;
     const baseQuery = query(collection(db, "competitions"), where("type", "==", "League"));
+    const userRole = userData?.role;
 
-    if (userData.role === 'super_admin') {
+    if (userRole === 'super_admin') {
       q = baseQuery;
     } else {
-      const filters = [];
-      if (userData.uid) {
-        filters.push(where("ownerUid", "==", userData.uid));
-      }
-      if (userData.email) {
-        filters.push(where("collaborators", "array-contains", userData.email));
-      }
-
-      if (filters.length === 0) {
-        setLoading(false);
-        return;
-      }
-
-      // Filter by League AND (Owner OR Collaborator)
-      // Note: Firestore might need a composite index for this, 
-      // but let's try to filter in memory if it gets complex, 
-      // or just use one query and filter client side for better UX if IDs are few.
+      // Just fetch all leagues and filter on client to avoid composite index issues for now
+      // This is safer than the previous logic which depended on userData.uid being ready
       q = query(collection(db, "competitions"), where("type", "==", "League"));
     }
 
@@ -56,10 +42,12 @@ const Leagues = () => {
       }));
 
       // Filter by ownership if not super admin
-      if (userData.role !== 'super_admin') {
+      if (userRole !== 'super_admin') {
+        const uid = user.uid;
+        const email = user.email;
         list = list.filter(item => 
-          item.ownerUid === userData.uid || 
-          item.collaborators?.includes(userData.email)
+          item.ownerUid === uid || 
+          (email && item.collaborators?.includes(email))
         );
       }
 
@@ -68,36 +56,54 @@ const Leagues = () => {
     });
 
     return () => unsubscribe();
-  }, [userData]);
+  }, [user, userData]); // Added user dependency
 
   const handleCreate = async (e) => {
     e.preventDefault();
     
-    if (!userData) {
+    if (!user) {
       alert("Profil se još uvijek učitava. Molimo sačekajte.");
       return;
     }
 
+    // Check plan limits (super_admin has no limits)
+    if (!isSuperAdmin && planDetails) {
+      try {
+        const { getDocs, query, collection, where } = await import('firebase/firestore');
+        const countQ = query(collection(db, "competitions"), where("ownerUid", "==", user.uid));
+        const countSnap = await getDocs(countQ);
+        const totalCount = countSnap.size;
+        
+        const limit = planDetails.tournamentsLimit || 0;
+        
+        if (totalCount >= limit) {
+          alert(`Dostigli ste limit vašeg plana (${limit} turnira/liga ukupno). Molimo zatražite nadogradnju na profilu.`);
+          return;
+        }
+      } catch (err) {
+        console.error("Greška pri provjeri limita:", err);
+      }
+    }
+
     try {
-      const docRef = await addDoc(collection(db, "competitions"), {
+      await addDoc(collection(db, "competitions"), {
         name,
         sport,
         type: 'League',
         status: 'draft',
-        ownerUid: userData.uid || userData.id || '',
-        ownerName: userData.displayName || userData.email || 'Admin',
-        ownerEmail: userData.email || '',
+        ownerUid: user.uid,
+        ownerName: userData?.displayName || userData?.name || user.email || 'Admin',
+        ownerEmail: user.email,
         createdAt: serverTimestamp(),
         participantsCount: 0,
         settings: {
-          pointsWin: Number(pointsWin),
-          pointsDraw: Number(pointsDraw),
-          pointsLoss: Number(pointsLoss)
+          pointsWin,
+          pointsDraw,
+          pointsLoss
         }
       });
       setShowModal(false);
       setName('');
-      navigate(`/leagues/${docRef.id}`);
     } catch (err) {
       console.error("Greška:", err);
       alert(`Greška: ${err.message}`);
@@ -143,7 +149,7 @@ const Leagues = () => {
             {leagues.map((league) => (
               <Link 
                 key={league.id} 
-                to={`/leagues/${league.id}`}
+                to={`/admin/leagues/${league.id}`}
                 className="group relative bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-emerald-500/50 hover:shadow-2xl hover:shadow-emerald-500/5 transition-all"
               >
                 <div className="flex justify-between items-start mb-4">

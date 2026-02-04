@@ -6,6 +6,7 @@ import { doc, getDoc, setDoc, addDoc, collection, updateDoc, query, where, getDo
 const AuthContext = createContext({
   user: null,
   userData: null,
+  planDetails: null, // Add planDetails
   isSuperAdmin: false,
   isAdmin: false,
   loading: true,
@@ -15,7 +16,22 @@ const AuthContext = createContext({
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [userData, setUserData] = useState(null);
+  const [planDetails, setPlanDetails] = useState(null); // Add planDetails state
   const [loading, setLoading] = useState(true);
+
+  // Helper function to fetch plan details
+  const fetchPlanDetails = async (planId) => {
+    if (!planId) return null;
+    try {
+      const planSnap = await getDoc(doc(db, 'plans', planId));
+      if (planSnap.exists()) {
+        return { id: planSnap.id, ...planSnap.data() };
+      }
+    } catch (err) {
+      console.error("Error fetching plan details:", err);
+    }
+    return null;
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -37,6 +53,8 @@ export const AuthProvider = ({ children }) => {
           const docRef = doc(db, "users", currentUser.uid);
           const docSnap = await getDoc(docRef);
           
+          let currentUserData = null;
+
           if (!docSnap.exists()) {
             console.log("Novi korisnik, provjera whiteliste za:", userEmail);
             
@@ -73,13 +91,24 @@ export const AuthProvider = ({ children }) => {
             };
 
             await setDoc(docRef, newUserData);
-            setUserData(newUserData);
+            currentUserData = newUserData;
           } else {
-            setUserData(docSnap.data());
+            currentUserData = docSnap.data();
+          }
+
+          setUserData(currentUserData);
+
+          // Fetch plan details if user has a plan assigned
+          if (currentUserData?.subscriptionPlanId) {
+            const plan = await fetchPlanDetails(currentUserData.subscriptionPlanId);
+            setPlanDetails(plan);
+          } else {
+            setPlanDetails(null);
           }
         } else {
           setUser(null);
           setUserData(null);
+          setPlanDetails(null);
         }
       } catch (err) {
         console.error("Firestore Error:", err);
@@ -99,15 +128,14 @@ export const AuthProvider = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
-  const logout = async () => {
-    await signOut(auth);
-  };
+  const logout = () => signOut(auth);
 
   const value = {
     user,
     userData,
+    planDetails, // Add planDetails to value
     isSuperAdmin: userData?.role === 'super_admin',
-    isAdmin: userData?.role === 'org_admin',
+    isAdmin: userData?.role === 'org_admin' || userData?.role === 'super_admin',
     loading,
     logout
   };

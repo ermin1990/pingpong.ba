@@ -1,4 +1,4 @@
-import { Search, Plus, Target, CheckCircle, Users, Star } from 'lucide-react';
+import { Search, Plus, Target, CheckCircle, Users, Star, Edit2 } from 'lucide-react';
 
 const PlayersTab = ({ 
   activeCategory, 
@@ -11,13 +11,14 @@ const PlayersTab = ({
   seededPlayers = [],
   togglePlayerSelection, 
   togglePlayerSeed,
+  onEditPlayer,
   assignedPlayerIds = [], 
   saveSelectedPlayers, 
   setShowAddPlayer 
 }) => {
   const filteredPlayers = allPlayers
     .filter(p => !showOnlySelected || selectedPlayers.includes(p.id))
-    .filter(p => !searchTerm || p.name.toLowerCase().includes(searchTerm.toLowerCase()) || (p.club && p.club.toLowerCase().includes(searchTerm.toLowerCase())))
+    .filter(p => !searchTerm || (p.name && p.name.toLowerCase().includes(searchTerm.toLowerCase())) || (p.club && p.club.toLowerCase().includes(searchTerm.toLowerCase())))
     .sort((a, b) => {
       const aSeeded = seededPlayers.includes(a.id);
       const bSeeded = seededPlayers.includes(b.id);
@@ -145,6 +146,16 @@ const PlayersTab = ({
                             {player.club || 'Individualac'}
                           </p>
                         </div>
+                        
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEditPlayer(player);
+                          }}
+                          className="p-2 -mr-2 text-slate-500 hover:text-blue-400 opacity-0 group-hover:opacity-100 transition-all rounded-xl hover:bg-slate-800"
+                        >
+                          <Edit2 size={16} />
+                        </button>
                       </div>
 
                       <div className="mt-auto pt-4 flex items-center justify-between border-t border-slate-800/50">

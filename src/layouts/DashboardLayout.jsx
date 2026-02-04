@@ -1,6 +1,6 @@
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { LayoutDashboard, Users, Trophy, Settings, LogOut, Menu, X, Shield, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Users, Trophy, Settings, LogOut, Menu, X, Shield, ChevronLeft, ChevronRight, User } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 const DashboardLayout = ({ children, title }) => {
@@ -30,14 +30,14 @@ const DashboardLayout = ({ children, title }) => {
   };
 
   const navItems = [
-    { icon: <LayoutDashboard size={20} />, label: 'Dashboard', href: '/dashboard' },
-    { icon: <Trophy size={20} />, label: 'Turniri', href: '/competitions' },
-    { icon: <Trophy size={20} className="text-emerald-500" />, label: 'Lige (Berger)', href: '/leagues' },
-    { icon: <Users size={20} />, label: 'Igrači', href: '/players' },
+    { icon: <User size={20} />, label: 'Moj profil', href: '/admin/profile' },
+    { icon: <LayoutDashboard size={20} />, label: 'Dashboard', href: '/admin/dashboard' },
+    { icon: <Trophy size={20} />, label: 'Turniri', href: '/admin/competitions' },
+    { icon: <Trophy size={20} className="text-emerald-500" />, label: 'Lige (Berger)', href: '/admin/leagues' },
+    { icon: <Users size={20} />, label: 'Igrači', href: '/admin/players' },
     ...(isSuperAdmin ? [
-      { icon: <Shield size={20} className="text-yellow-500" />, label: 'Super Admin', href: '/super-admin' }
+      { icon: <Shield size={20} className="text-yellow-500" />, label: 'Super Admin', href: '/admin/super-admin' }
     ] : []),
-    { icon: <Settings size={20} />, label: 'Postavke', href: '/settings' },
   ];
 
   const handleLogout = async () => {

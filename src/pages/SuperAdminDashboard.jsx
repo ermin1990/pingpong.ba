@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useState, useEffect } from 'react';
 import { db } from '../firebase/config';
 import { collection, getDocs, query, orderBy, updateDoc, doc, addDoc, deleteDoc } from 'firebase/firestore';
-import { Shield, Building2, Users, Crown, CheckCircle, XCircle, Plus, Mail, Trash2, Clock, Phone, User, Trophy, Edit2 } from 'lucide-react';
+import { Shield, Building2, Users, Crown, CheckCircle, XCircle, Plus, Mail, Trash2, Clock, Phone, User, Trophy, Edit2, Layout } from 'lucide-react';
 
 const SuperAdminDashboard = () => {
   const { userData, isSuperAdmin } = useAuth();
@@ -13,9 +13,15 @@ const SuperAdminDashboard = () => {
   const [whitelistedEmails, setWhitelistedEmails] = useState([]);
   const [accessRequests, setAccessRequests] = useState([]);
   const [newEmail, setNewEmail] = useState('');
+  const [plans, setPlans] = useState([]);
+  const [newPlan, setNewPlan] = useState({ name: '', price: '', periodDays: 30, tournamentsLimit: 1, groupsLimit: 5, playersPerGroupLimit: 12, features: [] });
+  const [editingPlan, setEditingPlan] = useState(null);
+  const [featureInput, setFeatureInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('profiles'); // 'profiles' | 'requests'
   const [editingUser, setEditingUser] = useState(null);
+  const [editingSub, setEditingSub] = useState(null);
+  const [userPlanSelections, setUserPlanSelections] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -38,7 +44,12 @@ const SuperAdminDashboard = () => {
             userStats[data.ownerUid].competitions++;
           }
           const creator = usersData.find(u => u.uid === data.ownerUid);
-          return { id: d.id, ...data, creatorName: creator?.displayName || 'N/A' };
+          return { 
+            id: d.id, 
+            ...data, 
+            creatorName: creator?.displayName || data.ownerName || data.ownerEmail || 'N/A',
+            creatorEmail: creator?.email || data.ownerEmail || ''
+          };
         });
         setAllCompetitions(compsData);
 
@@ -73,6 +84,14 @@ const SuperAdminDashboard = () => {
         const requestsQ = query(collection(db, "access_requests"), orderBy("createdAt", "desc"));
         const requestsSnap = await getDocs(requestsQ);
         setAccessRequests(requestsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+
+        // Fetch Plans
+        try {
+          const plansSnap = await getDocs(query(collection(db, 'plans'), orderBy('createdAt', 'desc')));
+          setPlans(plansSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+        } catch (e) {
+          console.warn('Plans collection not found or empty', e);
+        }
 
       } catch (err) {
         console.error("Greška pri dohvaćanju podataka:", err);
@@ -171,6 +190,28 @@ const SuperAdminDashboard = () => {
     }
   };
 
+  const openEditSubscription = (user) => {
+    setEditingSub({ id: user.id, email: user.email, subscriptionPlan: user.subscriptionPlan || '', subscriptionExpiry: user.subscriptionExpiry ? new Date(user.subscriptionExpiry.seconds ? user.subscriptionExpiry.toMillis() : user.subscriptionExpiry) : '' });
+  };
+
+  const saveSubscription = async () => {
+    if (!editingSub) return;
+    try {
+      const uDoc = doc(db, 'users', editingSub.id);
+      const payload = {
+        subscriptionPlan: editingSub.subscriptionPlan || null,
+        subscriptionExpiry: editingSub.subscriptionExpiry ? new Date(editingSub.subscriptionExpiry) : null
+      };
+      await updateDoc(uDoc, payload);
+      setUsers(prev => prev.map(u => u.id === editingSub.id ? { ...u, ...payload } : u));
+      setEditingSub(null);
+      alert('Pretplata ažurirana.');
+    } catch (err) {
+      console.error('Greška pri ažuriranju pretplate:', err);
+      alert('Greška pri ažuriranju.');
+    }
+  };
+
   const removeWhitelist = async (id) => {
     if (!confirm("Ukloniti email sa liste dozvoljenih?")) return;
     try {
@@ -178,6 +219,102 @@ const SuperAdminDashboard = () => {
       setWhitelistedEmails(prev => prev.filter(item => item.id !== id));
     } catch (err) {
       alert("Greška pri brisanju.");
+    }
+  };
+
+  // Plans management
+  const handleAddFeature = (e) => {
+    e.preventDefault();
+    if (!featureInput.trim()) return;
+    if (editingPlan) {
+      setEditingPlan(prev => ({ ...prev, features: [...(prev.features || []), featureInput.trim()] }));
+    } else {
+      setNewPlan(prev => ({ ...prev, features: [...prev.features, featureInput.trim()] }));
+    }
+    setFeatureInput('');
+  };
+
+  const handleRemoveFeature = (index) => {
+    if (editingPlan) {
+      setEditingPlan(prev => ({ ...prev, features: prev.features.filter((_, i) => i !== index) }));
+    } else {
+      setNewPlan(prev => ({ ...prev, features: prev.features.filter((_, i) => i !== index) }));
+    }
+  };
+
+  const handleCreateOrUpdatePlan = async (e) => {
+    e && e.preventDefault && e.preventDefault();
+    try {
+      if (editingPlan) {
+        const pDoc = doc(db, 'plans', editingPlan.id);
+        const payload = {
+          name: editingPlan.name,
+          price: editingPlan.price || null,
+          periodDays: Number(editingPlan.periodDays) || 0,
+          tournamentsLimit: Number(editingPlan.tournamentsLimit) || 0,
+          groupsLimit: Number(editingPlan.groupsLimit) || 0,
+          playersPerGroupLimit: Number(editingPlan.playersPerGroupLimit) || 0,
+          features: editingPlan.features || []
+        };
+        await updateDoc(pDoc, payload);
+        setPlans(prev => prev.map(p => p.id === editingPlan.id ? { ...p, ...payload } : p));
+        setEditingPlan(null);
+        alert('Plan ažuriran.');
+      } else {
+        const payload = {
+          name: newPlan.name,
+          price: newPlan.price || null,
+          periodDays: Number(newPlan.periodDays) || 0,
+          tournamentsLimit: Number(newPlan.tournamentsLimit) || 0,
+          groupsLimit: Number(newPlan.groupsLimit) || 0,
+          playersPerGroupLimit: Number(newPlan.playersPerGroupLimit) || 0,
+          features: newPlan.features || [],
+          createdAt: new Date()
+        };
+        const pRef = await addDoc(collection(db, 'plans'), payload);
+        setPlans(prev => [{ id: pRef.id, ...payload }, ...prev]);
+        setNewPlan({ name: '', price: '', periodDays: 30, tournamentsLimit: 1, groupsLimit: 5, playersPerGroupLimit: 12, features: [] });
+        alert('Novi plan kreiran.');
+      }
+    } catch (err) {
+      console.error('Greška pri spremanju plana:', err);
+      alert('Greška pri spremanju plana.');
+    }
+  };
+
+  const startEditPlan = (plan) => {
+    setEditingPlan({ ...plan });
+  };
+
+  const cancelEditPlan = () => setEditingPlan(null);
+
+  const handleDeletePlan = async (planId) => {
+    if (!confirm('Obrisati plan? Ovo će ukloniti plan, ali postojeći korisnici neće biti automatski promijenjeni.')) return;
+    try {
+      await deleteDoc(doc(db, 'plans', planId));
+      setPlans(prev => prev.filter(p => p.id !== planId));
+      alert('Plan obrisan.');
+    } catch (err) {
+      console.error('Greška pri brisanju plana:', err);
+      alert('Greška pri brisanju plana.');
+    }
+  };
+
+  const assignPlanToUser = async (userId, planId) => {
+    try {
+      const plan = plans.find(p => p.id === planId);
+      if (!plan) return alert('Plan nije pronađen.');
+      const expiry = plan.periodDays ? new Date(Date.now() + Number(plan.periodDays) * 24*60*60*1000) : null;
+      await updateDoc(doc(db, 'users', userId), {
+        subscriptionPlan: plan.name || plan.id,
+        subscriptionPlanId: plan.id,
+        subscriptionExpiry: expiry
+      });
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, subscriptionPlan: plan.name || plan.id, subscriptionPlanId: plan.id, subscriptionExpiry: expiry } : u));
+      alert('Plan primijenjen korisniku.');
+    } catch (err) {
+      console.error('Greška pri dodjeli plana:', err);
+      alert('Greška pri dodjeli plana.');
     }
   };
 
@@ -263,6 +400,12 @@ const SuperAdminDashboard = () => {
             className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition flex items-center gap-2 whitespace-nowrap ${activeTab === 'competitions' ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/20' : 'text-gray-500 hover:text-gray-300'}`}
           >
             <Trophy size={14} /> Takmičenja
+          </button>
+          <button 
+            onClick={() => setActiveTab('plans')}
+            className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition flex items-center gap-2 whitespace-nowrap ${activeTab === 'plans' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/20' : 'text-gray-500 hover:text-gray-300'}`}
+          >
+            <Plus size={14} /> Planovi
           </button>
         </div>
       </div>
@@ -408,6 +551,7 @@ const SuperAdminDashboard = () => {
                     <th className="px-5 py-3">Email</th>
                     <th className="px-5 py-3">Sadržaj</th>
                     <th className="px-5 py-3">Uloga</th>
+                    <th className="px-5 py-3">Pretplata</th>
                     <th className="px-5 py-3 text-right">Upravljanje</th>
                   </tr>
                 </thead>
@@ -443,8 +587,34 @@ const SuperAdminDashboard = () => {
                           {user.role}
                         </span>
                       </td>
+                      <td className="px-5 py-3">
+                        <div className="text-sm text-slate-300">
+                          <div>{user.subscriptionPlan || 'N/A'}</div>
+                          <div className="text-[11px] text-gray-500">{user.subscriptionExpiry ? (() => {
+                            try {
+                              const d = user.subscriptionExpiry.seconds ? new Date(user.subscriptionExpiry.toMillis()) : new Date(user.subscriptionExpiry);
+                              const days = Math.ceil((d - new Date()) / (1000*60*60*24));
+                              return `${d.toLocaleDateString()} (${days}d)`;
+                            } catch (e) {
+                              return 'invalid';
+                            }
+                          })() : 'No expiry'}</div>
+                        </div>
+                      </td>
                       <td className="px-5 py-3 text-right">
                         <div className="flex items-center justify-end gap-2">
+                          <select
+                            className="bg-gray-800 border border-gray-700 text-xs rounded-lg px-2 py-1 text-gray-200"
+                            value={userPlanSelections[user.id] || user.subscriptionPlanId || ''}
+                            onChange={(e) => setUserPlanSelections(prev => ({ ...prev, [user.id]: e.target.value }))}
+                          >
+                            <option value="">-- Odaberi plan --</option>
+                            {plans.map(p => (
+                              <option key={p.id} value={p.id}>{p.name} ({p.periodDays || 0}d)</option>
+                            ))}
+                          </select>
+                          <button onClick={() => assignPlanToUser(user.id, userPlanSelections[user.id] || user.subscriptionPlanId)} className="p-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-all shadow-md">Dodijeli</button>
+                          <button onClick={() => openEditSubscription(user)} className="p-1.5 rounded-lg bg-gray-800 text-gray-400 hover:bg-blue-600 hover:text-white transition-all shadow-md">Edit</button>
                           <button 
                             onClick={() => {
                               if(confirm("Obrisati profil korisnika? Podaci u bazi će ostati ali on gubi pristup.")) {
@@ -560,9 +730,17 @@ const SuperAdminDashboard = () => {
                       <div className="text-[8px] text-gray-600 font-mono mt-0.5 opacity-50">ID: {comp.id}</div>
                     </td>
                     <td className="px-5 py-3">
-                      <div className="text-xs font-medium text-gray-400 flex items-center gap-1.5">
-                        <User size={10} className="text-gray-600" />
-                        {comp.creatorName || 'Nepoznato'}
+                      <div className="flex flex-col">
+                        <div className="text-xs font-bold text-gray-300 flex items-center gap-1.5">
+                          <User size={10} className="text-purple-500" />
+                          {comp.creatorName}
+                        </div>
+                        {comp.creatorEmail && (
+                          <div className="text-[9px] text-gray-500 flex items-center gap-1.5 mt-0.5">
+                            <Mail size={8} className="text-gray-600" />
+                            {comp.creatorEmail}
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td className="px-5 py-3">
@@ -598,8 +776,222 @@ const SuperAdminDashboard = () => {
           </div>
         </div>
       )}
-      
-      </div>
+      {/* Plans Tab */}
+      {activeTab === 'plans' && (
+        <div className="grid lg:grid-cols-4 gap-6">
+          <div className="lg:col-span-1">
+            <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-2xl">
+              <h2 className="text-sm font-black italic flex items-center gap-2 mb-4 uppercase">
+                <Plus size={16} className="text-emerald-500" />
+                {editingPlan ? 'Uredi Plan' : 'Novi Plan'}
+              </h2>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest">Osnovne informacije</label>
+                  <input 
+                    type="text"
+                    placeholder="Naziv plana (npr. Pro)"
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:border-emerald-500 outline-none transition-all text-xs"
+                    value={editingPlan ? editingPlan.name : newPlan.name}
+                    onChange={(e) => editingPlan ? setEditingPlan(prev => ({ ...prev, name: e.target.value })) : setNewPlan(prev => ({ ...prev, name: e.target.value }))}
+                  />
+                  <input 
+                    type="text"
+                    placeholder="Cijena (npr. 50 KM / turnir)"
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:border-emerald-500 outline-none transition-all text-xs"
+                    value={editingPlan ? editingPlan.price : newPlan.price}
+                    onChange={(e) => editingPlan ? setEditingPlan(prev => ({ ...prev, price: e.target.value })) : setNewPlan(prev => ({ ...prev, price: e.target.value }))}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest">Ograničenja</label>
+                  <div className="grid grid-cols-1 gap-2">
+                    <div className="space-y-1">
+                      <span className="text-[9px] text-gray-600 uppercase font-bold">Ukupni limit (Turniri i Lige)</span>
+                      <input 
+                        type="number"
+                        placeholder="Npr. 5"
+                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 focus:border-emerald-500 outline-none transition-all text-xs"
+                        value={editingPlan ? editingPlan.tournamentsLimit : newPlan.tournamentsLimit}
+                        onChange={(e) => editingPlan ? setEditingPlan(prev => ({ ...prev, tournamentsLimit: e.target.value })) : setNewPlan(prev => ({ ...prev, tournamentsLimit: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <span className="text-[9px] text-gray-600 uppercase font-bold">Trajanje (dana)</span>
+                      <input 
+                        type="number"
+                        placeholder="Npr. 30"
+                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 focus:border-emerald-500 outline-none transition-all text-xs"
+                        value={editingPlan ? editingPlan.periodDays : newPlan.periodDays}
+                        onChange={(e) => editingPlan ? setEditingPlan(prev => ({ ...prev, periodDays: e.target.value })) : setNewPlan(prev => ({ ...prev, periodDays: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[9px] text-gray-600 uppercase font-bold">Limit grupa</span>
+                      <input 
+                        type="number"
+                        placeholder="Npr. 8"
+                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 focus:border-emerald-500 outline-none transition-all text-xs"
+                        value={editingPlan ? editingPlan.groupsLimit : newPlan.groupsLimit}
+                        onChange={(e) => editingPlan ? setEditingPlan(prev => ({ ...prev, groupsLimit: e.target.value })) : setNewPlan(prev => ({ ...prev, groupsLimit: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[9px] text-gray-600 uppercase font-bold">Igrača po grupi</span>
+                      <input 
+                        type="number"
+                        placeholder="Npr. 12"
+                        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 focus:border-emerald-500 outline-none transition-all text-xs"
+                        value={editingPlan ? editingPlan.playersPerGroupLimit : newPlan.playersPerGroupLimit}
+                        onChange={(e) => editingPlan ? setEditingPlan(prev => ({ ...prev, playersPerGroupLimit: e.target.value })) : setNewPlan(prev => ({ ...prev, playersPerGroupLimit: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-gray-500 tracking-widest">Stavke / Opcije</label>
+                  <form onSubmit={handleAddFeature} className="flex gap-2">
+                    <input 
+                      type="text"
+                      placeholder="Dodaj stavku..."
+                      className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 focus:border-emerald-500 outline-none transition-all text-xs"
+                      value={featureInput}
+                      onChange={(e) => setFeatureInput(e.target.value)}
+                    />
+                    <button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-lg transition-all">
+                      <Plus size={16} />
+                    </button>
+                  </form>
+                  
+                  <div className="space-y-1 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
+                    {(editingPlan ? editingPlan.features : newPlan.features).map((feature, idx) => (
+                      <div key={idx} className="flex items-center justify-between bg-gray-800/50 border border-gray-700/50 rounded-lg px-3 py-1.5 group">
+                        <span className="text-[11px] text-gray-300 leading-tight pr-2">{feature}</span>
+                        <button 
+                          onClick={() => handleRemoveFeature(idx)}
+                          className="text-gray-600 hover:text-red-500 transition-colors"
+                        >
+                          <XCircle size= {12} />
+                        </button>
+                      </div>
+                    ))}
+                    {(editingPlan ? editingPlan.features : newPlan.features).length === 0 && (
+                      <div className="text-[10px] text-gray-600 italic py-2">Nema dodanih stavki.</div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="pt-4 flex gap-2">
+                  <button 
+                    onClick={handleCreateOrUpdatePlan}
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase tracking-widest py-3 rounded-lg text-[10px] transition-all shadow-lg shadow-emerald-900/20"
+                  >
+                    {editingPlan ? 'Spremi Izmjene' : 'Kreiraj Plan'}
+                  </button>
+                  {editingPlan && (
+                    <button 
+                      onClick={cancelEditPlan}
+                      className="bg-gray-800 hover:bg-gray-700 text-gray-400 p-3 rounded-lg transition-all"
+                    >
+                      <XCircle size={16} />
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="lg:col-span-3">
+            <div className="grid md:grid-cols-2 gap-4 h-fit">
+              {plans.length === 0 && (
+                <div className="col-span-full bg-gray-900 border border-gray-800 rounded-2xl p-12 text-center">
+                  <Shield size={40} className="text-gray-800 mx-auto mb-4" />
+                  <p className="text-gray-500 font-bold italic">Nema definiranih planova.</p>
+                </div>
+              )}
+              {plans.map(plan => (
+                <div key={plan.id} className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden hover:border-emerald-500/30 transition-all flex flex-col group relative">
+                  <div className="p-6 border-b border-gray-800">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="text-xl font-black text-white group-hover:text-emerald-400 transition-colors">{plan.name}</h3>
+                        <div className="text-emerald-500 font-black text-lg mt-1">{plan.price || 'Gratis'}</div>
+                      </div>
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                        <button onClick={() => startEditPlan(plan)} className="p-2 rounded-lg bg-gray-800 text-blue-400 hover:bg-blue-500 hover:text-white transition-all">
+                          <Edit2 size={14} />
+                        </button>
+                        <button onClick={() => handleDeletePlan(plan.id)} className="p-2 rounded-lg bg-gray-800 text-red-400 hover:bg-red-500 hover:text-white transition-all">
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-4 text-[10px] font-black uppercase tracking-wider text-gray-500">
+                      <div className="flex items-center gap-1.5">
+                        <Clock size={12} className="text-gray-700" />
+                        {plan.periodDays || 0} Dana
+                      </div>
+                      <div className="flex items-center gap-1.5" title="Ukupni limit turnira i liga">
+                        <Trophy size={12} className="text-gray-700" />
+                        {plan.tournamentsLimit || 0} Turnira/Liga
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Layout size={12} className="text-gray-700" />
+                        {plan.groupsLimit || 0} Grupa
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Users size={12} className="text-gray-700" />
+                        {plan.playersPerGroupLimit || 0} Igrača
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-6 bg-gray-950/20 flex-1">
+                    <div className="space-y-2.5">
+                      {(plan.features || []).map((feature, fidx) => (
+                        <div key={fidx} className="flex items-start gap-2.5">
+                          <div className="mt-1">
+                            <CheckCircle size={12} className="text-emerald-500" />
+                          </div>
+                          <span className="text-gray-400 text-xs font-medium leading-tight">{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}      </div>
+      {/* Edit subscription modal */}
+      {editingSub && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setEditingSub(null)}></div>
+          <div className="relative bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-md z-10">
+            <h3 className="text-lg font-bold text-white mb-4">Uredi pretplatu — {editingSub.email}</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="text-sm text-slate-400">Plan</label>
+                <input className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2" value={editingSub.subscriptionPlan} onChange={e => setEditingSub({...editingSub, subscriptionPlan: e.target.value})} />
+              </div>
+              <div>
+                <label className="text-sm text-slate-400">Datum isteka</label>
+                <input type="date" className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2" value={editingSub.subscriptionExpiry ? new Date(editingSub.subscriptionExpiry).toISOString().slice(0,10) : ''} onChange={e => setEditingSub({...editingSub, subscriptionExpiry: e.target.value})} />
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 mt-4">
+              <button className="px-4 py-2 rounded-xl bg-slate-800" onClick={() => setEditingSub(null)}>Otkaži</button>
+              <button className="px-4 py-2 rounded-xl bg-blue-600 text-white" onClick={saveSubscription}>Spremi</button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 };

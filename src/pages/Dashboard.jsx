@@ -26,7 +26,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchStats = async () => {
-      if (!userData) return;
+      if (!userData || !user) return;
 
       try {
         let playersQ, compsQ;
@@ -35,8 +35,8 @@ const Dashboard = () => {
           playersQ = query(collection(db, "players"));
           compsQ = query(collection(db, "competitions"));
         } else {
-          playersQ = query(collection(db, "players"), where("ownerUid", "==", userData.uid));
-          compsQ = query(collection(db, "competitions"), where("ownerUid", "==", userData.uid));
+          playersQ = query(collection(db, "players"), where("ownerUid", "==", user.uid));
+          compsQ = query(collection(db, "competitions"), where("ownerUid", "==", user.uid));
         }
         
         const [playersSnap, compsSnap] = await Promise.all([
@@ -71,14 +71,14 @@ const Dashboard = () => {
           </div>
           <div className="flex gap-3">
             <button 
-              onClick={() => navigate('/leagues')}
+              onClick={() => navigate('/admin/leagues')}
               className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold text-sm transition-all shadow-lg active:scale-95 flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
               Nova Liga (Berger)
             </button>
             <button 
-              onClick={() => navigate('/competitions')}
+              onClick={() => navigate('/admin/competitions')}
               className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-sm transition-all shadow-lg active:scale-95 flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
@@ -116,7 +116,7 @@ const Dashboard = () => {
               </div>
               <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <button 
-                  onClick={() => navigate('/competitions')}
+                  onClick={() => navigate('/admin/competitions')}
                   className="flex items-center gap-4 p-5 rounded-xl bg-slate-950 border border-slate-800 hover:border-blue-500/50 transition-all group"
                 >
                   <div className="p-3 rounded-lg bg-blue-500/10 text-blue-500 group-hover:bg-blue-600 group-hover:text-white transition-all">
@@ -129,7 +129,7 @@ const Dashboard = () => {
                 </button>
 
                 <button 
-                  onClick={() => navigate('/players')}
+                  onClick={() => navigate('/admin/players')}
                   className="flex items-center gap-4 p-5 rounded-xl bg-slate-950 border border-slate-800 hover:border-emerald-500/50 transition-all group"
                 >
                   <div className="p-3 rounded-lg bg-emerald-500/10 text-emerald-500 group-hover:bg-emerald-600 group-hover:text-white transition-all">

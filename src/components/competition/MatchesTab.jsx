@@ -30,7 +30,9 @@ const MatchesTab = ({
   handleToggleStage,
   handleReturnToDraft,
   handleDeleteMatch,
-  handleAutoAssignGroups
+  handleAutoAssignGroups,
+  planDetails, // Receive planDetails
+  isSuperAdmin  // Receive isSuperAdmin
 }) => {
   const [manualEditingGroups, setManualEditingGroups] = useState({});
   const seededPlayerIds = activeCategory?.seededPlayerIds || [];
@@ -183,7 +185,24 @@ const MatchesTab = ({
                         <span className="text-[10px] text-slate-500 font-black uppercase pl-2">Grupe: {groups.length}</span>
                         <div className="flex gap-1">
                           <button onClick={() => setGroups(prev => prev.length > 1 ? prev.slice(0, -1) : prev)} className="w-6 h-6 rounded flex items-center justify-center bg-slate-800 hover:bg-red-500/20 text-white font-bold transition-all">-</button>
-                          <button onClick={() => setGroups(prev => [...prev, []])} className="w-6 h-6 rounded flex items-center justify-center bg-slate-800 hover:bg-green-500/20 text-white font-bold transition-all">+</button>
+                          <button 
+                            onClick={() => {
+                              if (!isSuperAdmin) {
+                                if (!planDetails) {
+                                   alert("Podaci o planu se učitavaju. Molimo pričekajte.");
+                                   return;
+                                }
+                                if (groups.length >= (planDetails.groupsLimit || 1)) {
+                                  alert(`Limit vašeg plana je ${planDetails.groupsLimit} grupa po kategoriji.`);
+                                  return;
+                                }
+                              }
+                              setGroups(prev => [...prev, []]);
+                            }} 
+                            className="w-6 h-6 rounded flex items-center justify-center bg-slate-800 hover:bg-green-500/20 text-white font-bold transition-all"
+                          >
+                            +
+                          </button>
                         </div>
                       </div>
 

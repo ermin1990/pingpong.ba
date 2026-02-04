@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase/config';
-import { collection, query, where, onSnapshot, addDoc, deleteDoc, doc, writeBatch } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, addDoc, deleteDoc, doc, writeBatch, updateDoc } from 'firebase/firestore';
 import DashboardLayout from '../layouts/DashboardLayout';
-import { Users, Search, UserPlus, Trash2, FileText, LayoutGrid, Info } from 'lucide-react';
+import { Users, Search, UserPlus, Trash2, FileText, LayoutGrid, Info, Edit2, XCircle } from 'lucide-react';
 
 const Players = () => {
-  const { userData } = useAuth();
+  const { userData, user } = useAuth();
   const [players, setPlayers] = useState([]);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -16,17 +16,21 @@ const Players = () => {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [editingPlayer, setEditingPlayer] = useState(null);
 
   useEffect(() => {
-    if (!userData) return;
+    if (!user) return; // Wait for user
 
     let q;
-    if (userData.role === 'super_admin') {
+    const userRole = userData?.role;
+    
+    if (userRole === 'super_admin') {
       q = query(collection(db, "players"));
     } else {
+      // Use user.uid which is guaranteed
       q = query(
         collection(db, "players"),
-        where("ownerUid", "==", userData.uid)
+        where("ownerUid", "==", user.uid)
       );
     }
 
@@ -40,7 +44,7 @@ const Players = () => {
     });
 
     return () => unsubscribe();
-  }, [userData]);
+  }, [user, userData]); // Added user dependency
 
   const handleAddPlayer = async (e) => {
     e.preventDefault();
@@ -66,6 +70,45 @@ const Players = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleUpdatePlayer = async (e) => {
+    e.preventDefault();
+    if (!name.trim() || !editingPlayer) return;
+
+    setIsSubmitting(true);
+    try {
+      await updateDoc(doc(db, "players", editingPlayer.id), {
+        name: name.trim(),
+        email: email.trim(),
+        club: club.trim(),
+        updatedAt: new Date()
+      });
+      setEditingPlayer(null);
+      setName('');
+      setEmail('');
+      setClub('');
+    } catch (err) {
+      console.error("Greška pri ažuriranju igrača:", err);
+      alert("Greška pri ažuriranju profila.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const startEditing = (player) => {
+    setEditingPlayer(player);
+    setName(player.name || '');
+    setEmail(player.email || '');
+    setClub(player.club || '');
+    setFormMode('single');
+  };
+
+  const cancelEditing = () => {
+    setEditingPlayer(null);
+    setName('');
+    setEmail('');
+    setClub('');
   };
 
   const handleBulkAdd = async (e) => {
@@ -147,53 +190,81 @@ const Players = () => {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* Form Side */}
           <div className="lg:col-span-1">
-            <div className="bg-slate-800/50 border border-slate-800 p-6 rounded-2xl sticky top-6">
+            <div className={`bg-slate-800/50 border ${editingPlayer ? 'border-blue-500/50' : 'border-slate-800'} p-6 rounded-2xl sticky top-6 transition-colors`}>
                <div className="flex items-center justify-between mb-6">
                   <h3 className="font-bold text-slate-400 text-sm uppercase tracking-wider">
-                    {formMode === 'single' ? 'Novi Profil' : 'Grupni Unos'}
+                    {editingPlayer ? 'Uredi Profil' : (formMode === 'single' ? 'Novi Profil' : 'Grupni Unos')}
                   </h3>
-                  <div className="flex bg-slate-900 p-1 rounded-lg">
+                  {!editingPlayer && (
+                    <div className="flex bg-slate-900 p-1 rounded-lg">
+                      <button 
+                        onClick={() => setFormMode('single')}
+                        className={`p-1.5 rounded-md transition-all ${formMode === 'single' ? 'bg-slate-700 text-white shadow' : 'text-slate-500 hover:text-slate-300'}`}
+                      >
+                        <UserPlus size={16} />
+                      </button>
+                      <button 
+                        onClick={() => setFormMode('bulk')}
+                        className={`p-1.5 rounded-md transition-all ${formMode === 'bulk' ? 'bg-slate-700 text-white shadow' : 'text-slate-500 hover:text-slate-300'}`}
+                      >
+                        <FileText size={16} />
+                      </button>
+                    </div>
+                  )}
+                  {editingPlayer && (
                     <button 
-                      onClick={() => setFormMode('single')}
-                      className={`p-1.5 rounded-md transition-all ${formMode === 'single' ? 'bg-slate-700 text-white shadow' : 'text-slate-500 hover:text-slate-300'}`}
+                      onClick={cancelEditing}
+                      className="text-slate-500 hover:text-red-500 transition-colors"
+                      title="Otkaži uređivanje"
                     >
-                      <UserPlus size={16} />
+                      <XCircle size={18} />
                     </button>
-                    <button 
-                      onClick={() => setFormMode('bulk')}
-                      className={`p-1.5 rounded-md transition-all ${formMode === 'bulk' ? 'bg-slate-700 text-white shadow' : 'text-slate-500 hover:text-slate-300'}`}
-                    >
-                      <FileText size={16} />
-                    </button>
-                  </div>
+                  )}
                </div>
 
               {formMode === 'single' ? (
-                <form onSubmit={handleAddPlayer} className="space-y-4">
+                <form onSubmit={editingPlayer ? handleUpdatePlayer : handleAddPlayer} className="space-y-4">
                   <input 
                     placeholder="Ime i Prezime" 
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500 outline-none placeholder:text-slate-600" 
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500 outline-none placeholder:text-slate-600 shadow-inner" 
                     value={name} onChange={(e) => setName(e.target.value)} required
                   />
                   <input 
                     placeholder="E-mail (opciono)" 
                     type="email"
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500 outline-none placeholder:text-slate-600" 
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500 outline-none placeholder:text-slate-600 shadow-inner" 
                     value={email} onChange={(e) => setEmail(e.target.value)}
                   />
                   <input 
                     placeholder="Klub / Organizacija" 
-                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500 outline-none placeholder:text-slate-600" 
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500 outline-none placeholder:text-slate-600 shadow-inner" 
                     value={club} onChange={(e) => setClub(e.target.value)}
                   />
-                  <button 
-                    disabled={isSubmitting}
-                    className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold text-sm transition-all shadow-lg active:scale-95 disabled:opacity-50"
-                  >
-                    Dodaj u Registar
-                  </button>
+                  {editingPlayer ? (
+                    <div className="flex gap-2">
+                       <button 
+                        type="button"
+                        onClick={cancelEditing}
+                        className="flex-1 bg-slate-900 border border-slate-700 text-slate-400 py-3 rounded-xl font-bold text-sm hover:bg-slate-800 transition-all"
+                      >
+                        Otkaži
+                      </button>
+                      <button 
+                        disabled={isSubmitting}
+                        className="flex-[2] bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-900/20 active:scale-95 disabled:opacity-50"
+                      >
+                        Sačuvaj izmjene
+                      </button>
+                    </div>
+                  ) : (
+                    <button 
+                      disabled={isSubmitting}
+                      className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold text-sm transition-all shadow-lg active:scale-95 disabled:opacity-50"
+                    >
+                      Dodaj u Registar
+                    </button>
+                  )}
                 </form>
               ) : (
                 <form onSubmit={handleBulkAdd} className="space-y-4">
@@ -259,12 +330,22 @@ const Players = () => {
                                <span className="text-slate-500">{player.matchesPlayed || 0} mečeva</span>
                             </td>
                             <td className="px-6 py-4 text-right">
-                               <button 
-                                onClick={() => deletePlayer(player.id)}
-                                className="p-2 text-slate-700 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
-                              >
-                                <Trash2 size={16} />
-                              </button>
+                               <div className="flex items-center justify-end gap-1">
+                                  <button 
+                                    onClick={() => startEditing(player)}
+                                    className={`p-2 transition-all opacity-0 group-hover:opacity-100 ${editingPlayer?.id === player.id ? 'text-blue-500 bg-blue-500/10 rounded-lg opacity-100' : 'text-slate-500 hover:text-blue-400'}`}
+                                    title="Uredi"
+                                  >
+                                    <Edit2 size={16} />
+                                  </button>
+                                  <button 
+                                    onClick={() => deletePlayer(player.id)}
+                                    className="p-2 text-slate-500 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
+                                    title="Obriši"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                               </div>
                             </td>
                           </tr>
                         ))}

@@ -20,13 +20,6 @@ const CategoriesTab = ({
       <div className="lg:col-span-2 space-y-4">
         <h2 className="text-xl font-bold text-white mb-4">Pregled Kategorija</h2>
         
-        {categories.length === 0 ? (
-          <div className="text-center py-12 bg-slate-900 rounded-xl border border-slate-800">
-            <Zap className="w-12 h-12 mx-auto mb-3 text-slate-700" />
-            <h3 className="text-lg font-semibold text-white mb-2">Nema kategorija</h3>
-            <p className="text-slate-500 text-sm">Dodajte prvu kategoriju koristeći obrazac sa desne strane.</p>
-          </div>
-        ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {categories.map(cat => (
               <div 
@@ -121,7 +114,6 @@ const CategoriesTab = ({
               </form>
             </div>
           </div>
-        )}
       </div>
 
       <div className="lg:col-span-1">

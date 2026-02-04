@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Trophy, Zap, Mail, ArrowRight, CheckCircle2, Send, Loader2, Building2, CreditCard, Users, X, Activity } from 'lucide-react';
+import { ShieldCheck, Trophy, Zap, Mail, ArrowRight, CheckCircle2, Send, Loader2, Building2, CreditCard, Users, X, Activity, BookOpen } from 'lucide-react';
 import { db } from '../firebase/config';
 import { collection, addDoc, serverTimestamp, getDocs, query, where } from 'firebase/firestore';
 
@@ -161,6 +161,10 @@ const Home = () => {
                 <div className="flex gap-4 md:gap-8 items-center">
                     <Link to="/login" className="bg-blue-600/10 text-blue-400 border border-blue-500/20 px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-lg shadow-blue-900/20">
                         Prijava
+                    </Link>
+                    <Link to="/p/help" className="hidden md:inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white/90 px-3 py-2 rounded-lg border border-transparent hover:border-slate-700 transition">
+                        <BookOpen size={16} className="text-slate-400" />
+                        Kako koristiti
                     </Link>
                 </div>
             </nav>
@@ -601,7 +605,14 @@ const Home = () => {
             </div>
             
             <footer className="py-8 text-center text-slate-600 text-xs border-t border-white/5">
-                <p>&copy; {new Date().getFullYear()} PingPong.ba Platforma. Sva prava zadržana.</p>
+                <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <p className="text-center md:text-left">&copy; {new Date().getFullYear()} PingPong.ba Platforma. Sva prava zadržana.</p>
+                    <div>
+                        <Link to="/p/help" className="text-slate-400 hover:text-white text-sm flex items-center gap-2">
+                            <BookOpen size={14} /> Kako koristiti javni prikaz
+                        </Link>
+                    </div>
+                </div>
             </footer>
         </div>
     );

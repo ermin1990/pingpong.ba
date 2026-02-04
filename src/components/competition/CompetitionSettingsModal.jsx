@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, FileText } from 'lucide-react';
+import { X, UserPlus, FileText, ExternalLink } from 'lucide-react';
 
 const CompetitionSettingsModal = ({
   showCompSettings,
@@ -12,7 +12,9 @@ const CompetitionSettingsModal = ({
   setCollaborators,
   competition,
   handleUpdateCompetition,
-  savingComp
+  savingComp,
+  isPublic,
+  setIsPublic
 }) => {
   if (!showCompSettings || !competition) return null;
 
@@ -70,6 +72,60 @@ const CompetitionSettingsModal = ({
 
           <div className="space-y-4 pt-4 border-t border-slate-800/50">
             <div className="flex items-center justify-between">
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Vidljivost Takmičenja</label>
+              <div className="flex items-center gap-2">
+                {isPublic ? <Globe size={14} className="text-emerald-500" /> : <Lock size={14} className="text-slate-500" />}
+                <span className={`text-[9px] font-bold uppercase px-2 py-1 rounded ${isPublic ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-800 text-slate-500'}`}>
+                  {isPublic ? 'JAVNO' : 'PRIVATNO'}
+                </span>
+              </div>
+            </div>
+            
+            <div className="bg-slate-950/50 border border-slate-800 rounded-2xl p-4">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-white mb-1">Javno Takmičenje</p>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
+                    {isPublic ? 'Takmičenje je vidljivo svima sa linkom' : 'Samo vlasnik i saradnici mogu vidjeti takmičenje'}
+                  </p>
+                </div>
+                <button 
+                  onClick={() => setIsPublic(!isPublic)}
+                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                    isPublic 
+                      ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/20 hover:bg-emerald-500' 
+                      : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white'
+                  }`}
+                >
+                  {isPublic ? 'Sakrij' : 'Objavi'}
+                </button>
+              </div>
+
+              {isPublic && (
+                <div className="flex items-center gap-2 bg-slate-900 p-2 rounded-xl border border-slate-800">
+                   <div className="flex-1 truncate text-xs font-mono text-slate-400 select-all px-2">
+                      {`${window.location.origin}/p/${compSlug}`}
+                   </div>
+                   <button 
+                     onClick={() => window.open(`/p/${compSlug}`, '_blank')}
+                     className="px-3 py-1.5 bg-blue-600/10 text-blue-500 hover:bg-blue-600 hover:text-white rounded-lg text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 shrink-0"
+                   >
+                     <Globe size={12} /> Otvori
+                   </button>
+                   <button 
+                     onClick={() => {
+                        navigator.clipboard.writeText(`${window.location.origin}/p/${compSlug}`);
+                        alert("Link kopiran!");
+                     }}
+                     className="px-3 py-1.5 bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white rounded-lg text-[9px] font-black uppercase tracking-widest transition-all shrink-0"
+                   >
+                     Kopiraj
+                   </button>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between">
               <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Saradnici (Email)</label>
               <span className="text-[9px] text-slate-500 font-bold bg-slate-800 px-2 py-1 rounded">DODAJ SARADNIKA</span>
             </div>
@@ -120,16 +176,28 @@ const CompetitionSettingsModal = ({
                 <p className="text-xs text-white font-bold">{window.location.host}/p/{competition.slug || compSlug}</p>
               </div>
             </div>
-            <button 
-              onClick={() => {
-                  const slugToCopy = compSlug || competition.slug;
-                  navigator.clipboard.writeText(`${window.location.origin}/p/${slugToCopy}`);
-                  alert("Link kopiran!");
-              }}
-              className="text-blue-500 hover:text-blue-400 font-black uppercase text-[10px]"
-            >
-              Kopiraj
-            </button>
+            <div className="flex gap-2">
+                <button 
+                onClick={() => {
+                    const slugToCopy = compSlug || competition.slug;
+                    navigator.clipboard.writeText(`${window.location.origin}/p/${slugToCopy}`);
+                    alert("Link kopiran!");
+                }}
+                className="text-blue-500 hover:text-blue-400 font-black uppercase text-[10px]"
+                >
+                Kopiraj
+                </button>
+                <div className="w-px h-3 bg-slate-800 self-center"></div>
+                <button 
+                onClick={() => {
+                    const slugToOpen = compSlug || competition.slug;
+                    window.open(`${window.location.origin}/p/${slugToOpen}`, '_blank');
+                }}
+                className="text-emerald-500 hover:text-emerald-400 font-black uppercase text-[10px] flex items-center gap-1"
+                >
+                Otvori <ExternalLink size={10} />
+                </button>
+            </div>
           </div>
 
           <div className="pt-4 flex gap-3">

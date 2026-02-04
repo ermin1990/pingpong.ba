@@ -10,7 +10,7 @@ import DashboardLayout from '../layouts/DashboardLayout';
 import { 
   Users, Trophy, List, Settings, Save, Plus, ChevronRight, 
   Trash2, Play, CheckCircle, Info, Edit2, Zap, LayoutGrid, Search, Target,
-  FileText, UserPlus, RefreshCw
+  FileText, UserPlus, RefreshCw, X
 } from 'lucide-react';
 import { generateBergerMatches } from '../utils/berger';
 
@@ -24,7 +24,7 @@ const LeagueDetails = () => {
   const { id } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { userData } = useAuth();
+  const { userData, planDetails, isSuperAdmin } = useAuth(); // Import planDetails and isSuperAdmin
   
   const [league, setLeague] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -40,6 +40,12 @@ const LeagueDetails = () => {
   const [matchSearchQuery, setMatchSearchQuery] = useState('');
   const [showOnlySelected, setShowOnlySelected] = useState(false);
   const [showAddPlayer, setShowAddPlayer] = useState(false);
+
+  // State za uređivanje igrača
+  const [editingPlayer, setEditingPlayer] = useState(null);
+  const [editPlayerName, setEditPlayerName] = useState('');
+  const [editPlayerClub, setEditPlayerClub] = useState('');
+  const [updatingPlayer, setUpdatingPlayer] = useState(false);
 
   // Filter for global search
   const filteredGlobalMatches = useMemo(() => {
@@ -119,6 +125,35 @@ const LeagueDetails = () => {
     );
   };
 
+  const startEditingPlayer = (player) => {
+    setEditingPlayer(player);
+    setEditPlayerName(player.name || '');
+    setEditPlayerClub(player.club || '');
+  };
+
+  const handleUpdatePlayer = async (e) => {
+    e.preventDefault();
+    if (!editingPlayer || !editPlayerName.trim()) return;
+
+    setUpdatingPlayer(true);
+    try {
+      const playerRef = doc(db, "players", editingPlayer.id);
+      await updateDoc(playerRef, {
+        name: editPlayerName.trim(),
+        club: editPlayerClub.trim(),
+        updatedAt: serverTimestamp()
+      });
+
+      setEditingPlayer(null);
+      alert("Igrač uspešno ažuriran!");
+    } catch (err) {
+      console.error("Greška pri ažuriranju igrača:", err);
+      alert("Greška pri ažuriranju igrača.");
+    } finally {
+      setUpdatingPlayer(false);
+    }
+  };
+
   const handleQuickAddPlayer = async (e) => {
     e.preventDefault();
     if (!newPlayerName.trim()) return;
@@ -189,6 +224,15 @@ const LeagueDetails = () => {
   };
 
   const saveSelectedPlayers = async () => {
+    // Check players per group limit (a league is one group)
+    if (!isSuperAdmin && planDetails) {
+      const limit = planDetails.playersPerGroupLimit || 16;
+      if (selectedPlayers.length > limit) {
+        alert(`Dostigli ste limit od ${limit} igrača po grupi (ligi) za vaš plan.`);
+        return;
+      }
+    }
+
     try {
       await updateDoc(doc(db, "competitions", id), {
         playerIds: selectedPlayers,
@@ -471,19 +515,19 @@ const LeagueDetails = () => {
         <div className="min-h-[400px]">
           {activeTab === 'players' && (
             <PlayersTab 
-              activeCategory={{ name: 'Glavni Roster', status: league.status }}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              showOnlySelected={showOnlySelected}
+              setShowOnlySelected={setShowOnlySelected}
               allPlayers={allPlayers}
               selectedPlayers={selectedPlayers}
               seededPlayers={seededPlayers}
               togglePlayerSelection={togglePlayerSelection}
               togglePlayerSeed={togglePlayerSeed}
-              assignedPlayerIds={assignedPlayerIds}
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              showOnlySelected={showOnlySelected}
-              setShowOnlySelected={setShowOnlySelected}
+              onEditPlayer={startEditingPlayer}
               saveSelectedPlayers={saveSelectedPlayers}
               setShowAddPlayer={setShowAddPlayer}
+              activeCategory={{ status: league?.status || 'draft', name: 'Lista Igrača' }}
             />
           )}
 
@@ -702,7 +746,7 @@ const LeagueDetails = () => {
                             onClick={async () => {
                                 if (window.confirm("Trajno obrisati cijelu ligu?")) {
                                     await deleteDoc(doc(db, "competitions", id));
-                                    navigate('/leagues');
+                                    navigate('/admin/leagues');
                                 }
                             }}
                             className="bg-red-500/10 hover:bg-red-600 text-red-500 hover:text-white border border-red-500/20 px-6 py-3 rounded-xl text-sm font-bold transition-all flex items-center gap-2"
@@ -828,6 +872,58 @@ const LeagueDetails = () => {
                   </form>
                 )}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Player Modal */}
+        {editingPlayer && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+            <div className="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl">
+              <div className="p-6 border-b border-white/5 flex justify-between items-center bg-gradient-to-r from-blue-600/10 to-transparent">
+                <h3 className="text-xl font-black text-white uppercase tracking-tight">Uredi Igrača</h3>
+                <button onClick={() => setEditingPlayer(null)} className="text-slate-500 hover:text-white transition-colors">
+                  <X size={24} />
+                </button>
+              </div>
+              <form onSubmit={handleUpdatePlayer} className="p-6 space-y-4">
+                <div>
+                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2 px-1">Ime i prezime</label>
+                  <input
+                    type="text"
+                    required
+                    value={editPlayerName}
+                    onChange={(e) => setEditPlayerName(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3.5 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2 px-1">Klub / Grad</label>
+                  <input
+                    type="text"
+                    value={editPlayerClub}
+                    onChange={(e) => setEditPlayerClub(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3.5 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
+                    placeholder="Opciono"
+                  />
+                </div>
+                <div className="pt-4 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setEditingPlayer(null)}
+                    className="flex-1 px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition-all border border-slate-700"
+                  >
+                    Odustani
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={updatingPlayer}
+                    className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20"
+                  >
+                    {updatingPlayer ? 'Spašavam...' : 'Sačuvaj izmjene'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}
