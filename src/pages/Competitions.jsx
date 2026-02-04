@@ -118,7 +118,7 @@ const Competitions = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-white tracking-tight">Upravljanje Turnirima</h2>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Upravljanje Turnirima</h2>
             <p className="text-slate-500 text-sm">Ukupno {competitions.length} registrovanih turnira.</p>
           </div>
           
@@ -136,13 +136,13 @@ const Competitions = () => {
            <p className="text-xs text-slate-500 font-medium">Učitavanje podataka...</p>
         </div>
       ) : competitions.length === 0 ? (
-        <div className="bg-slate-900 border border-slate-800 border-dashed rounded-3xl p-20 text-center">
-          <Trophy size={48} className="text-slate-800 mx-auto mb-6" />
-          <h3 className="text-xl font-bold text-white mb-2">Nema aktivnih turnira</h3>
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-dashed rounded-3xl p-20 text-center">
+          <Trophy size={48} className="text-slate-200 dark:text-slate-800 mx-auto mb-6" />
+          <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Nema aktivnih turnira</h3>
           <p className="text-slate-500 mb-8 max-w-sm mx-auto text-sm">Kreirajte svoj prvi turnir i započnite sa upravljanjem.</p>
           <button 
             onClick={() => setShowModal(true)}
-            className="bg-slate-800 hover:bg-slate-700 text-white px-8 py-3 rounded-xl font-bold text-sm transition-all"
+            className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white px-8 py-3 rounded-xl font-bold text-sm transition-all"
           >
             Kreiraj Turnir
           </button>
@@ -150,35 +150,35 @@ const Competitions = () => {
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {competitions.map(comp => (
-            <div key={comp.id} className="group bg-slate-900 border border-slate-800 p-6 rounded-2xl hover:border-slate-700 transition-all flex flex-col justify-between">
+            <div key={comp.id} className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl hover:border-blue-400 dark:hover:border-slate-700 transition-all flex flex-col justify-between shadow-sm dark:shadow-none">
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${
-                    comp.status === 'active' ? 'bg-green-500/10 text-green-500' : 'bg-slate-800 text-slate-400'
+                    comp.status === 'active' ? 'bg-green-500/10 text-green-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
                   }`}>
                     {comp.status === 'draft' ? 'Nije pokrenuto' : 'Aktivno'}
                   </span>
-                  <Trophy size={16} className="text-slate-700" />
+                  <Trophy size={16} className="text-slate-300 dark:text-slate-700" />
                 </div>
                 
-                <h3 className="text-xl font-bold text-white mb-1 group-hover:text-blue-500 transition-colors">{comp.name}</h3>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-500 transition-colors">{comp.name}</h3>
                 <div className="flex flex-col gap-1 mb-6">
                   <div className="text-[10px] text-slate-500 flex items-center gap-2">
                     <span>{comp.sport}</span>
-                    <span className="w-1 h-1 bg-slate-800 rounded-full"></span>
+                    <span className="w-1 h-1 bg-slate-200 dark:bg-slate-800 rounded-full"></span>
                     <span>{comp.type}</span>
                   </div>
                   {comp.ownerName && (
-                    <div className="text-[10px] text-blue-400/60 font-medium">
+                    <div className="text-[10px] text-blue-600 dark:text-blue-400/60 font-medium">
                       Kreirao: {comp.ownerName}
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-4 border-t border-slate-800">
+              <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 text-[11px] text-slate-600 font-medium">
+                  <div className="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
                     <Calendar size={14} /> {comp.createdAt?.toDate().toLocaleDateString('de-DE')}
                   </div>
                   {comp.slug && (
@@ -186,7 +186,7 @@ const Competitions = () => {
                       href={`/p/${comp.slug}`} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="text-blue-500 hover:text-blue-400 transition-colors"
+                      className="text-blue-600 dark:text-blue-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
                       title="Javni prikaz"
                       onClick={(e) => e.stopPropagation()}
                     >
@@ -196,7 +196,7 @@ const Competitions = () => {
                 </div>
                 <Link 
                   to={`/admin/competitions/${comp.id}`} 
-                  className="bg-slate-800 p-2 rounded-lg text-slate-400 hover:text-white transition-all"
+                  className="bg-slate-100 dark:bg-slate-800 p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white transition-all"
                 >
                   <ChevronRight size={18} />
                 </Link>
@@ -209,9 +209,9 @@ const Competitions = () => {
       {/* Modal - Simplified */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/80" onClick={() => setShowModal(false)}></div>
-          <div className="relative bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl shadow-2xl p-8 animate-in fade-in zoom-in duration-200">
-            <h2 className="text-2xl font-bold text-white mb-6">Novi Turnir</h2>
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowModal(false)}></div>
+          <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-lg rounded-2xl shadow-2xl p-8 animate-in fade-in zoom-in duration-200">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Novi Turnir</h2>
             
             <form onSubmit={handleCreate} className="space-y-6">
               <div className="space-y-2">
@@ -219,7 +219,7 @@ const Competitions = () => {
                 <input 
                   type="text" required
                   placeholder="npr. Proljećni Kup 2026"
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-blue-500 outline-none placeholder:text-slate-600"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all font-medium"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
@@ -228,7 +228,7 @@ const Competitions = () => {
               <div className="space-y-2">
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Format Turnira</label>
                   <select 
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none focus:border-blue-500 appearance-none shadow-sm"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 appearance-none shadow-sm font-medium transition-all"
                     value={type}
                     onChange={(e) => setType(e.target.value)}
                   >
@@ -241,13 +241,13 @@ const Competitions = () => {
                 <button 
                   type="button" 
                   onClick={() => setShowModal(false)}
-                  className="flex-1 bg-slate-800 text-white py-3 rounded-xl font-bold text-sm hover:bg-slate-700 transition-all"
+                  className="flex-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-white py-3 rounded-xl font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
                 >
                   Odustani
                 </button>
                 <button 
                   type="submit" 
-                  className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold text-sm hover:bg-blue-500 transition-all shadow-lg shadow-blue-500/20"
+                  className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold text-sm hover:bg-blue-500 transition-all shadow-lg shadow-blue-500/25"
                 >
                   Kreiraj
                 </button>

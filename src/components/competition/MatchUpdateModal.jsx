@@ -47,26 +47,26 @@ const MatchUpdateModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl">
-        <div className="p-6 border-b border-slate-800 flex justify-between items-center">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm transition-colors">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl transition-all">
+        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900/50">
           <div>
-            <h3 className="text-white font-black uppercase italic tracking-tighter text-lg leading-none">
+            <h3 className="text-slate-900 dark:text-white font-black uppercase italic tracking-tighter text-lg leading-none">
                 {showSettings ? 'Postavke Meča' : 'Unos Rezultata'}
             </h3>
             <p className="text-[9px] text-slate-500 font-bold uppercase mt-1">
-                {showSettings ? 'Promjena faze i pozicije' : <>Potrebno setova za pobjedu: <span className="text-blue-500">{setsToWin}</span></>}
+                {showSettings ? 'Promjena faze i pozicije' : <>Potrebno setova za pobjedu: <span className="text-blue-600 dark:text-blue-500">{setsToWin}</span></>}
             </p>
           </div>
           <div className="flex items-center gap-2">
             <button 
               onClick={() => setShowSettings(!showSettings)}
-              className={`p-2 rounded-xl transition-all ${showSettings ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-500 hover:text-white'}`}
+              className={`p-2 rounded-xl transition-all ${showSettings ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700'}`}
               title="Postavke meča"
             >
               <Settings size={18} />
             </button>
-            <button onClick={() => setShowMatchModal(false)} className="text-slate-500 hover:text-white"><X size={20} /></button>
+            <button onClick={() => setShowMatchModal(false)} className="text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"><X size={20} /></button>
           </div>
         </div>
         
@@ -74,10 +74,10 @@ const MatchUpdateModal = ({
           {showSettings ? (
             <div className="space-y-6">
                <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Naziv Runde / Faza</label>
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Naziv Runde / Faza</label>
                 <input 
                   type="text" 
-                  className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-white font-bold outline-none focus:border-blue-500 transition-all"
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm dark:shadow-none"
                   value={editingMatch.roundName || ''}
                   onChange={(e) => setEditingMatch({...editingMatch, roundName: e.target.value})}
                   placeholder="Npr. 1/4 Finale, Polufinale..."
@@ -86,19 +86,19 @@ const MatchUpdateModal = ({
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Broj Runde</label>
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Broj Runde</label>
                   <input 
                     type="number" 
-                    className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-white font-bold outline-none focus:border-blue-500 transition-all"
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm dark:shadow-none"
                     value={editingMatch.round || 1}
                     onChange={(e) => setEditingMatch({...editingMatch, round: parseInt(e.target.value) || 1})}
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Poredak (Index)</label>
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Poredak (Index)</label>
                   <input 
                     type="number" 
-                    className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-white font-bold outline-none focus:border-blue-500 transition-all"
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm dark:shadow-none"
                     value={editingMatch.bracketIndex || 0}
                     onChange={(e) => setEditingMatch({...editingMatch, bracketIndex: parseInt(e.target.value) || 0})}
                   />
@@ -111,7 +111,7 @@ const MatchUpdateModal = ({
                     saveMatchResult(editingMatch);
                     setShowMatchModal(false);
                   }}
-                  className="w-full bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-blue-600/20"
+                  className="w-full bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-blue-500/20 active:scale-95"
                 >
                   Sačuvaj Postavke
                 </button>
@@ -120,29 +120,29 @@ const MatchUpdateModal = ({
           ) : (
             <>
               {/* Status Selector */}
-              <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
+              <div className="flex bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200 dark:border-slate-800">
                 <button 
                   onClick={() => setEditingMatch({...editingMatch, status: 'pending'})}
-                  className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${editingMatch.status !== 'completed' ? 'bg-blue-600 text-white shadow' : 'text-slate-500 hover:text-slate-300'}`}
+                  className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${editingMatch.status !== 'completed' ? 'bg-blue-600 text-white shadow' : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-300'}`}
                 >
                   U toku
                 </button>
                 <button 
                   onClick={() => setEditingMatch({...editingMatch, status: 'completed'})}
-                  className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${editingMatch.status === 'completed' ? 'bg-emerald-600 text-white shadow' : 'text-slate-500 hover:text-slate-300'}`}
+                  className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all ${editingMatch.status === 'completed' ? 'bg-emerald-600 text-white shadow' : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-300'}`}
                 >
-                  Gotov Mec / Predaja
+                  Gotov Meč / Predaja
                 </button>
               </div>
 
               <div className="flex items-center justify-between gap-4">
-                <div className={`flex-1 text-center space-y-2 p-4 rounded-2xl transition-all ${editingMatch.player1Score >= setsToWin ? 'bg-blue-600/10 border border-blue-600/20' : ''}`}>
+                <div className={`flex-1 text-center space-y-2 p-4 rounded-2xl transition-all ${editingMatch.player1Score >= setsToWin ? 'bg-blue-50 dark:bg-blue-600/10 border border-blue-200 dark:border-blue-600/20 shadow-sm dark:shadow-none' : 'bg-slate-50/50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800'}`}>
                   <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest truncate">{editingMatch.player1?.name || 'TBD'}</p>
                   <input 
                     type="number" 
                     min="0"
                     max="5"
-                    className="w-full bg-slate-950 border-2 border-slate-800 rounded-2xl p-4 text-center text-3xl font-black text-white focus:border-blue-500 outline-none transition-all"
+                    className="w-full bg-white dark:bg-slate-950 border-2 border-slate-200 dark:border-slate-800 rounded-2xl p-4 text-center text-3xl font-black text-slate-900 dark:text-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all shadow-sm dark:shadow-none"
                     value={editingMatch.player1Score || 0}
                     onChange={(e) => {
                       const val = Math.max(0, Math.min(5, parseInt(e.target.value) || 0));
@@ -154,14 +154,14 @@ const MatchUpdateModal = ({
                     }}
                   />
                 </div>
-                <div className="text-2xl font-black text-slate-700">:</div>
-                <div className={`flex-1 text-center space-y-2 p-4 rounded-2xl transition-all ${editingMatch.player2Score >= setsToWin ? 'bg-blue-600/10 border border-blue-600/20' : ''}`}>
+                <div className="text-2xl font-black text-slate-200 dark:text-slate-700">:</div>
+                <div className={`flex-1 text-center space-y-2 p-4 rounded-2xl transition-all ${editingMatch.player2Score >= setsToWin ? 'bg-blue-50 dark:bg-blue-600/10 border border-blue-200 dark:border-blue-600/20 shadow-sm dark:shadow-none' : 'bg-slate-50/50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800'}`}>
                   <p className="text-[10px] font-black uppercase text-slate-500 tracking-widest truncate">{editingMatch.player2?.name || 'TBD'}</p>
                   <input 
                     type="number" 
                     min="0"
                     max="5"
-                    className="w-full bg-slate-950 border-2 border-slate-800 rounded-2xl p-4 text-center text-3xl font-black text-white focus:border-blue-500 outline-none transition-all"
+                    className="w-full bg-white dark:bg-slate-950 border-2 border-slate-200 dark:border-slate-800 rounded-2xl p-4 text-center text-3xl font-black text-slate-900 dark:text-white focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all shadow-sm dark:shadow-none"
                     value={editingMatch.player2Score || 0}
                     onChange={(e) => {
                       const val = Math.max(0, Math.min(5, parseInt(e.target.value) || 0));

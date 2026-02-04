@@ -35,11 +35,11 @@ const CompetitionSettingsModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-      <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl">
-        <div className="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-900/50 text-white">
-          <h3 className="font-black uppercase italic tracking-tighter text-lg">Postavke Takmičenja</h3>
-          <button onClick={() => setShowCompSettings(false)} className="text-slate-500 hover:text-white"><X size={20} /></button>
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm transition-colors">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl transition-all">
+        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900/50">
+          <h3 className="font-black uppercase italic tracking-tighter text-lg text-slate-900 dark:text-white">Postavke Takmičenja</h3>
+          <button onClick={() => setShowCompSettings(false)} className="text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"><X size={20} /></button>
         </div>
         
         <div className="p-8 space-y-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
@@ -47,7 +47,7 @@ const CompetitionSettingsModal = ({
             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Naziv Takmičenja</label>
             <input 
               type="text" 
-              className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-white font-bold outline-none focus:border-blue-500 transition-all"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm dark:shadow-none"
               value={compName}
               onChange={(e) => setCompName(e.target.value)}
               placeholder="npr. Joola Cup 2024"
@@ -57,12 +57,12 @@ const CompetitionSettingsModal = ({
           <div className="space-y-2">
             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Link (Slug)</label>
             <div className="relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 font-bold text-xs">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-600 font-bold text-xs">
                 {window.location.host}/p/
               </div>
               <input 
                 type="text" 
-                className="w-full bg-slate-950 border border-slate-800 rounded-2xl py-4 pl-40 pr-4 text-blue-400 font-bold outline-none focus:border-blue-500 transition-all"
+                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 pl-40 pr-4 text-blue-600 dark:text-blue-400 font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm dark:shadow-none"
                 value={compSlug}
                 onChange={(e) => setCompSlug(e.target.value)}
                 placeholder="joola-cup"
@@ -70,7 +70,7 @@ const CompetitionSettingsModal = ({
             </div>
           </div>
 
-          <div className="space-y-4 pt-4 border-t border-slate-800/50">
+          <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800/50">
             <div className="flex items-center justify-between">
               <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Vidljivost Takmičenja</label>
               <div className="flex items-center gap-2">
@@ -81,10 +81,10 @@ const CompetitionSettingsModal = ({
               </div>
             </div>
             
-            <div className="bg-slate-950/50 border border-slate-800 rounded-2xl p-4">
+            <div className="bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-2xl p-4">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex-1">
-                  <p className="text-sm font-bold text-white mb-1">Javno Takmičenje</p>
+                  <p className="text-sm font-bold text-slate-900 dark:text-white mb-1">Javno Takmičenje</p>
                   <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
                     {isPublic ? 'Takmičenje je vidljivo svima sa linkom' : 'Samo vlasnik i saradnici mogu vidjeti takmičenje'}
                   </p>
@@ -93,8 +93,8 @@ const CompetitionSettingsModal = ({
                   onClick={() => setIsPublic(!isPublic)}
                   className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
                     isPublic 
-                      ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/20 hover:bg-emerald-500' 
-                      : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white'
+                      ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20 hover:bg-emerald-500' 
+                      : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-slate-700'
                   }`}
                 >
                   {isPublic ? 'Sakrij' : 'Objavi'}
@@ -102,13 +102,13 @@ const CompetitionSettingsModal = ({
               </div>
 
               {isPublic && (
-                <div className="flex items-center gap-2 bg-slate-900 p-2 rounded-xl border border-slate-800">
-                   <div className="flex-1 truncate text-xs font-mono text-slate-400 select-all px-2">
+                <div className="flex items-center gap-2 bg-white dark:bg-slate-900 p-2 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-none">
+                   <div className="flex-1 truncate text-xs font-mono text-slate-500 dark:text-slate-400 select-all px-2">
                       {`${window.location.origin}/p/${compSlug}`}
                    </div>
                    <button 
                      onClick={() => window.open(`/p/${compSlug}`, '_blank')}
-                     className="px-3 py-1.5 bg-blue-600/10 text-blue-500 hover:bg-blue-600 hover:text-white rounded-lg text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 shrink-0"
+                     className="px-3 py-1.5 bg-blue-50 dark:bg-blue-600/10 text-blue-600 dark:text-blue-500 hover:bg-blue-600 hover:text-white rounded-lg text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 shrink-0"
                    >
                      <Globe size={12} /> Otvori
                    </button>
@@ -117,7 +117,7 @@ const CompetitionSettingsModal = ({
                         navigator.clipboard.writeText(`${window.location.origin}/p/${compSlug}`);
                         alert("Link kopiran!");
                      }}
-                     className="px-3 py-1.5 bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white rounded-lg text-[9px] font-black uppercase tracking-widest transition-all shrink-0"
+                     className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white rounded-lg text-[9px] font-black uppercase tracking-widest transition-all shrink-0"
                    >
                      Kopiraj
                    </button>
@@ -127,13 +127,13 @@ const CompetitionSettingsModal = ({
 
             <div className="flex items-center justify-between">
               <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Saradnici (Email)</label>
-              <span className="text-[9px] text-slate-500 font-bold bg-slate-800 px-2 py-1 rounded">DODAJ SARADNIKA</span>
+              <span className="text-[9px] text-slate-500 font-bold bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">DODAJ SARADNIKA</span>
             </div>
             
             <div className="flex gap-2">
               <input 
                 type="email" 
-                className="flex-1 bg-slate-950 border border-slate-800 rounded-2xl p-4 text-white font-bold outline-none focus:border-blue-500 transition-all text-sm"
+                className="flex-1 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm dark:shadow-none"
                 value={newCollabEmail}
                 onChange={(e) => setNewCollabEmail(e.target.value)}
                 placeholder="email@example.com"
@@ -141,7 +141,7 @@ const CompetitionSettingsModal = ({
               />
               <button 
                 onClick={addCollaborator}
-                className="bg-slate-800 hover:bg-slate-700 text-white px-4 rounded-2xl transition-all"
+                className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white px-6 rounded-2xl font-bold text-sm transition-all shadow-sm dark:shadow-none border border-slate-200 dark:border-slate-700"
               >
                 Dodaj
               </button>
@@ -149,18 +149,18 @@ const CompetitionSettingsModal = ({
 
             <div className="space-y-2">
               {collaborators.map((email) => (
-                <div key={email} className="flex items-center justify-between bg-white/5 border border-white/5 p-3 rounded-2xl group transition-all">
-                  <span className="text-white text-sm font-bold">{email}</span>
+                <div key={email} className="flex items-center justify-between bg-white dark:bg-white/5 border border-slate-100 dark:border-white/5 p-3 rounded-2xl group transition-all shadow-sm dark:shadow-none">
+                  <span className="text-slate-900 dark:text-white text-sm font-bold">{email}</span>
                   <button 
                     onClick={() => removeCollaborator(email)}
-                    className="text-slate-500 hover:text-red-500 transition-colors"
+                    className="text-slate-400 hover:text-red-500 dark:text-slate-500 transition-colors"
                   >
                     <X size={16} />
                   </button>
                 </div>
               ))}
               {collaborators.length === 0 && (
-                <p className="text-center py-4 text-slate-600 text-[10px] font-bold uppercase tracking-widest border-2 border-dashed border-slate-800 rounded-2xl">Nema dodanih saradnika</p>
+                <p className="text-center py-4 text-slate-400 dark:text-slate-600 text-[10px] font-bold uppercase tracking-widest border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-2xl">Nema dodanih saradnika</p>
               )}
             </div>
             <p className="text-[9px] text-slate-600 font-bold uppercase tracking-wider px-1">
@@ -168,12 +168,12 @@ const CompetitionSettingsModal = ({
             </p>
           </div>
 
-            <div className="bg-blue-600/5 border border-blue-500/10 rounded-2xl p-4 flex items-center justify-between mt-4">
+            <div className="bg-blue-50 dark:bg-blue-600/5 border border-blue-100 dark:border-blue-500/10 rounded-2xl p-4 flex items-center justify-between mt-4">
             <div className="flex items-center gap-3">
               <FileText size={16} className="text-blue-500" />
               <div>
                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Javni Link</p>
-                <p className="text-xs text-white font-bold">{window.location.host}/p/{competition.slug || compSlug}</p>
+                <p className="text-xs text-slate-900 dark:text-white font-bold">{window.location.host}/p/{competition.slug || compSlug}</p>
               </div>
             </div>
             <div className="flex gap-2">
@@ -183,17 +183,17 @@ const CompetitionSettingsModal = ({
                     navigator.clipboard.writeText(`${window.location.origin}/p/${slugToCopy}`);
                     alert("Link kopiran!");
                 }}
-                className="text-blue-500 hover:text-blue-400 font-black uppercase text-[10px]"
+                className="text-blue-600 dark:text-blue-500 hover:text-blue-500 dark:hover:text-blue-400 font-black uppercase text-[10px]"
                 >
                 Kopiraj
                 </button>
-                <div className="w-px h-3 bg-slate-800 self-center"></div>
+                <div className="w-px h-3 bg-slate-200 dark:bg-slate-800 self-center"></div>
                 <button 
                 onClick={() => {
                     const slugToOpen = compSlug || competition.slug;
                     window.open(`${window.location.origin}/p/${slugToOpen}`, '_blank');
                 }}
-                className="text-emerald-500 hover:text-emerald-400 font-black uppercase text-[10px] flex items-center gap-1"
+                className="text-emerald-600 dark:text-emerald-500 hover:text-emerald-500 dark:hover:text-emerald-400 font-black uppercase text-[10px] flex items-center gap-1"
                 >
                 Otvori <ExternalLink size={10} />
                 </button>
@@ -203,7 +203,7 @@ const CompetitionSettingsModal = ({
           <div className="pt-4 flex gap-3">
             <button 
               onClick={() => setShowCompSettings(false)}
-              className="flex-1 bg-slate-800 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-700 transition-all"
+              className="flex-1 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-all border border-slate-200 dark:border-slate-700"
             >
               Otkaži
             </button>
