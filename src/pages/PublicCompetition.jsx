@@ -534,25 +534,55 @@ const PublicCompetition = () => {
 
       {/* Sticky Category Nav */}
       <div className="sticky top-0 z-50 bg-white/80 dark:bg-[#070b14]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800/50">
-        <div className="container mx-auto px-4 overflow-x-auto no-scrollbar">
-          <div className="flex items-center h-16 md:h-20 gap-2 min-w-max">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center h-16 md:h-20 gap-4">
             <button 
                 onClick={() => handleCategorySelect(null)}
-                className={`p-3 rounded-xl transition-all ${!selectedCategoryId ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-900'}`}
+                className={`p-3 rounded-xl transition-all shrink-0 ${!selectedCategoryId ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-900'}`}
+                title="Pregled"
             >
                 <LayoutGrid size={20} />
             </button>
-            <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-2" />
+            <div className="h-6 w-px bg-slate-200 dark:bg-slate-800" />
             
-            {categories.map(cat => (
-              <button
-                key={cat.id}
-                onClick={() => handleCategorySelect(cat.id)}
-                className={`px-5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${selectedCategoryId === cat.id ? 'bg-blue-600 text-white' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'}`}
+            {/* Dropdown za kategorije */}
+            <div className="relative group">
+              <button 
+                className={`px-5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
+                  selectedCategoryId 
+                    ? 'bg-blue-600 text-white' 
+                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                }`}
               >
-                {cat.name}
+                {selectedCategoryId ? categories.find(c => c.id === selectedCategoryId)?.name || 'Kategorije' : 'Kategorije'}
+                <ChevronDown size={14} className="group-hover:rotate-180 transition-transform" />
               </button>
-            ))}
+              
+              {/* Dropdown meni */}
+              <div className="absolute left-0 top-full mt-1 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                {categories.length === 0 ? (
+                  <div className="px-4 py-3 text-[10px] text-slate-500 font-bold uppercase tracking-widest text-center">
+                    Nema kategorija
+                  </div>
+                ) : (
+                  <div className="py-2">
+                    {categories.map(cat => (
+                      <button
+                        key={cat.id}
+                        onClick={() => handleCategorySelect(cat.id)}
+                        className={`w-full px-4 py-3 text-left text-[11px] font-bold uppercase tracking-widest transition-all ${
+                          selectedCategoryId === cat.id 
+                            ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400' 
+                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                        }`}
+                      >
+                        {cat.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
