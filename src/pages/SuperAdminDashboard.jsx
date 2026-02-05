@@ -402,7 +402,7 @@ const SuperAdminDashboard = () => {
         <div className="flex gap-1 p-1 bg-slate-100 dark:bg-gray-950 border-2 border-slate-300 dark:border-gray-800 rounded-xl w-fit shadow-xl min-w-min">
           <button 
             onClick={() => setActiveTab('requests')}
-            className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition flex items-center gap-2 whitespace-nowrap ${activeTab === 'requests' ? 'bg-amber-600 text-white shadow-lg' : 'text-slate-700 dark:text-gray-500 hover:text-slate-900 dark:hover:text-slate-700 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-gray-800'}`}
+            className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition flex items-center gap-2 whitespace-nowrap ${activeTab === 'requests' ? 'bg-amber-400 text-slate-900 shadow-lg' : 'text-slate-700 dark:text-gray-500 hover:text-slate-900 dark:hover:text-slate-700 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-gray-800'}`}
           >
             <Clock size={14} /> Zahtjevi ({accessRequests.filter(r => r.status === 'pending').length})
           </button>
@@ -437,7 +437,7 @@ const SuperAdminDashboard = () => {
       {activeTab === 'requests' && (
         <div className="space-y-6">
           {accessRequests.filter(r => r.status === 'pending').length === 0 ? (
-            <div className="bg-slate-50 dark:bg-gray-800/30 border-2 border-slate-300 dark:border-gray-700 rounded-3xl p-20 text-center">
+            <div className="bg-slate-50 dark:bg-gray-800/30 border-2 border-slate-300 dark:border-gray-700 rounded-lg p-20 text-center">
               <Clock className="w-16 h-16 text-slate-400 dark:text-gray-700 mx-auto mb-6" />
               <h3 className="text-xl font-bold text-slate-700 dark:text-gray-400 mb-2">Nema novih zahtjeva</h3>
               <p className="text-slate-600 dark:text-gray-500">Svi zahtjevi su procesuirani.</p>
@@ -445,7 +445,7 @@ const SuperAdminDashboard = () => {
           ) : (
             <div className="grid gap-6">
               {accessRequests.filter(r => r.status === 'pending').map(request => (
-                <div key={request.id} className="bg-white dark:bg-gray-900 border-2 border-slate-300 dark:border-gray-800 rounded-3xl p-6 hover:border-blue-500 dark:hover:border-blue-500/50 transition shadow-sm">
+                <div key={request.id} className="bg-white dark:bg-gray-900 border-2 border-slate-300 dark:border-gray-800 rounded-lg p-6 hover:border-blue-500 dark:hover:border-blue-500/50 transition shadow-sm">
                   <div className="flex items-start justify-between mb-6">
                     <div>
                       <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">{request.organizationName}</h3>
@@ -988,13 +988,13 @@ const SuperAdminDashboard = () => {
           <div className="lg:col-span-3">
             <div className="grid md:grid-cols-2 gap-4 h-fit">
               {plans.length === 0 && (
-                <div className="col-span-full bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 rounded-2xl p-12 text-center">
+                <div className="col-span-full bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 rounded-lg p-12 text-center">
                   <Shield size={40} className="text-gray-800 mx-auto mb-4" />
                   <p className="text-slate-500 dark:text-gray-500 font-bold italic">Nema definiranih planova.</p>
                 </div>
               )}
               {plans.map(plan => (
-                <div key={plan.id} className="bg-white dark:bg-gray-900 border-2 border-slate-300 dark:border-gray-800 rounded-2xl overflow-hidden hover:border-teal-500 dark:hover:border-emerald-500/30 hover:shadow-lg transition-all flex flex-col group relative">
+                <div key={plan.id} className="bg-white dark:bg-gray-900 border-2 border-slate-300 dark:border-gray-800 rounded-lg overflow-hidden hover:border-teal-500 dark:hover:border-emerald-500/30 hover:shadow-lg transition-all flex flex-col group relative">
                   {plan.badge && (
                     <div className="absolute -top-3 -right-3 z-10">
                       <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[8px] font-black uppercase px-3 py-1.5 rounded-full shadow-lg border-2 border-white dark:border-gray-900 tracking-wider">
@@ -1067,7 +1067,7 @@ const SuperAdminDashboard = () => {
       {editingSub && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60 dark:bg-black/80" onClick={() => setEditingSub(null)}></div>
-          <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 w-full max-w-md z-10">
+          <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-6 w-full max-w-md z-10">
             <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Uredi pretplatu — {editingSub.email}</h3>
             <div className="space-y-3">
               <div>

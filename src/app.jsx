@@ -15,11 +15,13 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const SuperAdminDashboard = lazy(() => import('./pages/SuperAdminDashboard'));
 const Players = lazy(() => import('./pages/Players'));
 const Competitions = lazy(() => import('./pages/Competitions'));
+const CreateCompetition = lazy(() => import('./pages/CreateCompetition'));
 const CompetitionDetails = lazy(() => import('./pages/CompetitionDetails'));
+const CompetitionSettings = lazy(() => import('./pages/CompetitionSettings'));
 const Leagues = lazy(() => import('./pages/Leagues'));
 const LeagueDetails = lazy(() => import('./pages/LeagueDetails'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
-const PublicCompetition = lazy(() => import('./pages/PublicCompetition'));
+const PublicCompetition = lazy(() => import('./pages/PublicCompetitionNew'));
 const PublicOverview = lazy(() => import('./pages/PublicOverview'));
 const MyProfile = lazy(() => import('./pages/MyProfile'));
 const Explore = lazy(() => import('./pages/Explore'));
@@ -118,7 +120,7 @@ const Unauthorized = () => {
   if (submitted) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="max-w-md bg-gray-900 border border-gray-800 p-10 rounded-3xl shadow-2xl text-center">
+        <div className="max-w-md bg-gray-900 border border-gray-800 p-10 rounded-lg shadow-2xl text-center">
           <div className="text-green-500 text-5xl mb-6">✅</div>
           <h1 className="text-2xl font-bold mb-4 text-white">Zahtjev Poslat!</h1>
           <p className="text-gray-400 mb-8">
@@ -153,7 +155,7 @@ const Unauthorized = () => {
               <div 
                 key={plan.id}
                 onClick={() => setFormData({...formData, plan: plan.id})}
-                className={`relative bg-gray-900 border-2 rounded-3xl p-6 cursor-pointer transition-all hover:scale-105 ${
+                className={`relative bg-gray-900 border-2 rounded-lg p-6 cursor-pointer transition-all hover:scale-105 ${
                   formData.plan === plan.id 
                     ? 'border-blue-500 shadow-xl shadow-blue-500/20' 
                     : 'border-gray-800 hover:border-gray-700'
@@ -205,7 +207,7 @@ const Unauthorized = () => {
           </div>
 
           {/* Contact Form */}
-          <div className="bg-gray-900 border border-gray-800 rounded-3xl p-8 shadow-2xl">
+          <div className="bg-gray-900 border border-gray-800 rounded-lg p-8 shadow-2xl">
             <h3 className="text-2xl font-bold mb-6 flex items-center gap-2">
               <Building2 className="text-blue-500" />
               Informacije o Organizaciji
@@ -284,7 +286,7 @@ const Unauthorized = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 text-center">
-      <div className="max-w-md bg-gray-900 border border-gray-800 p-10 rounded-3xl shadow-2xl">
+      <div className="max-w-md bg-gray-900 border border-gray-800 p-10 rounded-lg shadow-2xl">
         <div className="text-red-500 text-5xl mb-6">⚠️</div>
         <h1 className="text-2xl font-bold mb-4 text-white">Pristup Odbijen</h1>
         <p className="text-gray-400 mb-8 font-medium">
@@ -331,7 +333,9 @@ export function App() {
                 <Route path="/admin/super-admin" element={<SuperAdminDashboard />} />
                 <Route path="/admin/players" element={<Players />} />
                 <Route path="/admin/competitions" element={<Competitions />} />
+                <Route path="/admin/competitions/new" element={<CreateCompetition />} />
                 <Route path="/admin/competitions/:id" element={<CompetitionDetails />} />
+                <Route path="/admin/competitions/:id/settings" element={<CompetitionSettings />} />
                 <Route path="/admin/leagues" element={<Leagues />} />
                 <Route path="/admin/leagues/:id" element={<LeagueDetails />} />
                 <Route path="/admin/settings" element={<SettingsPage />} />

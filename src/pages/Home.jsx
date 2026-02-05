@@ -212,11 +212,11 @@ const Home = () => {
                 <div className="flex flex-col sm:flex-row gap-5 w-full sm:w-auto z-20">
                     <button 
                         onClick={() => setShowForm(true)}
-                        className="group bg-blue-600 text-white px-10 py-5 rounded-2xl font-black hover:bg-blue-500 transition-all shadow-[0_0_40px_-10px_rgba(37,99,235,0.5)] hover:shadow-[0_0_60px_-15px_rgba(37,99,235,0.6)] text-base md:text-lg flex items-center justify-center gap-3 active:scale-95"
+                        className="group bg-blue-600 text-white px-10 py-5 rounded-lg font-black hover:bg-blue-500 transition-all shadow-[0_0_40px_-10px_rgba(37,99,235,0.5)] hover:shadow-[0_0_60px_-15px_rgba(37,99,235,0.6)] text-base md:text-lg flex items-center justify-center gap-3 active:scale-95"
                     >
                         Postani Organizator <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                     </button>
-                    <Link to="/explore" className="bg-white/5 text-white border border-white/10 px-10 py-5 rounded-2xl font-bold hover:bg-white/20 transition-all text-base md:text-lg flex items-center justify-center backdrop-blur-sm active:scale-95 gap-3">
+                    <Link to="/explore" className="bg-white/5 text-white border border-white/10 px-10 py-5 rounded-lg font-bold hover:bg-white/20 transition-all text-base md:text-lg flex items-center justify-center backdrop-blur-sm active:scale-95 gap-3">
                         <Activity size={20} className="text-emerald-500" /> Rezultati Uživo
                     </Link>
                 </div>
@@ -232,7 +232,7 @@ const Home = () => {
                                             <h2 className="text-4xl font-black text-white tracking-tighter uppercase italic">Odaberite Plan</h2>
                                             <p className="text-slate-400 font-medium mt-1">Sve što vam je potrebno za profesionalni turnir ili ligu</p>
                                         </div>
-                                        <button onClick={() => setShowForm(false)} className="bg-slate-900 border border-slate-800 p-3 rounded-2xl text-slate-500 hover:text-white transition-all">
+                                        <button onClick={() => setShowForm(false)} className="bg-slate-900 border border-slate-800 p-3 rounded-lg text-slate-500 hover:text-white transition-all">
                                             <X size={24} />
                                         </button>
                                     </div>
@@ -284,7 +284,7 @@ const Home = () => {
                                                 </div>
 
                                                 {requestForm.plan === plan.id && (
-                                                    <div className="absolute top-6 right-6 w-8 h-8 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-600/40">
+                                                    <div className="absolute top-6 right-6 w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-600/40">
                                                         <CheckCircle2 size={20} className="text-white" />
                                                     </div>
                                                 )}
@@ -298,7 +298,7 @@ const Home = () => {
                                         
                                         <div className="relative z-10 flex flex-col lg:flex-row gap-12">
                                             <div className="lg:w-1/3 text-left">
-                                                <div className="w-16 h-16 bg-blue-600 rounded-3xl flex items-center justify-center mb-6 shadow-xl shadow-blue-600/20">
+                                                <div className="w-16 h-16 bg-blue-600 rounded-lg flex items-center justify-center mb-6 shadow-xl shadow-blue-600/20">
                                                     <Building2 size={32} className="text-white" />
                                                 </div>
                                                 <h3 className="text-3xl font-black text-white italic tracking-tighter mb-4 uppercase">Informacije</h3>
@@ -307,7 +307,7 @@ const Home = () => {
                                                 </p>
                                                 
                                                 <div className="mt-8 flex flex-col gap-4">
-                                                    <div className="flex items-center gap-4 text-sm font-bold text-slate-300 bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                                                    <div className="flex items-center gap-4 text-sm font-bold text-slate-300 bg-slate-950 p-4 rounded-lg border border-slate-800">
                                                         <CreditCard className="text-blue-400" />
                                                         <span>Plan: {plans.find(p => p.id === requestForm.plan)?.name}</span>
                                                     </div>
@@ -321,7 +321,7 @@ const Home = () => {
                                                         <input 
                                                             required
                                                             placeholder="npr. STK PING PONG"
-                                                            className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 text-white focus:border-blue-500 outline-none transition-all placeholder:text-slate-800 font-medium"
+                                                            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-5 py-4 text-white focus:border-blue-500 outline-none transition-all placeholder:text-slate-800 font-medium"
                                                             value={requestForm.club}
                                                             onChange={e => setRequestForm({...requestForm, club: e.target.value})}
                                                         />
@@ -331,7 +331,7 @@ const Home = () => {
                                                         <input 
                                                             required
                                                             placeholder="Ime i Prezime"
-                                                            className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 text-white focus:border-blue-500 outline-none transition-all placeholder:text-slate-800 font-medium"
+                                                            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-5 py-4 text-white focus:border-blue-500 outline-none transition-all placeholder:text-slate-800 font-medium"
                                                             value={requestForm.name}
                                                             onChange={e => setRequestForm({...requestForm, name: e.target.value})}
                                                         />
@@ -342,7 +342,7 @@ const Home = () => {
                                                             required
                                                             type="email"
                                                             placeholder="vas-email@gmail.com"
-                                                            className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 text-white focus:border-blue-500 outline-none transition-all placeholder:text-slate-800 font-medium"
+                                                            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-5 py-4 text-white focus:border-blue-500 outline-none transition-all placeholder:text-slate-800 font-medium"
                                                             value={requestForm.email}
                                                             onChange={e => setRequestForm({...requestForm, email: e.target.value})}
                                                         />
@@ -352,7 +352,7 @@ const Home = () => {
                                                         <input 
                                                             required
                                                             placeholder="+387 6x xxx xxx"
-                                                            className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 text-white focus:border-blue-500 outline-none transition-all placeholder:text-slate-800 font-medium"
+                                                            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-5 py-4 text-white focus:border-blue-500 outline-none transition-all placeholder:text-slate-800 font-medium"
                                                             value={requestForm.phone}
                                                             onChange={e => setRequestForm({...requestForm, phone: e.target.value})}
                                                         />
@@ -362,7 +362,7 @@ const Home = () => {
                                                         <input 
                                                             required
                                                             placeholder="Grad, Država"
-                                                            className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 text-white focus:border-blue-500 outline-none transition-all placeholder:text-slate-800 font-medium"
+                                                            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-5 py-4 text-white focus:border-blue-500 outline-none transition-all placeholder:text-slate-800 font-medium"
                                                             value={requestForm.city}
                                                             onChange={e => setRequestForm({...requestForm, city: e.target.value})}
                                                         />
@@ -371,7 +371,7 @@ const Home = () => {
                                                     <div className="md:col-span-2 pt-4">
                                                         <button 
                                                             disabled={isSubmitting}
-                                                            className="group w-full bg-blue-600 hover:bg-blue-500 text-white font-black uppercase italic tracking-widest py-5 rounded-2xl transition-all shadow-xl shadow-blue-600/30 flex items-center justify-center gap-3 disabled:opacity-50 active:scale-[0.98]"
+                                                            className="group w-full bg-blue-600 hover:bg-blue-500 text-white font-black uppercase italic tracking-widest py-5 rounded-lg transition-all shadow-xl shadow-blue-600/30 flex items-center justify-center gap-3 disabled:opacity-50 active:scale-[0.98]"
                                                         >
                                                             {isSubmitting ? (
                                                                 <Loader2 className="animate-spin" size={24} />
@@ -398,7 +398,7 @@ const Home = () => {
                                         </p>
                                         <button 
                                             onClick={() => setShowForm(false)}
-                                            className="w-full bg-slate-800 hover:bg-slate-700 text-white py-4 rounded-2xl font-black uppercase italic tracking-widest transition-all"
+                                            className="w-full bg-slate-800 hover:bg-slate-700 text-white py-4 rounded-lg font-black uppercase italic tracking-widest transition-all"
                                         >
                                             Zatvori Prozori
                                         </button>
@@ -411,11 +411,11 @@ const Home = () => {
 
                 {/* Info Card for Approval */}
                 <div className="mt-24 max-w-3xl mx-auto">
-                    <div className="bg-gradient-to-br from-slate-900/80 to-slate-900/40 backdrop-blur-xl border border-slate-700/50 p-6 md:p-8 rounded-3xl relative overflow-hidden group hover:border-blue-500/30 transition-all">
+                    <div className="bg-gradient-to-br from-slate-900/80 to-slate-900/40 backdrop-blur-xl border border-slate-700/50 p-6 md:p-8 rounded-lg relative overflow-hidden group hover:border-blue-500/30 transition-all">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl -mr-16 -mt-16 group-hover:bg-blue-500/20 transition-all" />
                         
                         <div className="flex flex-col md:flex-row items-center gap-6 relative z-10">
-                            <div className="w-16 h-16 rounded-2xl bg-blue-500/10 flex items-center justify-center flex-shrink-0 border border-blue-500/20 shadow-lg shadow-blue-500/5">
+                            <div className="w-16 h-16 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0 border border-blue-500/20 shadow-lg shadow-blue-500/5">
                                 <ShieldCheck size={32} className="text-blue-400" />
                             </div>
                             <div className="text-left flex-1">
@@ -446,7 +446,7 @@ const Home = () => {
                         { icon: <Zap size={24} />, title: "Live Žrijeb", desc: "Eliminaciona faza se automatski kreira na osnovu rezultata iz grupa." },
                         { icon: <Trophy size={24} />, title: "Rang Liste", desc: "Pratite napredak igrača kroz detaljnu statistiku pobjeda i poraza." }
                     ].map((feature, idx) => (
-                        <div key={idx} className="p-6 rounded-3xl bg-white/5 border border-white/5 hover:border-white/10 hover:bg-white/10 transition-all">
+                        <div key={idx} className="p-6 rounded-lg bg-white/5 border border-white/5 hover:border-white/10 hover:bg-white/10 transition-all">
                             <div className="mb-4 text-blue-400">{feature.icon}</div>
                             <h4 className="text-lg font-bold text-white mb-2">{feature.title}</h4>
                             <p className="text-sm text-slate-400 leading-relaxed max-w-[250px]">{feature.desc}</p>
@@ -458,9 +458,9 @@ const Home = () => {
                 <div className="mt-32 w-full max-w-6xl mx-auto px-4 pb-20">
                     <div className="relative group">
                         {/* Decorative Background Elements */}
-                        <div className="absolute -inset-1 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-[3rem] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+                        <div className="absolute -inset-1 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
                         
-                        <div className="relative bg-[#0a0f1d]/80 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-8 md:p-16 overflow-hidden">
+                        <div className="relative bg-[#0a0f1d]/80 backdrop-blur-2xl border border-white/10 rounded-2xl p-8 md:p-16 overflow-hidden">
                             {/* Animated Background Orbs */}
                             <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-blue-600/10 rounded-full blur-[80px] animate-pulse"></div>
                             <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-64 h-64 bg-purple-600/10 rounded-full blur-[80px] animate-pulse" style={{ animationDelay: '2s' }}></div>
@@ -498,8 +498,8 @@ const Home = () => {
 
                                     {/* Availability Note */}
                                     <div className="inline-block relative">
-                                        <div className="absolute inset-0 bg-blue-500/20 blur-xl rounded-2xl"></div>
-                                        <div className="relative bg-slate-900/80 border border-blue-500/30 rounded-2xl p-6 flex flex-col md:flex-row items-center gap-6">
+                                        <div className="absolute inset-0 bg-blue-500/20 blur-xl rounded-lg"></div>
+                                        <div className="relative bg-slate-900/80 border border-blue-500/30 rounded-lg p-6 flex flex-col md:flex-row items-center gap-6">
                                             <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-900/40">
                                                 <ShieldCheck size={28} className="text-white" />
                                             </div>
@@ -527,7 +527,7 @@ const Home = () => {
                                             <div className="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
                                             <button 
                                                 onClick={() => setShowForm(true)}
-                                                className="w-full py-4 bg-white text-black rounded-2xl font-black uppercase italic tracking-widest hover:bg-blue-50 transition-colors flex items-center justify-center gap-2 group-hover:gap-4 transition-all"
+                                                className="w-full py-4 bg-white text-black rounded-lg font-black uppercase italic tracking-widest hover:bg-blue-50 transition-colors flex items-center justify-center gap-2 group-hover:gap-4 transition-all"
                                             >
                                                 Zatraži Demo <ArrowRight size={18} />
                                             </button>
@@ -535,7 +535,7 @@ const Home = () => {
                                     </div>
                                     
                                     {/* Floating Stats */}
-                                    <div className="absolute -top-6 -right-6 bg-slate-900/90 border border-white/10 backdrop-blur-xl p-4 rounded-2xl shadow-2xl hidden md:block animate-bounce" style={{ animationDuration: '4s' }}>
+                                    <div className="absolute -top-6 -right-6 bg-slate-900/90 border border-white/10 backdrop-blur-xl p-4 rounded-lg shadow-2xl hidden md:block animate-bounce" style={{ animationDuration: '4s' }}>
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-500">
                                                 <Activity size={20} />
@@ -560,7 +560,7 @@ const Home = () => {
                             {/* Developer Card */}
                             <div className="group bg-gradient-to-br from-blue-500/10 to-purple-500/10 backdrop-blur-sm rounded-[2.5rem] p-8 md:p-10 border border-blue-500/20 hover:border-blue-500/40 transition-all duration-500 hover:shadow-2xl hover:shadow-blue-500/10">
                                 <div className="flex flex-col items-center text-center">
-                                    <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500 shadow-xl shadow-blue-500/20">
+                                    <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500 shadow-xl shadow-blue-500/20">
                                         <Zap size={40} className="text-white" />
                                     </div>
                                     <h4 className="text-2xl md:text-3xl font-black text-white mb-2 uppercase italic tracking-tighter">Ermin Selimović</h4>
@@ -570,11 +570,11 @@ const Home = () => {
                                         od korisničkog interfejsa do strukturne logike sistema.
                                     </p>
                                     <div className="flex flex-wrap justify-center gap-4">
-                                        <a href="https://github.com/ermin1990" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-slate-900 border border-slate-800 hover:border-white/20 px-6 py-3 rounded-2xl transition-all group/link">
+                                        <a href="https://github.com/ermin1990" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-slate-900 border border-slate-800 hover:border-white/20 px-6 py-3 rounded-lg transition-all group/link">
                                             <Activity size={18} className="text-slate-400 group-hover/link:text-white" />
                                             <span className="text-slate-400 group-hover/link:text-white text-sm font-black uppercase tracking-widest">GitHub</span>
                                         </a>
-                                        <a href="https://instagram.com/infinitycreative.agency" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/20 hover:border-pink-500/40 px-6 py-3 rounded-2xl transition-all group/link">
+                                        <a href="https://instagram.com/infinitycreative.agency" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/20 hover:border-pink-500/40 px-6 py-3 rounded-lg transition-all group/link">
                                             <div className="w-5 h-5 flex items-center justify-center text-pink-500 group-hover/link:text-pink-400">
                                                 <Users size={18} />
                                             </div>
@@ -587,7 +587,7 @@ const Home = () => {
                             {/* Consultant Card */}
                             <div className="group bg-gradient-to-br from-purple-500/10 to-pink-500/10 backdrop-blur-sm rounded-[2.5rem] p-8 md:p-10 border border-purple-500/20 hover:border-purple-500/40 transition-all duration-500 hover:shadow-2xl hover:shadow-purple-500/10">
                                 <div className="flex flex-col items-center text-center">
-                                    <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-600 rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500 shadow-xl shadow-purple-500/20">
+                                    <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500 shadow-xl shadow-purple-500/20">
                                         <Trophy size={40} className="text-white" />
                                     </div>
                                     <h4 className="text-2xl md:text-3xl font-black text-white mb-2 uppercase italic tracking-tighter">Sanel Moranjkić</h4>

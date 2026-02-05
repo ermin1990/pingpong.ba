@@ -1,8 +1,8 @@
-import { useTheme } from '../themes/ThemeContext';
-import { Palette, Check } from 'lucide-react';
+import { useTheme } from '../../themes/ThemeContext';
+import { Palette, Check, Loader2 } from 'lucide-react';
 
 const ThemeSwitcher = () => {
-  const { currentTheme, switchTheme, availableThemes, theme } = useTheme();
+  const { currentTheme, switchTheme, availableThemes, theme, isLoadingTheme } = useTheme();
 
   const themeDisplayNames = {
     dark: { name: 'Dark Blue', preview: 'bg-slate-900', accent: 'bg-blue-500' },
@@ -17,8 +17,11 @@ const ThemeSwitcher = () => {
         <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-200 dark:border-gray-800">
           <Palette size={20} className="text-blue-600 dark:text-amber-400" />
           <h3 className="font-black text-sm uppercase tracking-wider">
-            Izaberi temu
+            Izaberi Globalnu Temu
           </h3>
+          {isLoadingTheme && (
+            <Loader2 size={16} className="animate-spin text-blue-600 dark:text-amber-400 ml-auto" />
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -61,8 +64,13 @@ const ThemeSwitcher = () => {
         </div>
 
         <div className="mt-4 pt-3 border-t border-slate-200 dark:border-gray-800">
+          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 mb-2">
+            <p className="text-[10px] text-blue-700 dark:text-blue-300 font-bold text-center">
+              ⚠️ GLOBALNA PROMJENA - Primjenjuje se za SVE korisnike
+            </p>
+          </div>
           <p className="text-[10px] text-slate-500 dark:text-gray-500 text-center">
-            Promjena boja primjenjuje se odmah
+            Light/Dark mode toggle ostaje individualan za svakog korisnika
           </p>
         </div>
       </div>

@@ -1,12 +1,12 @@
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../themes/ThemeContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { LayoutDashboard, Users, Trophy, Settings, LogOut, Menu, X, Shield, ChevronLeft, ChevronRight, User, Sun, Moon } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 const DashboardLayout = ({ children, title }) => {
   const { user, userData, loading, isSuperAdmin, logout } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+  const { isDark, toggleDarkMode } = useTheme();
   const navigate = useNavigate();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
@@ -37,6 +37,7 @@ const DashboardLayout = ({ children, title }) => {
     { icon: <Trophy size={20} />, label: 'Turniri', href: '/admin/competitions' },
     { icon: <Trophy size={20} className="text-emerald-500" />, label: 'Lige (Berger)', href: '/admin/leagues' },
     { icon: <Users size={20} />, label: 'Igrači', href: '/admin/players' },
+    { icon: <Settings size={20} />, label: 'Postavke', href: '/admin/settings' },
     ...(isSuperAdmin ? [
       { icon: <Shield size={20} className="text-yellow-500" />, label: 'Super Admin', href: '/admin/super-admin' }
     ] : []),
@@ -120,11 +121,11 @@ const DashboardLayout = ({ children, title }) => {
           
           <div className="flex items-center gap-3">
             <button
-              onClick={toggleTheme}
+              onClick={toggleDarkMode}
               className="p-2 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors shadow-sm dark:shadow-none"
-              title={theme === 'dark' ? 'Prebaci na svijetlu temu' : 'Prebaci na tamnu temu'}
+              title={isDark ? 'Prebaci na svijetlu temu' : 'Prebaci na tamnu temu'}
             >
-              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+              {isDark ? <Sun size={20} /> : <Moon size={20} />}
             </button>
 
             <div className="flex items-center gap-4 bg-white dark:bg-slate-900/50 p-2 pl-4 rounded-full border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-none">

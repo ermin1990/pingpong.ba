@@ -7,7 +7,7 @@ import { db } from '../firebase/config';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 
 const StatCard = ({ label, value, icon: Icon, color }) => (
-  <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm hover:border-blue-400 dark:hover:border-slate-700 transition-all">
+  <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-lg shadow-sm hover:border-blue-400 dark:hover:border-slate-700 transition-all">
     <div className="flex items-center justify-between mb-4">
       <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
         <Icon className={`w-6 h-6 ${color}`} />
@@ -110,7 +110,7 @@ const Dashboard = () => {
 
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+            <div className="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden shadow-sm">
               <div className="p-6 border-b border-slate-800 bg-slate-900/50">
                 <h3 className="font-bold text-white">Brze Akcije</h3>
               </div>
@@ -144,7 +144,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="bg-slate-900 border border-slate-800 p-8 rounded-2xl flex flex-col items-center justify-center text-center shadow-sm">
+          <div className="bg-slate-900 border border-slate-800 p-8 rounded-lg flex flex-col items-center justify-center text-center shadow-sm">
             <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mb-6">
               <ExternalLink className="text-blue-500 w-8 h-8" />
             </div>

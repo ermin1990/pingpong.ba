@@ -4,7 +4,7 @@ import { db } from '../firebase/config';
 import { collection, query, where, getDocs, onSnapshot, doc, getDoc } from 'firebase/firestore';
 import PublicGroupStandings from '../components/public/PublicGroupStandings';
 import PublicGroupMatches from '../components/public/PublicGroupMatches';
-import { Trophy, Clock, Zap, Users, LayoutGrid, AlertTriangle, ChevronRight, ChevronDown, CheckCircle, ArrowUp, ArrowDown, Share2, Code, Search, ShieldCheck } from 'lucide-react';
+import { Trophy, Clock, Zap, Users, LayoutGrid, AlertTriangle, ChevronRight, ChevronDown, CheckCircle, ArrowUp, ArrowDown, Share2, Code, Search, ShieldCheck, Calendar, MapPin, Info } from 'lucide-react';
 
 const KnockoutMatchCard = ({ match, isFinal = false }) => {
   const p1Win = match.status === 'completed' && match.player1Score > match.player2Score;
@@ -101,8 +101,10 @@ const PublicCompetition = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [competition, setCompetition] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [categories, setCategories] = useState([]);
   const [showEmbedCode, setShowEmbedCode] = useState(false);
+  const [showRulesModal, setShowRulesModal] = useState(false);
   
   const selectedCategoryId = searchParams.get('category') || '';
   const activeTab = searchParams.get('tab') || 'groups';
@@ -179,9 +181,12 @@ const PublicCompetition = () => {
               setManualOrders(prev => ({ ...prev, [cat.id]: orders }));
             });
           });
+        } else {
+          setError("Takmičenje nije pronađeno.");
         }
       } catch (err) {
         console.error(err);
+        setError("Došlo je do greške prilikom učitavanja podataka.");
       } finally {
         setLoading(false);
       }
@@ -437,7 +442,7 @@ const PublicCompetition = () => {
       </div>
       <h1 className="text-3xl font-black text-white uppercase italic tracking-tighter mb-4">Privatno Takmičenje</h1>
       <p className="text-slate-500 text-sm max-w-xs mx-auto mb-8 font-medium">Organizator trenutno nije omogućio javni pristup rezultatima za ovo takmičenje.</p>
-      <Link to="/" className="inline-flex items-center gap-2 bg-slate-900 text-slate-400 px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:text-white hover:bg-slate-800 transition-all">
+      <Link to="/" className="inline-flex items-center gap-2 bg-slate-900 text-slate-400 px-6 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest hover:text-white hover:bg-slate-800 transition-all">
         Vrati se na početnu <ChevronRight size={12} />
       </Link>
     </div>
@@ -470,7 +475,14 @@ const PublicCompetition = () => {
                 </div>
                 <div className="text-left">
                   <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Datum</p>
-                  <p className="text-xs font-black text-slate-700 dark:text-white uppercase">{competition?.date}</p>
+                  <p className="text-xs font-black text-slate-700 dark:text-white uppercase">
+                    {competition?.startDate ? (
+                      <>
+                        {new Date(competition.startDate).toLocaleDateString('bs-BA')}
+                        {competition.endDate && competition.endDate !== competition.startDate && ` - ${new Date(competition.endDate).toLocaleDateString('bs-BA')}`}
+                      </>
+                    ) : competition?.date || 'Nije definisano'}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -479,10 +491,43 @@ const PublicCompetition = () => {
                 </div>
                 <div className="text-left">
                   <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Lokacija</p>
-                  <p className="text-xs font-black text-slate-700 dark:text-white uppercase">{competition?.location}</p>
+                  <p className="text-xs font-black text-slate-700 dark:text-white uppercase">{competition?.location || 'Nije definisano'}</p>
                 </div>
               </div>
+              
+              {(competition?.contact?.phone || competition?.contact?.email) && (
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-slate-100 dark:bg-slate-900 rounded-xl flex items-center justify-center text-slate-500 border border-slate-200 dark:border-slate-800">
+                    <Users size={18} />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Kontakt</p>
+                    <p className="text-xs font-black text-slate-700 dark:text-white uppercase">
+                      {competition?.contact?.phone || competition?.contact?.email}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
+
+            {competition?.registration?.isOpen && (
+              <div className="pt-8 flex flex-wrap justify-center gap-4">
+                 <button 
+                  onClick={() => competition.registration.link && window.open(competition.registration.link, '_blank')}
+                  className="bg-amber-400 hover:bg-amber-300 text-black px-8 py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-amber-400/20 transition-all transform hover:-translate-y-1"
+                 >
+                   Prijavi se na turnir
+                 </button>
+                 {competition.registration.deadline && (
+                   <div className="flex flex-col justify-center text-left">
+                     <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Rok za prijavu</p>
+                     <p className="text-[11px] font-black text-slate-700 dark:text-white uppercase">
+                       {new Date(competition.registration.deadline).toLocaleString('bs-BA', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                     </p>
+                   </div>
+                 )}
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -521,20 +566,104 @@ const PublicCompetition = () => {
         ) : (
           <>
             {error ? (
-                <div className="max-w-md mx-auto bg-red-500/10 border border-red-500/20 p-8 rounded-3xl text-center">
+                <div className="max-w-md mx-auto bg-red-500/10 border border-red-500/20 p-8 rounded-lg text-center">
                     <Trophy size={48} className="mx-auto text-red-500 mb-4" />
                     <h3 className="text-xl font-black text-white uppercase italic tracking-tighter mb-2">Greška</h3>
                     <p className="text-[10px] text-red-400 font-bold uppercase tracking-widest">{error}</p>
                 </div>
             ) : (
                 <div className="animate-in fade-in duration-1000">
+                    {!selectedCategoryId && (
+                        <div className="max-w-4xl mx-auto mb-16 space-y-8">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                <div className="md:col-span-2 space-y-8">
+                                    {competition?.description && (
+                                        <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 p-8 rounded-[2rem] shadow-xl">
+                                            <div className="flex items-center gap-3 mb-4">
+                                                <Info size={20} className="text-blue-500" />
+                                                <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase italic tracking-tighter">O Turniru</h3>
+                                            </div>
+                                            <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed whitespace-pre-wrap">
+                                                {competition.description}
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {competition?.rules && (
+                                        <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 p-8 rounded-[2rem] shadow-xl">
+                                            <div className="flex items-center gap-3 mb-4">
+                                                <ShieldCheck size={20} className="text-emerald-500" />
+                                                <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase italic tracking-tighter">Propozicije i Pravila</h3>
+                                            </div>
+                                            <div className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed whitespace-pre-wrap max-h-[300px] overflow-y-auto pr-4 custom-scrollbar">
+                                                {competition.rules}
+                                            </div>
+                                            {competition.rules.length > 500 && (
+                                                <button 
+                                                    onClick={() => setShowRulesModal(true)}
+                                                    className="mt-4 text-blue-500 font-bold uppercase text-[10px] tracking-widest hover:underline"
+                                                >
+                                                    Prikaži sve propozicije
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="space-y-6">
+                                    <div className="bg-blue-600 p-8 rounded-[2rem] text-white shadow-xl shadow-blue-600/20">
+                                        <h3 className="text-lg font-black uppercase italic tracking-tighter mb-4">Informacije</h3>
+                                        <div className="space-y-4">
+                                            <div>
+                                                <p className="text-[10px] font-bold text-blue-200 uppercase tracking-widest mb-1">Vlasnik / Organizator</p>
+                                                <p className="text-sm font-bold uppercase">{competition?.ownerEmail?.split('@')[0] || 'Administrator'}</p>
+                                            </div>
+                                            {competition?.contact?.phone && (
+                                                <div>
+                                                    <p className="text-[10px] font-bold text-blue-200 uppercase tracking-widest mb-1">Kontakt Telefon</p>
+                                                    <p className="text-sm font-bold">{competition.contact.phone}</p>
+                                                </div>
+                                            )}
+                                            {competition?.contact?.email && (
+                                                <div>
+                                                    <p className="text-[10px] font-bold text-blue-200 uppercase tracking-widest mb-1">Email Adresa</p>
+                                                    <p className="text-sm font-bold">{competition.contact.email}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 p-8 rounded-[2rem] shadow-xl">
+                                        <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase italic tracking-tighter mb-4">Dijeli</h3>
+                                        <div className="flex gap-4">
+                                            <button 
+                                                onClick={() => {
+                                                    navigator.clipboard.writeText(window.location.href);
+                                                    alert("Link kopiran!");
+                                                }}
+                                                className="w-12 h-12 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center justify-center text-slate-500 hover:text-blue-500 transition-colors"
+                                            >
+                                                <Share2 size={20} />
+                                            </button>
+                                            <button 
+                                                onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank')}
+                                                className="w-12 h-12 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center justify-center text-slate-500 hover:text-blue-600 transition-colors"
+                                            >
+                                                <Users size={20} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                     {activeCategory ? (
                         <div className="space-y-12">
                             {/* Category Header */}
                             <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-10 border-b border-slate-200 dark:border-slate-800/50">
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-600/20">
+                                        <div className="w-14 h-14 bg-blue-600 rounded-lg flex items-center justify-center shadow-xl shadow-blue-600/20">
                                             <Trophy size={24} className="text-white" />
                                         </div>
                                         <div>
@@ -612,7 +741,7 @@ const PublicCompetition = () => {
                                             }
 
                                             return participatingPlayers.map((player, idx) => (
-                                                <div key={player.id} className="bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl flex items-center gap-4 group hover:border-blue-500/50 dark:hover:border-blue-500/50 transition-all">
+                                                <div key={player.id} className="bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 p-4 rounded-lg flex items-center gap-4 group hover:border-blue-500/50 dark:hover:border-blue-500/50 transition-all">
                                                 <div className="w-10 h-10 bg-white dark:bg-slate-900 rounded-xl flex items-center justify-center text-xs font-black text-slate-500 border border-slate-200 dark:border-none group-hover:text-blue-500 transition-colors">
                                                     {idx + 1}
                                                 </div>
@@ -753,7 +882,7 @@ const PublicCompetition = () => {
                                             <div className="relative z-10 flex flex-col h-full justify-between">
                                                 <div className="space-y-4">
                                                     <div className="flex justify-between items-start">
-                                                        <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-all duration-300 shadow-xl shadow-blue-600/20">
+                                                        <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-all duration-300 shadow-xl shadow-blue-600/20">
                                                             <Zap size={20} className="text-white" />
                                                         </div>
                                                         {liveMatches > 0 && (
@@ -865,10 +994,61 @@ const PublicCompetition = () => {
 
             <button 
               onClick={() => setShowEmbedCode(false)}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black uppercase text-xs tracking-widest py-4 rounded-2xl transition-all"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black uppercase text-xs tracking-widest py-4 rounded-lg transition-all"
             >
               Zatvori
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Rules Modal */}
+      {showRulesModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center px-6">
+          <div className="absolute inset-0 bg-white/90 dark:bg-[#070b14]/90 backdrop-blur-md" onClick={() => setShowRulesModal(false)}></div>
+          <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-3xl rounded-[2rem] p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center mb-6">
+               <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase italic tracking-tighter">
+                  Propozicije i Pravila
+               </h3>
+               <button onClick={() => setShowRulesModal(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                  <ArrowDown size={20} />
+               </button>
+            </div>
+            
+            <div className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed whitespace-pre-wrap max-h-[500px] overflow-y-auto pr-4 custom-scrollbar">
+              {competition.rules}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Rules Full Modal */}
+      {showRulesModal && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-md" onClick={() => setShowRulesModal(false)}></div>
+          <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-2xl rounded-[2.5rem] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+               <h3 className="text-2xl font-black text-slate-900 dark:text-white uppercase italic tracking-tighter flex items-center gap-3">
+                  <ShieldCheck className="text-emerald-500" /> Propozicije Turnira
+               </h3>
+               <button onClick={() => setShowRulesModal(false)} className="bg-slate-100 dark:bg-slate-800 p-2 rounded-full text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                  <X size={20} />
+               </button>
+            </div>
+            <div className="p-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
+              <div className="text-slate-600 dark:text-slate-400 text-base leading-relaxed whitespace-pre-wrap">
+                {competition?.rules}
+              </div>
+            </div>
+            <div className="p-8 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+              <button 
+                onClick={() => setShowRulesModal(false)}
+                className="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black uppercase text-xs tracking-widest py-5 rounded-2xl transition-all"
+              >
+                Zatvori
+              </button>
+            </div>
           </div>
         </div>
       )}

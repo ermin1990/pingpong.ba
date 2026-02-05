@@ -83,7 +83,7 @@ const MyProfile = () => {
   return (
     <DashboardLayout title="Moj profil">
       <div className="max-w-3xl mx-auto space-y-6">
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+        <div className="bg-slate-900 border border-slate-800 rounded-lg p-6">
           <div className="flex items-center justify-between">
             <div>
               <div className="text-xs text-slate-400 uppercase font-black tracking-wider">Korisnik</div>
@@ -103,7 +103,7 @@ const MyProfile = () => {
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 md:col-span-2 space-y-6">
+          <div className="bg-slate-900 border border-slate-800 rounded-lg p-6 md:col-span-2 space-y-6">
             <div>
               <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
                 <Layout size={18} className="text-blue-500" />
@@ -181,7 +181,7 @@ const MyProfile = () => {
           </div>
 
           <div className="space-y-4">
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+            <div className="bg-slate-900 border border-slate-800 rounded-lg p-6">
               <h3 className="text-sm font-bold text-white mb-2 flex items-center gap-2">
                 <Mail size={16} className="text-blue-500" /> Podrška
               </h3>
@@ -191,7 +191,7 @@ const MyProfile = () => {
               </a>
             </div>
 
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+            <div className="bg-slate-900 border border-slate-800 rounded-lg p-6">
               <h3 className="text-sm font-bold text-white mb-2 flex items-center gap-2">
                 <Clock size={16} className="text-blue-500" /> Info
               </h3>
@@ -202,7 +202,7 @@ const MyProfile = () => {
           </div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 opacity-60">
+        <div className="bg-slate-900 border border-slate-800 rounded-lg p-6 opacity-60">
           <h4 className="text-xs font-bold text-slate-400 mb-2 uppercase tracking-widest">Historija zahtjeva</h4>
           <p className="text-xs text-slate-500 font-medium">Vaši zahtjevi za nadogradnju se obrađuju u roku od 24 sata.</p>
         </div>
@@ -210,7 +210,7 @@ const MyProfile = () => {
         {showModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/60" onClick={() => setShowModal(false)}></div>
-            <form onSubmit={handleRequestUpgrade} className="relative bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-lg z-10">
+            <form onSubmit={handleRequestUpgrade} className="relative bg-slate-900 border border-slate-800 rounded-lg p-6 w-full max-w-lg z-10">
               <h3 className="text-lg font-bold text-white mb-4">Zatraži nadogradnju</h3>
               <div className="space-y-3 mb-4">
                 <label className="text-sm text-slate-400">Odaberite plan</label>

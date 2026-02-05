@@ -1,5 +1,18 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { themes } from './themes';
+import { db } from '../firebase/config';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+
+/**
+ * Theme Context - Global Theme Management
+ * 
+ * IMPORTANT:
+ * - Global Theme (Trophy, Dark, Purple, Light) - Set by SuperAdmin, applies to ALL users
+ * - Light/Dark Mode Toggle - Individual preference per user
+ * 
+ * SuperAdmin can change the global theme in Settings.
+ * All users will see the same color scheme, but can toggle light/dark independently.
+ */
 
 const ThemeContext = createContext();
 
@@ -12,28 +25,50 @@ export const useTheme = () => {
 };
 
 export const ThemeProvider = ({ children }) => {
-  // Load saved theme from localStorage or default to 'dark'
-  const [currentTheme, setCurrentTheme] = useState(() => {
-    const saved = localStorage.getItem('pingpong-theme');
-    return saved || 'dark';
-  });
+  // GLOBAL THEME - Loaded from Firestore, applies to all users
+  const [currentTheme, setCurrentTheme] = useState('trophy'); // Default to trophy theme
+  const [isLoadingTheme, setIsLoadingTheme] = useState(true);
 
-  // Load light/dark mode preference
+  // INDIVIDUAL PREFERENCE - Light/Dark mode per user
   const [isDark, setIsDark] = useState(() => {
-    const saved = localStorage.getItem('theme-mode');
-    return saved === 'dark';
+    const saved = localStorage.getItem('user-dark-mode-preference');
+    return saved === null ? true : saved === 'true'; // Default to dark
   });
 
   const theme = themes[currentTheme];
 
-  // Save theme preference
+  // Load global theme from Firestore on mount
   useEffect(() => {
-    localStorage.setItem('pingpong-theme', currentTheme);
-  }, [currentTheme]);
+    const loadGlobalTheme = async () => {
+      try {
+        const themeDoc = await getDoc(doc(db, 'settings', 'globalTheme'));
+        if (themeDoc.exists()) {
+          const savedTheme = themeDoc.data().theme;
+          if (themes[savedTheme]) {
+            setCurrentTheme(savedTheme);
+          }
+        } else {
+          // Initialize with default theme
+          await setDoc(doc(db, 'settings', 'globalTheme'), {
+            theme: 'trophy',
+            updatedAt: new Date(),
+            updatedBy: 'system'
+          });
+        }
+      } catch (error) {
+        console.warn('Failed to load global theme, using default:', error);
+      } finally {
+        setIsLoadingTheme(false);
+      }
+    };
 
-  // Save mode preference
+    loadGlobalTheme();
+  }, []);
+
+  // Save user's light/dark mode preference locally
   useEffect(() => {
-    localStorage.setItem('theme-mode', isDark ? 'dark' : 'light');
+    localStorage.setItem('user-dark-mode-preference', isDark.toString());
+    
     // Update document class for Tailwind dark mode
     if (isDark) {
       document.documentElement.classList.add('dark');
@@ -48,6 +83,9 @@ export const ThemeProvider = ({ children }) => {
 
     const root = document.documentElement;
     
+    // Set theme name as data attribute
+    root.setAttribute('data-theme', currentTheme);
+    
     // Apply color variables
     Object.entries(theme.colors).forEach(([key, value]) => {
       root.style.setProperty(`--color-${key}`, value);
@@ -57,14 +95,32 @@ export const ThemeProvider = ({ children }) => {
     Object.entries(theme.shadows).forEach(([key, value]) => {
       root.style.setProperty(`--shadow-${key}`, value);
     });
-  }, [theme]);
+    
+    // Apply accent color to Tailwind blue variants
+    root.style.setProperty('--tw-color-accent', theme.colors.accent);
+    root.style.setProperty('--tw-color-accent-hover', theme.colors.accentHover);
+  }, [theme, currentTheme]);
 
-  const switchTheme = (themeName) => {
-    if (themes[themeName]) {
+  // Switch global theme (SuperAdmin only - enforced in UI)
+  const switchTheme = async (themeName) => {
+    if (!themes[themeName]) return;
+    
+    try {
+      // Save to Firestore - applies globally to all users
+      await setDoc(doc(db, 'settings', 'globalTheme'), {
+        theme: themeName,
+        updatedAt: new Date(),
+        updatedBy: 'superadmin' // This should be actual user ID in production
+      });
+      
       setCurrentTheme(themeName);
+    } catch (error) {
+      console.error('Failed to save global theme:', error);
+      alert('Greška pri čuvanju teme. Pokušajte ponovo.');
     }
   };
 
+  // Toggle individual user's light/dark preference
   const toggleDarkMode = () => {
     setIsDark(!isDark);
   };
@@ -77,6 +133,7 @@ export const ThemeProvider = ({ children }) => {
     toggleDarkMode,
     availableThemes: Object.keys(themes),
     themeNames: Object.values(themes).map(t => t.name),
+    isLoadingTheme,
   };
 
   return (

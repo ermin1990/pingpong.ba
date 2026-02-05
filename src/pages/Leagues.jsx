@@ -133,11 +133,11 @@ const Leagues = () => {
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3].map(i => (
-              <div key={i} className="h-48 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl animate-pulse" />
+              <div key={i} className="h-48 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-lg animate-pulse" />
             ))}
           </div>
         ) : leagues.length === 0 ? (
-          <div className="text-center py-20 bg-white dark:bg-slate-900/30 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl">
+          <div className="text-center py-20 bg-white dark:bg-slate-900/30 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-lg">
             <Trophy className="w-12 h-12 text-slate-200 dark:text-slate-700 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-300">Nema kreiranih liga</h3>
             <p className="text-slate-500 mt-2 max-w-xs mx-auto text-sm">
@@ -150,7 +150,7 @@ const Leagues = () => {
               <Link 
                 key={league.id} 
                 to={`/admin/leagues/${league.id}`}
-                className="group relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 hover:border-emerald-500 transition-all shadow-sm hover:shadow-xl hover:shadow-emerald-500/10 dark:shadow-none dark:hover:shadow-emerald-500/5"
+                className="group relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-6 hover:border-emerald-500 transition-all shadow-sm hover:shadow-xl hover:shadow-emerald-500/10 dark:shadow-none dark:hover:shadow-emerald-500/5"
               >
                 <div className="flex justify-between items-start mb-4">
                   <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-500 group-hover:scale-110 transition-transform">
@@ -196,7 +196,7 @@ const Leagues = () => {
         {/* Create Modal */}
         {showModal && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl transition-all">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg w-full max-w-md overflow-hidden shadow-2xl transition-all">
               <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white">Nova Liga (Berger)</h3>
                 <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
@@ -262,7 +262,7 @@ const Leagues = () => {
                   </div>
                 </div>
 
-                <div className="p-4 bg-emerald-50 dark:bg-emerald-500/5 border border-emerald-100 dark:border-emerald-500/10 rounded-2xl flex gap-3">
+                <div className="p-4 bg-emerald-50 dark:bg-emerald-500/5 border border-emerald-100 dark:border-emerald-500/10 rounded-lg flex gap-3">
                   <Info className="w-5 h-5 text-emerald-600 dark:text-emerald-50 shrink-0 mt-0.5" />
                   <p className="text-[11px] text-slate-600 dark:text-slate-400 font-medium">
                     Ova opcija kreira takmičenje po sistemu "svako sa svakim". Moći ćete naknadno dodavati kola i unositi rezultate.

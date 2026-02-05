@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase/config';
 import { collection, query, where, onSnapshot, addDoc, serverTimestamp, or } from 'firebase/firestore';
-import { Trophy, Plus, Calendar, Target, ChevronRight, ExternalLink } from 'lucide-react';
+import { Trophy, Plus, Calendar, Target, ChevronRight, ExternalLink, MapPin, X } from 'lucide-react';
 import DashboardLayout from '../layouts/DashboardLayout';
 
 const Competitions = () => {
@@ -11,13 +11,7 @@ const Competitions = () => {
   const navigate = useNavigate();
   const [competitions, setCompetitions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
   
-  // New Comp State
-  const [name, setName] = useState('');
-  const [sport, setSport] = useState('Table Tennis');
-  const [type, setType] = useState('League');
-
   useEffect(() => {
     if (!user) return; // Use user instead of userData for auth check
 
@@ -94,16 +88,28 @@ const Competitions = () => {
       const docRef = await addDoc(collection(db, "competitions"), {
         name,
         sport,
-        type: type === 'League' ? 'Knockout' : type, // Fallback if user didn't change initial state
+        type: type === 'League' ? 'Knockout' : type,
         status: 'draft',
-        ownerUid: user.uid, // Always use user.uid from AuthContext
+        ownerUid: user.uid,
         ownerName: userData.displayName || userData.name || userData.email || 'Admin',
         ownerEmail: userData.email || user.email || '',
         createdAt: serverTimestamp(),
-        participantsCount: 0
+        participantsCount: 0,
+        startDate: startDate || null,
+        endDate: endDate || null,
+        location: location || '',
+        defaultSettings: {
+          setsToWin: Number(setsToWin),
+          winPoints: Number(winPoints),
+          lossPoints: Number(lossPoints),
+          advancingPlayers: Number(advancingPlayers)
+        }
       });
       setShowModal(false);
       setName('');
+      setStartDate('');
+      setEndDate('');
+      setLocation('');
       navigate(`/admin/competitions/${docRef.id}`);
     } catch (err) {
       console.error("Greška:", err);
@@ -118,13 +124,12 @@ const Competitions = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Upravljanje Turnirima</h2>
-            <p className="text-slate-500 text-sm">Ukupno {competitions.length} registrovanih turnira.</p>
+            <h1 className="text-3xl font-black text-slate-900 dark:text-white uppercase italic tracking-tighter">Moji Turniri</h1>
+            <p className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-widest">Upravljajte svojim sportskim događajima</p>
           </div>
-          
           <button 
-            onClick={() => setShowModal(true)}
-            className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-bold text-sm transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
+            onClick={() => navigate('/admin/competitions/new')}
+            className="w-full md:w-auto bg-amber-400 hover:bg-amber-500 text-black px-6 py-4 rounded-xl font-black uppercase text-xs tracking-widest transition-all shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2"
           >
             <Plus size={18} /> Novi Turnir
           </button>
@@ -136,13 +141,13 @@ const Competitions = () => {
            <p className="text-xs text-slate-500 font-medium">Učitavanje podataka...</p>
         </div>
       ) : competitions.length === 0 ? (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-dashed rounded-3xl p-20 text-center">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 border-dashed rounded-lg p-20 text-center">
           <Trophy size={48} className="text-slate-200 dark:text-slate-800 mx-auto mb-6" />
           <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Nema aktivnih turnira</h3>
           <p className="text-slate-500 mb-8 max-w-sm mx-auto text-sm">Kreirajte svoj prvi turnir i započnite sa upravljanjem.</p>
           <button 
-            onClick={() => setShowModal(true)}
-            className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white px-8 py-3 rounded-xl font-bold text-sm transition-all"
+            onClick={() => navigate('/admin/competitions/new')}
+            className="bg-amber-400 hover:bg-amber-500 text-black px-8 py-3 rounded-xl font-bold text-sm transition-all"
           >
             Kreiraj Turnir
           </button>
@@ -150,7 +155,7 @@ const Competitions = () => {
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {competitions.map(comp => (
-            <div key={comp.id} className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl hover:border-blue-400 dark:hover:border-slate-700 transition-all flex flex-col justify-between shadow-sm dark:shadow-none">
+            <div key={comp.id} className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-lg hover:border-blue-400 dark:hover:border-slate-700 transition-all flex flex-col justify-between shadow-sm dark:shadow-none">
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${
@@ -162,15 +167,26 @@ const Competitions = () => {
                 </div>
                 
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-500 transition-colors">{comp.name}</h3>
-                <div className="flex flex-col gap-1 mb-6">
+                <div className="flex flex-col gap-1.5 mb-6">
                   <div className="text-[10px] text-slate-500 flex items-center gap-2">
-                    <span>{comp.sport}</span>
-                    <span className="w-1 h-1 bg-slate-200 dark:bg-slate-800 rounded-full"></span>
                     <span>{comp.type}</span>
+                    {comp.location && (
+                      <>
+                        <span className="w-1 h-1 bg-slate-200 dark:bg-slate-800 rounded-full"></span>
+                        <span className="flex items-center gap-1"><MapPin size={10} /> {comp.location}</span>
+                      </>
+                    )}
                   </div>
+                  {(comp.startDate || comp.endDate) && (
+                    <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                      <Calendar size={10} />
+                      {comp.startDate ? new Date(comp.startDate).toLocaleDateString('de-DE') : '...'} 
+                      {comp.endDate && ` - ${new Date(comp.endDate).toLocaleDateString('de-DE')}`}
+                    </div>
+                  )}
                   {comp.ownerName && (
                     <div className="text-[10px] text-blue-600 dark:text-blue-400/60 font-medium">
-                      Kreirao: {comp.ownerName}
+                      Organizator: {comp.ownerName}
                     </div>
                   )}
                 </div>
@@ -203,57 +219,6 @@ const Competitions = () => {
               </div>
             </div>
           ))}
-        </div>
-      )}
-
-      {/* Modal - Simplified */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowModal(false)}></div>
-          <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-lg rounded-2xl shadow-2xl p-8 animate-in fade-in zoom-in duration-200">
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Novi Turnir</h2>
-            
-            <form onSubmit={handleCreate} className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Naziv Turnira</label>
-                <input 
-                  type="text" required
-                  placeholder="npr. Proljećni Kup 2026"
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none placeholder:text-slate-400 dark:placeholder:text-slate-600 transition-all font-medium"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Format Turnira</label>
-                  <select 
-                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 appearance-none shadow-sm font-medium transition-all"
-                    value={type}
-                    onChange={(e) => setType(e.target.value)}
-                  >
-                    <option value="Knockout">Knockout (Eliminacije)</option>
-                    <option value="Groups">Grupni Sistem + Knockout</option>
-                  </select>
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <button 
-                  type="button" 
-                  onClick={() => setShowModal(false)}
-                  className="flex-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-white py-3 rounded-xl font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
-                >
-                  Odustani
-                </button>
-                <button 
-                  type="submit" 
-                  className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold text-sm hover:bg-blue-500 transition-all shadow-lg shadow-blue-500/25"
-                >
-                  Kreiraj
-                </button>
-              </div>
-            </form>
-          </div>
         </div>
       )}
     </div>

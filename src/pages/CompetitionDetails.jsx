@@ -20,7 +20,6 @@ import SettingsTab from '../components/competition/SettingsTab';
 import GlobalMatchSearch from '../components/competition/GlobalMatchSearch';
 import CompetitionHeader from '../components/competition/CompetitionHeader';
 import MatchUpdateModal from '../components/competition/MatchUpdateModal';
-import CompetitionSettingsModal from '../components/competition/CompetitionSettingsModal';
 import AllMatchesTab from '../components/competition/AllMatchesTab';
 import AllPlayersTab from '../components/competition/AllPlayersTab';
 
@@ -88,10 +87,29 @@ const CompetitionDetails = () => {
   const [allMatchesForSearch, setAllMatchesForSearch] = useState([]);
   const [matchSearchQuery, setMatchSearchQuery] = useState('');
   
-  // Competition settings state
-  const [showCompSettings, setShowCompSettings] = useState(false);
   const [compName, setCompName] = useState('');
   const [compSlug, setCompSlug] = useState('');
+  const [compStartDate, setCompStartDate] = useState('');
+  const [compEndDate, setCompEndDate] = useState('');
+  const [compLocation, setCompLocation] = useState('');
+  const [compDescription, setCompDescription] = useState('');
+  const [compRules, setCompRules] = useState('');
+  const [compContactPhone, setCompContactPhone] = useState('');
+  const [compContactEmail, setCompContactEmail] = useState('');
+  const [compContactAddress, setCompContactAddress] = useState('');
+  const [compOrganizer, setCompOrganizer] = useState('');
+  const [compDirector, setCompDirector] = useState('');
+  const [compReferee, setCompReferee] = useState('');
+  const [compEntryFee, setCompEntryFee] = useState('');
+  const [compPrizes, setCompPrizes] = useState('');
+  const [compSchedule, setCompSchedule] = useState('');
+  const [regIsOpen, setRegIsOpen] = useState(false);
+  const [regLink, setRegLink] = useState('');
+  const [regDeadline, setRegDeadline] = useState('');
+  const [compSetsToWin, setCompSetsToWin] = useState(2);
+  const [compWinPoints, setCompWinPoints] = useState(2);
+  const [compLossPoints, setCompLossPoints] = useState(0);
+  const [compAdvancingPlayers, setCompAdvancingPlayers] = useState(2);
   const [collaborators, setCollaborators] = useState([]);
   const [isPublic, setIsPublic] = useState(false);
   const [savingComp, setSavingComp] = useState(false);
@@ -122,6 +140,27 @@ const CompetitionDetails = () => {
           setCompetition(compData);
           setCompName(compData.name || '');
           setCompSlug(compData.slug || '');
+          setCompStartDate(compData.startDate || '');
+          setCompEndDate(compData.endDate || '');
+          setCompLocation(compData.location || '');
+          setCompDescription(compData.description || '');
+          setCompRules(compData.rules || '');
+          setCompContactPhone(compData.contact?.phone || '');
+          setCompContactEmail(compData.contact?.email || '');
+          setCompContactAddress(compData.contact?.address || '');
+          setCompOrganizer(compData.organizer || '');
+          setCompDirector(compData.director || '');
+          setCompReferee(compData.referee || '');
+          setCompEntryFee(compData.entryFee || '');
+          setCompPrizes(compData.prizes || '');
+          setCompSchedule(compData.schedule || '');
+          setRegIsOpen(compData.registration?.isOpen || false);
+          setRegLink(compData.registration?.link || '');
+          setRegDeadline(compData.registration?.deadline || '');
+          setCompSetsToWin(compData.defaultSettings?.setsToWin || 2);
+          setCompWinPoints(compData.defaultSettings?.winPoints || 2);
+          setCompLossPoints(compData.defaultSettings?.lossPoints || 0);
+          setCompAdvancingPlayers(compData.defaultSettings?.advancingPlayers || 2);
           setCollaborators(compData.collaborators || []);
           setIsPublic(compData.isPublic || false);
           
@@ -208,8 +247,7 @@ const CompetitionDetails = () => {
     if (!id) return;
     const q = query(
       collection(db, "matches"), 
-      where("competitionId", "==", id),
-      limit(50)
+      where("competitionId", "==", id)
     );
     const unsubscribe = onSnapshot(q, (snap) => {
       setAllMatchesForSearch(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
@@ -308,10 +346,10 @@ const CompetitionDetails = () => {
         createdAt: serverTimestamp(),
         playerIds: [],
         seededPlayerIds: [],
-        advancingPlayers: 2,
-        setsToWin: 2,
-        winPoints: 2,
-        lossPoints: 1
+        advancingPlayers: competition?.defaultSettings?.advancingPlayers ?? 2,
+        setsToWin: competition?.defaultSettings?.setsToWin ?? 2,
+        winPoints: competition?.defaultSettings?.winPoints ?? 2,
+        lossPoints: competition?.defaultSettings?.lossPoints ?? 0
       };
 
       await addDoc(collection(db, "competitions", id, "categories"), catData);
@@ -1601,18 +1639,45 @@ const CompetitionDetails = () => {
     setSavingComp(true);
     try {
       const slugVal = compSlug.trim().toLowerCase().replace(/[^a-z0-9]/g, '-');
-      await updateDoc(doc(db, "competitions", id), {
+      const updateData = {
         name: compName.trim(),
         slug: slugVal,
         collaborators: collaborators,
-        // isPublic is updated separately now
+        startDate: compStartDate || null,
+        endDate: compEndDate || null,
+        location: compLocation || '',
+        description: compDescription || '',
+        rules: compRules || '',
+        contact: {
+          phone: compContactPhone || '',
+          email: compContactEmail || '',
+          address: compContactAddress || ''
+        },
+        organizer: compOrganizer || '',
+        director: compDirector || '',
+        referee: compReferee || '',
+        entryFee: compEntryFee || '',
+        prizes: compPrizes || '',
+        schedule: compSchedule || '',
+        registration: {
+          isOpen: regIsOpen,
+          link: regLink || '',
+          deadline: regDeadline || ''
+        },
+        defaultSettings: {
+          setsToWin: Number(compSetsToWin),
+          winPoints: Number(compWinPoints),
+          lossPoints: Number(compLossPoints),
+          advancingPlayers: Number(compAdvancingPlayers)
+        },
         updatedAt: serverTimestamp()
-      });
+      };
+      
+      await updateDoc(doc(db, "competitions", id), updateData);
+      
       setCompetition(prev => ({ 
         ...prev, 
-        name: compName.trim(), 
-        slug: slugVal,
-        collaborators: collaborators
+        ...updateData
       }));
       setShowCompSettings(false);
       alert("Takmičenje ažurirano!");
@@ -1669,7 +1734,6 @@ const CompetitionDetails = () => {
 
         <CompetitionHeader 
           competition={competition}
-          setShowCompSettings={setShowCompSettings}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           categoriesLoading={categoriesLoading}
@@ -1747,8 +1811,8 @@ const CompetitionDetails = () => {
         {activeTab === 'knockout' && (
           <div className="min-h-[500px]">
             {!activeCategory ? (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-3xl p-12 text-center backdrop-blur-xl">
-                <div className="w-16 h-16 bg-red-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 text-red-500">
+              <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-12 text-center backdrop-blur-xl">
+                <div className="w-16 h-16 bg-red-500/20 rounded-lg flex items-center justify-center mx-auto mb-6 text-red-500">
                   <AlertTriangle size={32} />
                 </div>
                 <h3 className="text-xl font-black text-white uppercase italic tracking-tighter mb-2">Kategorija nije pronađena</h3>
@@ -1824,28 +1888,10 @@ const CompetitionDetails = () => {
         activeCategory={activeCategory}
       />
 
-      {showCompSettings && (
-        <CompetitionSettingsModal 
-          showCompSettings={showCompSettings}
-          setShowCompSettings={setShowCompSettings}
-          compName={compName}
-          setCompName={setCompName}
-          compSlug={compSlug}
-          setCompSlug={setCompSlug}
-          collaborators={collaborators}
-          setCollaborators={setCollaborators}
-          competition={competition}
-          handleUpdateCompetition={handleUpdateCompetition}
-          savingComp={savingComp}
-          isPublic={isPublic}
-          handleTogglePublic={handleTogglePublic}
-        />
-      )}
-
       {/* Edit Player Modal */}
       {editingPlayer && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl">
+          <div className="bg-slate-900 border border-slate-800 w-full max-w-md rounded-lg overflow-hidden shadow-2xl">
             <div className="p-6 border-b border-white/5 flex justify-between items-center bg-gradient-to-r from-blue-600/10 to-transparent">
               <h3 className="text-xl font-black text-white uppercase tracking-tight">Uredi Igrača</h3>
               <button onClick={() => setEditingPlayer(null)} className="text-slate-500 hover:text-white transition-colors">
@@ -1860,7 +1906,7 @@ const CompetitionDetails = () => {
                   required
                   value={editPlayerName}
                   onChange={(e) => setEditPlayerName(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3.5 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3.5 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
                 />
               </div>
               <div>
@@ -1869,7 +1915,7 @@ const CompetitionDetails = () => {
                   type="text"
                   value={editPlayerClub}
                   onChange={(e) => setEditPlayerClub(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3.5 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3.5 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
                   placeholder="Opciono"
                 />
               </div>
@@ -1877,14 +1923,14 @@ const CompetitionDetails = () => {
                 <button
                   type="button"
                   onClick={() => setEditingPlayer(null)}
-                  className="flex-1 px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition-all border border-slate-700"
+                  className="flex-1 px-6 py-4 rounded-lg text-xs font-black uppercase tracking-widest text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition-all border border-slate-700"
                 >
                   Odustani
                 </button>
                 <button
                   type="submit"
                   disabled={updatingPlayer}
-                  className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20"
+                  className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-4 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20"
                 >
                   {updatingPlayer ? 'Spašavam...' : 'Sačuvaj izmjene'}
                 </button>
@@ -1926,7 +1972,7 @@ const CompetitionDetails = () => {
                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Ime i Prezime</label>
                       <input 
                       required
-                      className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-blue-500 transition-all placeholder:text-slate-700"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-5 py-4 text-white focus:outline-none focus:border-blue-500 transition-all placeholder:text-slate-700"
                       placeholder="npr. Edin Džeko"
                       value={newPlayerName}
                       onChange={(e) => setNewPlayerName(e.target.value)}
@@ -1935,7 +1981,7 @@ const CompetitionDetails = () => {
                   <div className="space-y-2">
                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Klub (opciono)</label>
                       <input 
-                      className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-blue-500 transition-all placeholder:text-slate-700"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-5 py-4 text-white focus:outline-none focus:border-blue-500 transition-all placeholder:text-slate-700"
                       placeholder="npr. STK Spin"
                       value={newPlayerClub}
                       onChange={(e) => setNewPlayerClub(e.target.value)}
@@ -1951,7 +1997,7 @@ const CompetitionDetails = () => {
                     </button>
                     <button 
                       type="submit"
-                      className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20 active:scale-95"
+                      className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-lg font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20 active:scale-95"
                     >
                       Dodaj Igrača
                     </button>
@@ -1967,7 +2013,7 @@ const CompetitionDetails = () => {
                       <textarea 
                       required
                       rows={6}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 text-white font-mono text-xs focus:outline-none focus:border-blue-500 transition-all placeholder:text-slate-800 resize-none"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-5 py-4 text-white font-mono text-xs focus:outline-none focus:border-blue-500 transition-all placeholder:text-slate-800 resize-none"
                       placeholder="Haris Tabaković, STK Spin;&#10;Ermin H., STK Sarajevo;"
                       value={bulkPlayerText}
                       onChange={(e) => setBulkPlayerText(e.target.value)}
@@ -1984,7 +2030,7 @@ const CompetitionDetails = () => {
                     <button 
                       type="submit"
                       disabled={generating}
-                      className={`flex-1 ${generating ? 'bg-slate-800' : 'bg-white text-slate-900 hover:bg-blue-500 hover:text-white'} py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95`}
+                      className={`flex-1 ${generating ? 'bg-slate-800' : 'bg-white text-slate-900 hover:bg-blue-500 hover:text-white'} py-4 rounded-lg font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95`}
                     >
                       {generating ? 'Procesiranje...' : 'Uvezi Listu'}
                     </button>

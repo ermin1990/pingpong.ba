@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { BookOpen, Users, Trophy, LayoutGrid, List, Activity, Share2, Code, Zap } from 'lucide-react';
 
 const Section = ({ title, icon: Icon, children }) => (
-  <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6">
+  <div className="bg-slate-900/40 border border-slate-800 rounded-lg p-6">
     <div className="flex gap-4">
       <div className="w-12 h-12 rounded-lg bg-slate-800 flex items-center justify-center text-blue-400">
         <Icon size={20} />
@@ -20,7 +20,7 @@ const PublicOverview = () => {
   return (
     <div className="min-h-screen p-6">
       <div className="max-w-5xl mx-auto space-y-6">
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8">
+        <div className="bg-slate-900 border border-slate-800 rounded-lg p-8">
           <h1 className="text-2xl font-black">Kako koristiti aplikaciju — Kratki priručnik</h1>
           <p className="text-slate-400 mt-2">Ovaj vodič pokazuje korak-po-korak kako organizovati takmičenja, upravljati igračima i voditi turnire koristeći PingPong.ba.</p>
         </div>
@@ -134,7 +134,7 @@ const PublicOverview = () => {
           </div>
         </Section>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-slate-400">
+        <div className="bg-slate-900 border border-slate-800 rounded-lg p-6 text-slate-400">
           <h4 className="text-white font-bold mb-2">Želite da ovo bude dostupno direktno iz UI?</h4>
           <p className="mb-2">Mogu dodati:</p>
           <ul className="list-disc list-inside text-slate-400">

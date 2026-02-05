@@ -472,10 +472,10 @@ const LeagueDetails = () => {
         />
         
         {/* Header */}
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 mb-8">
+        <div className="bg-slate-900 border border-slate-800 rounded-lg p-6 mb-8">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div className="flex items-center gap-5">
-              <div className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center border border-emerald-500/20">
+              <div className="w-16 h-16 bg-emerald-500/10 rounded-lg flex items-center justify-center border border-emerald-500/20">
                 <Trophy className="w-8 h-8 text-emerald-500" />
               </div>
               <div>
@@ -515,7 +515,7 @@ const LeagueDetails = () => {
         </div>
 
         {/* Navigation */}
-        <div className="flex flex-wrap gap-2 p-1.5 bg-slate-900/50 border border-slate-800 rounded-2xl mb-8 w-fit">
+        <div className="flex flex-wrap gap-2 p-1.5 bg-slate-900/50 border border-slate-800 rounded-lg mb-8 w-fit">
           {[
             { id: 'players', label: 'Igrači', icon: Users },
             { id: 'matches', label: 'Rezultati', icon: List },
@@ -560,7 +560,7 @@ const LeagueDetails = () => {
           {activeTab === 'matches' && (
             <div className="space-y-10">
                {matches.length === 0 ? (
-                 <div className="text-center py-24 bg-slate-950/20 border-2 border-dashed border-slate-800 rounded-3xl">
+                 <div className="text-center py-24 bg-slate-950/20 border-2 border-dashed border-slate-800 rounded-lg">
                     <List size={48} className="text-slate-700 mx-auto mb-4" />
                     <h3 className="text-xl font-bold text-white mb-2">Nema generisanih mečeva</h3>
                     <p className="text-slate-500 mb-8 max-w-sm mx-auto">Nakon što odaberete igrače, generišite raspored po kolima.</p>
@@ -595,7 +595,7 @@ const LeagueDetails = () => {
                                   <div 
                                       key={match.id}
                                       onClick={() => { setEditingMatch(match); setShowMatchModal(true); }}
-                                      className="bg-slate-900/50 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/30 p-5 rounded-2xl transition-all cursor-pointer group flex items-center justify-between"
+                                      className="bg-slate-900/50 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/30 p-5 rounded-lg transition-all cursor-pointer group flex items-center justify-between"
                                   >
                                       <div className="flex-1 space-y-3">
                                           <div className="flex items-center justify-between">
@@ -624,7 +624,7 @@ const LeagueDetails = () => {
                    })}
 
                    {matchSearchQuery && matches.some(m => m.player1?.name.toLowerCase().includes(matchSearchQuery.toLowerCase()) || m.player2?.name.toLowerCase().includes(matchSearchQuery.toLowerCase())) === false && (
-                      <div className="text-center py-20 bg-slate-900/20 border border-slate-800 rounded-3xl">
+                      <div className="text-center py-20 bg-slate-900/20 border border-slate-800 rounded-lg">
                         <Search className="w-12 h-12 text-slate-800 mx-auto mb-4" />
                         <p className="text-slate-500 font-bold uppercase tracking-widest">Nema rezultata pretrage za "{matchSearchQuery}"</p>
                       </div>
@@ -635,7 +635,7 @@ const LeagueDetails = () => {
           )}
 
           {activeTab === 'standings' && (
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+            <div className="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden shadow-xl">
                <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
                   <h3 className="text-xl font-black text-white flex items-center gap-3">
                     <Trophy className="text-amber-500" /> Tabela Lige
@@ -651,7 +651,7 @@ const LeagueDetails = () => {
 
           {activeTab === 'settings' && (
             <div className="max-w-2xl mx-auto space-y-8">
-               <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8">
+               <div className="bg-slate-900 border border-slate-800 rounded-lg p-8">
                   <h3 className="text-xl font-bold text-white mb-8 border-b border-slate-800 pb-4">Opšte Postavke</h3>
                   <div className="space-y-6">
                     <div>
@@ -720,7 +720,7 @@ const LeagueDetails = () => {
                     <div className="pt-6 border-t border-slate-800">
                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Javna Vidljivost & Link</label>
                         <div className="flex flex-col gap-4">
-                           <div className="flex items-center justify-between bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                           <div className="flex items-center justify-between bg-slate-950 p-4 rounded-lg border border-slate-800">
                               <div>
                                  <p className="text-white font-bold text-sm">Javna stranica</p>
                                  <p className="text-[10px] text-slate-500">Omogući svima da vide tabelu i rezultate</p>
@@ -763,7 +763,7 @@ const LeagueDetails = () => {
                         <button 
                             onClick={handleResetLeague}
                             disabled={generating}
-                            className="bg-amber-600/10 hover:bg-amber-600 text-amber-500 hover:text-white border border-amber-500/20 px-6 py-3 rounded-xl text-sm font-bold transition-all flex items-center gap-2"
+                            className="bg-amber-100 dark:bg-amber-500/10 hover:bg-amber-400 text-amber-700 dark:text-amber-500 hover:text-slate-900 border border-amber-500/20 px-6 py-3 rounded-lg text-sm font-bold transition-all flex items-center gap-2"
                         >
                             <RefreshCw size={18} className={generating ? 'animate-spin' : ''} /> Resetuj Ligu (Draft)
                         </button>
@@ -832,7 +832,7 @@ const LeagueDetails = () => {
                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Ime i Prezime</label>
                        <input 
                         required
-                        className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-blue-500 transition-all placeholder:text-slate-700"
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-5 py-4 text-white focus:outline-none focus:border-blue-500 transition-all placeholder:text-slate-700"
                         placeholder="npr. Edin Džeko"
                         value={newPlayerName}
                         onChange={(e) => setNewPlayerName(e.target.value)}
@@ -841,7 +841,7 @@ const LeagueDetails = () => {
                     <div className="space-y-2">
                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Klub (opciono)</label>
                        <input 
-                        className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-blue-500 transition-all placeholder:text-slate-700"
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-5 py-4 text-white focus:outline-none focus:border-blue-500 transition-all placeholder:text-slate-700"
                         placeholder="npr. STK Spin"
                         value={newPlayerClub}
                         onChange={(e) => setNewPlayerClub(e.target.value)}
@@ -857,7 +857,7 @@ const LeagueDetails = () => {
                       </button>
                       <button 
                         type="submit"
-                        className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20 active:scale-95"
+                        className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-lg font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20 active:scale-95"
                       >
                         Dodaj Igrača
                       </button>
@@ -873,7 +873,7 @@ const LeagueDetails = () => {
                        <textarea 
                         required
                         rows={6}
-                        className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 text-white font-mono text-xs focus:outline-none focus:border-blue-500 transition-all placeholder:text-slate-800 resize-none"
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-5 py-4 text-white font-mono text-xs focus:outline-none focus:border-blue-500 transition-all placeholder:text-slate-800 resize-none"
                         placeholder="Haris Tabaković, STK Spin;&#10;Ermin H., STK Sarajevo;"
                         value={bulkPlayerText}
                         onChange={(e) => setBulkPlayerText(e.target.value)}
@@ -890,7 +890,7 @@ const LeagueDetails = () => {
                       <button 
                         type="submit"
                         disabled={generating}
-                        className={`flex-1 ${generating ? 'bg-slate-800' : 'bg-white text-slate-900 hover:bg-blue-500 hover:text-white'} py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95`}
+                        className={`flex-1 ${generating ? 'bg-slate-800' : 'bg-white text-slate-900 hover:bg-blue-500 hover:text-white'} py-4 rounded-lg font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95`}
                       >
                         {generating ? 'Procesiranje...' : 'Uvezi Listu'}
                       </button>
@@ -905,7 +905,7 @@ const LeagueDetails = () => {
         {/* Edit Player Modal */}
         {editingPlayer && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-            <div className="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl">
+            <div className="bg-slate-900 border border-slate-800 w-full max-w-md rounded-lg overflow-hidden shadow-2xl">
               <div className="p-6 border-b border-white/5 flex justify-between items-center bg-gradient-to-r from-blue-600/10 to-transparent">
                 <h3 className="text-xl font-black text-white uppercase tracking-tight">Uredi Igrača</h3>
                 <button onClick={() => setEditingPlayer(null)} className="text-slate-500 hover:text-white transition-colors">
@@ -920,7 +920,7 @@ const LeagueDetails = () => {
                     required
                     value={editPlayerName}
                     onChange={(e) => setEditPlayerName(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3.5 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3.5 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
                   />
                 </div>
                 <div>
@@ -929,7 +929,7 @@ const LeagueDetails = () => {
                     type="text"
                     value={editPlayerClub}
                     onChange={(e) => setEditPlayerClub(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3.5 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3.5 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
                     placeholder="Opciono"
                   />
                 </div>
@@ -937,14 +937,14 @@ const LeagueDetails = () => {
                   <button
                     type="button"
                     onClick={() => setEditingPlayer(null)}
-                    className="flex-1 px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition-all border border-slate-700"
+                    className="flex-1 px-6 py-4 rounded-lg text-xs font-black uppercase tracking-widest text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition-all border border-slate-700"
                   >
                     Odustani
                   </button>
                   <button
                     type="submit"
                     disabled={updatingPlayer}
-                    className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20"
+                    className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-4 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20"
                   >
                     {updatingPlayer ? 'Spašavam...' : 'Sačuvaj izmjene'}
                   </button>

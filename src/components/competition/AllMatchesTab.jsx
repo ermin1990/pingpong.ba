@@ -56,70 +56,94 @@ const AllMatchesTab = ({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white">Svi Mečevi</h2>
-          <p className="text-slate-500 text-sm mt-1">
-            Ukupno {allMatches.length} mečeva • Prikazano {filteredMatches.length}
-          </p>
+      {/* Header with Info */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg p-5">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Svi Mečevi - Pregled</h2>
+            <p className="text-xs text-slate-600 dark:text-slate-400">
+              Pretražite sve mečeve odjednom bez potrebe za odabirom kategorije
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">
+              Ukupno {allMatches.length} mečeva • Prikazano {filteredMatches.length}
+            </p>
+          </div>
+          
+          {filteredMatches.length > 0 && (
+            <button
+              onClick={() => setShowDeleteAllConfirm(true)}
+              className="bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2"
+            >
+              <Trash2 size={14} />
+              Obriši Filtrirane ({filteredMatches.length})
+            </button>
+          )}
         </div>
-        
-        {filteredMatches.length > 0 && (
-          <button
-            onClick={() => setShowDeleteAllConfirm(true)}
-            className="bg-red-50 dark:bg-red-600/10 hover:bg-red-100 dark:hover:bg-red-600/20 border border-red-200 dark:border-red-600/30 text-red-600 dark:text-red-400 px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2"
-          >
-            <Trash2 size={16} />
-            Obriši Sve Filtrirane ({filteredMatches.length})
-          </button>
-        )}
       </div>
 
-      {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Search */}
+      {/* Global Search - Prominent */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-4 shadow-sm">
+        <div className="flex items-start gap-3 mb-3">
+          <div className="p-2 bg-blue-50 dark:bg-blue-500/10 rounded-lg text-blue-600 dark:text-blue-400">
+            <Search size={20} />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">Globalna Pretraga Mečeva</h3>
+            <p className="text-xs text-slate-600 dark:text-slate-400">
+              Pretražite bilo koji meč u takmičenju po imenu igrača - bez potrebe za odabirom kategorije
+            </p>
+          </div>
+        </div>
         <div className="relative">
           <input 
             type="text"
-            placeholder="Pretraži po imenu igrača..."
-            className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 pl-10 text-sm text-slate-900 dark:text-white focus:border-blue-500 outline-none shadow-sm dark:shadow-none"
+            placeholder="Unesite ime igrača za pretragu kroz sve kategorije..."
+            className="w-full bg-slate-50 dark:bg-slate-950 border-2 border-slate-200 dark:border-slate-700 rounded-lg px-4 py-3 pl-11 text-sm text-slate-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all font-medium"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" size={16} />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-all"
             >
               <X size={16} />
             </button>
           )}
         </div>
+      </div>
 
+      {/* Filters */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Category Filter */}
-        <select
-          value={filterCategory}
-          onChange={(e) => setFilterCategory(e.target.value)}
-          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:border-blue-500 outline-none shadow-sm dark:shadow-none"
-        >
-          <option value="all">Sve kategorije</option>
-          {categories.map(cat => (
-            <option key={cat.id} value={cat.id}>{cat.name}</option>
-          ))}
-        </select>
+        <div>
+          <label className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block font-medium">Filtriraj po kategoriji:</label>
+          <select
+            value={filterCategory}
+            onChange={(e) => setFilterCategory(e.target.value)}
+            className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none"
+          >
+            <option value="all">Sve kategorije</option>
+            {categories.map(cat => (
+              <option key={cat.id} value={cat.id}>{cat.name}</option>
+            ))}
+          </select>
+        </div>
 
         {/* Status Filter */}
-        <select
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:border-blue-500 outline-none shadow-sm dark:shadow-none"
-        >
-          <option value="all">Svi statusi</option>
-          <option value="pending">Predstojeći</option>
-          <option value="completed">Završeni</option>
-        </select>
+        <div>
+          <label className="text-xs text-slate-600 dark:text-slate-400 mb-1.5 block font-medium">Filtriraj po statusu:</label>
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none"
+          >
+            <option value="all">Svi statusi</option>
+            <option value="pending">Predstojeći</option>
+            <option value="completed">Završeni</option>
+          </select>
+        </div>
       </div>
 
       {/* Delete All Confirmation Modal */}
@@ -156,18 +180,20 @@ const AllMatchesTab = ({
 
       {/* Matches List */}
       {filteredMatches.length === 0 ? (
-        <div className="text-center py-20 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 transition-colors">
-          <Search className="w-12 h-12 mx-auto mb-3 text-slate-300 dark:text-slate-700" />
-          <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+        <div className="text-center py-20 bg-slate-50 dark:bg-slate-900/50 rounded-lg border-2 border-dashed border-slate-300 dark:border-slate-700">
+          <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center">
+            <Search className="w-8 h-8 text-slate-400" />
+          </div>
+          <h3 className="text-base font-bold text-slate-900 dark:text-white mb-2">
             {searchQuery || filterCategory !== 'all' || filterStatus !== 'all' 
-              ? 'Nema rezultata' 
+              ? 'Nema rezultata pretrage' 
               : 'Nema mečeva'
             }
           </h3>
-          <p className="text-slate-500 text-sm">
+          <p className="text-sm text-slate-600 dark:text-slate-400">
             {searchQuery || filterCategory !== 'all' || filterStatus !== 'all'
-              ? 'Pokušajte promijeniti filtere pretrage.'
-              : 'Mečevi će se pojaviti ovdje kada ih generirate u kategorijama.'
+              ? 'Pokušajte promijeniti filtere ili unijeti drugo ime.'
+              : 'Generirajte mečeve u kategorijama da bi se pojavili ovdje.'
             }
           </p>
         </div>
