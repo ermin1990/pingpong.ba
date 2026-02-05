@@ -4,7 +4,7 @@ import { db } from '../firebase/config';
 import { collection, query, where, getDocs, onSnapshot, doc, getDoc } from 'firebase/firestore';
 import PublicGroupStandings from '../components/public/PublicGroupStandings';
 import PublicGroupMatches from '../components/public/PublicGroupMatches';
-import { Trophy, Clock, Zap, Users, LayoutGrid, AlertTriangle, ChevronRight, ChevronDown, CheckCircle, ArrowUp, ArrowDown, Share2, Code, Search, ShieldCheck, Calendar, MapPin, Phone, Mail, MapPinned, Award, DollarSign, ClockIcon, Timer, ZoomIn, ZoomOut, Maximize } from 'lucide-react';
+import { Trophy, Clock, Zap, Users, LayoutGrid, AlertTriangle, ChevronRight, ChevronDown, CheckCircle, ArrowUp, ArrowDown, Share2, Code, Search, ShieldCheck, Calendar, MapPin, Phone, Mail, MapPinned, Award, DollarSign, ClockIcon, Timer, ZoomIn, ZoomOut, Maximize, Sun, Moon } from 'lucide-react';
 
 // Helper za generisanje URL slug-a iz imena kategorije
 const generateSlug = (name) => {
@@ -735,10 +735,10 @@ const PublicCompetitionNew = () => {
             {/* Light Mode Toggle */}
             <button
               onClick={() => setIsDarkMode(!isDarkMode)}
-              className={`px-3 py-2 rounded-lg transition-all ${isDarkMode ? 'bg-slate-800 text-yellow-400 hover:bg-slate-700' : 'bg-slate-200 text-slate-900 hover:bg-slate-300'}`}
+              className={`w-10 h-10 rounded-lg transition-all flex items-center justify-center border ${isDarkMode ? 'bg-slate-800 border-slate-700 text-yellow-400 hover:bg-slate-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
               title={isDarkMode ? 'Prijeđi na light mode' : 'Prijeđi na dark mode'}
             >
-              {isDarkMode ? '☀️' : '🌙'}
+              {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
           </div>
         </div>
