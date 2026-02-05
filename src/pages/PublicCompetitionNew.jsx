@@ -666,12 +666,12 @@ const PublicCompetitionNew = () => {
       </header>
 
       {/* Sticky Category Nav - UVIJEK PRIKAZUJ */}
-      <div id="category-nav" className="sticky top-0 z-50 bg-[#070b14]/95 dark:bg-[#070b14]/95 backdrop-blur-lg border-b border-slate-800 shadow-sm">
-        <div className="container mx-auto px-4 overflow-x-auto no-scrollbar">
-          <div className="flex items-center h-14 gap-2 min-w-max">
+      <div id="category-nav" className="sticky top-0 z-40 bg-[#070b14]/95 dark:bg-[#070b14]/95 backdrop-blur-lg border-b border-slate-800 shadow-sm">
+        <div className="container mx-auto px-4 overflow-visible">
+          <div className="flex items-center h-14 gap-2 min-w-max relative">
             <Link 
                 to={`/p/${slug}`}
-                className={`px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${!categorySlug ? 'bg-blue-600 text-white shadow' : 'text-slate-500 hover:bg-slate-900'}`}
+                className={`px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${!categorySlug ? 'bg-blue-600 text-black shadow' : 'text-slate-500 hover:bg-slate-900'}`}
             >
                 Pregled
             </Link>
@@ -681,12 +681,12 @@ const PublicCompetitionNew = () => {
                 <div className="h-4 w-px bg-slate-800 mx-1" />
                 
                 {/* Dropdown za kategorije */}
-                <div className="relative">
+                <div className="relative z-50">
                   <button 
                     onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
                     className={`px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
                       categorySlug 
-                        ? 'bg-blue-600 text-white shadow' 
+                        ? 'bg-blue-600 text-black shadow' 
                         : 'text-slate-500 hover:text-slate-300'
                     }`}
                   >
@@ -696,7 +696,7 @@ const PublicCompetitionNew = () => {
                   
                   {/* Dropdown meni */}
                   {showCategoryDropdown && (
-                    <div className="absolute left-0 top-full mt-1 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-xl z-50 animate-in fade-in slide-in-from-top-2">
+                    <div className="absolute left-0 top-full mt-1 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl z-50 animate-in fade-in slide-in-from-top-2">
                       {categories.length === 0 ? (
                         <div className="px-4 py-3 text-[10px] text-slate-500 font-bold uppercase tracking-widest text-center">
                           Nema kategorija
