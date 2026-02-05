@@ -105,6 +105,7 @@ const PublicCompetition = () => {
   const [categories, setCategories] = useState([]);
   const [showEmbedCode, setShowEmbedCode] = useState(false);
   const [showRulesModal, setShowRulesModal] = useState(false);
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   
   const selectedCategoryId = searchParams.get('category') || '';
   const activeTab = searchParams.get('tab') || 'groups';
@@ -546,8 +547,9 @@ const PublicCompetition = () => {
             <div className="h-6 w-px bg-slate-200 dark:bg-slate-800" />
             
             {/* Dropdown za kategorije */}
-            <div className="relative group">
+            <div className="relative">
               <button 
+                onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
                 className={`px-5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
                   selectedCategoryId 
                     ? 'bg-blue-600 text-white' 
@@ -555,33 +557,38 @@ const PublicCompetition = () => {
                 }`}
               >
                 {selectedCategoryId ? categories.find(c => c.id === selectedCategoryId)?.name || 'Kategorije' : 'Kategorije'}
-                <ChevronDown size={14} className="group-hover:rotate-180 transition-transform" />
+                <ChevronDown size={14} className={`transition-transform ${showCategoryDropdown ? 'rotate-180' : ''}`} />
               </button>
               
               {/* Dropdown meni */}
-              <div className="absolute left-0 top-full mt-1 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                {categories.length === 0 ? (
-                  <div className="px-4 py-3 text-[10px] text-slate-500 font-bold uppercase tracking-widest text-center">
-                    Nema kategorija
-                  </div>
-                ) : (
-                  <div className="py-2">
-                    {categories.map(cat => (
-                      <button
-                        key={cat.id}
-                        onClick={() => handleCategorySelect(cat.id)}
-                        className={`w-full px-4 py-3 text-left text-[11px] font-bold uppercase tracking-widest transition-all ${
-                          selectedCategoryId === cat.id 
-                            ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400' 
-                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
-                        }`}
-                      >
-                        {cat.name}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+              {showCategoryDropdown && (
+                <div className="absolute left-0 top-full mt-1 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 animate-in fade-in slide-in-from-top-2">
+                  {categories.length === 0 ? (
+                    <div className="px-4 py-3 text-[10px] text-slate-500 font-bold uppercase tracking-widest text-center">
+                      Nema kategorija
+                    </div>
+                  ) : (
+                    <div className="py-2">
+                      {categories.map(cat => (
+                        <button
+                          key={cat.id}
+                          onClick={() => {
+                            handleCategorySelect(cat.id);
+                            setShowCategoryDropdown(false);
+                          }}
+                          className={`w-full px-4 py-3 text-left text-[11px] font-bold uppercase tracking-widest transition-all ${
+                            selectedCategoryId === cat.id 
+                              ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400' 
+                              : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                          }`}
+                        >
+                          {cat.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
