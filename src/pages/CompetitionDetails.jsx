@@ -562,6 +562,62 @@ const CompetitionDetails = () => {
     }
   };
 
+  const handleClearCategory = async () => {
+    if (!selectedCategoryId) return;
+    
+    const confirmMessage = 
+      "PAŽNJA: Ova akcija će OČISTITI kategoriju:\n\n" +
+      "1. ✓ Obrisati SVE mečeve\n" +
+      "2. ✓ Obrisati sve grupe i žrijeb\n" +
+      "3. ✓ Obrisati sve sortirane poretke\n" +
+      "4. ✓ Vratiti status na DRAFT\n\n" +
+      "❌ Igrači će biti SAČUVANI!\n\n" +
+      "Da li želite nastaviti?";
+    
+    if (!window.confirm(confirmMessage)) return;
+    
+    setGenerating(true);
+    try {
+      const batch = writeBatch(db);
+      
+      // 1. Obriši sve mečeve ove kategorije
+      const allCategoryMatches = matches.filter(m => m.categoryId === selectedCategoryId);
+      allCategoryMatches.forEach(m => {
+        batch.delete(doc(db, "matches", m.id));
+      });
+
+      // 2. Resetuj kategoriju - obriši sve osim igrača
+      const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
+      batch.update(catRef, {
+        status: 'draft',
+        groupConfig: null,
+        stages: null,
+        [`stages.groups.completed`]: false,
+        [`stages.knockout.completed`]: false,
+        updatedAt: serverTimestamp()
+      });
+
+      // 3. Obriši sve ručne poretke (manualOrders) ako postoje
+      const ordersRef = collection(db, "competitions", id, "categories", selectedCategoryId, "manualOrders");
+      const ordersSnap = await getDocs(ordersRef);
+      ordersSnap.docs.forEach(d => {
+        batch.delete(d.ref);
+      });
+
+      await batch.commit();
+      
+      // Resetuj lokalni state
+      setMatches(prev => prev.filter(m => m.categoryId !== selectedCategoryId));
+      alert("Kategorija je očišćena! Igrači su sačuvani.");
+      
+    } catch (err) {
+      console.error("Greška pri čišćenju kategorije:", err);
+      alert("Greška pri čišćenju kategorije: " + err.message);
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   const handleSaveManualOrder = async (groupIdx, orderedPlayerIds) => {
     if (!selectedCategoryId) return;
     try {
@@ -1802,6 +1858,7 @@ const CompetitionDetails = () => {
             handleDeleteMatch={handleDeleteMatch}
             handleToggleStage={handleToggleStage}
             handleReturnToDraft={handleReturnToDraft}
+            handleClearCategory={handleClearCategory}
             handleAutoAssignGroups={handleAutoAssignGroups}
             planDetails={planDetails}
             isSuperAdmin={isSuperAdmin}

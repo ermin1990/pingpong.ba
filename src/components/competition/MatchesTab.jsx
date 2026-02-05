@@ -29,6 +29,7 @@ const MatchesTab = ({
   handleSaveManualOrder,
   handleToggleStage,
   handleReturnToDraft,
+  handleClearCategory,
   handleDeleteMatch,
   handleAutoAssignGroups,
   planDetails, // Receive planDetails
@@ -122,6 +123,13 @@ const MatchesTab = ({
                   </div>
                 )}
               </div>
+              <button 
+                onClick={handleClearCategory}
+                className="w-full mt-4 px-4 py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 border bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-500/20 hover:bg-orange-100 dark:hover:bg-orange-500/20"
+                title="Očistite sve (mečeve, grupe, poretke) ali igrači ostaju"
+              >
+                <Trash2 size={14} /> Očisti kategoriju
+              </button>
             </div>
           </div>
         )}
@@ -164,6 +172,13 @@ const MatchesTab = ({
                   }`}
                 >
                   <RotateCcw size={14} /> Resetuj
+                </button>
+                <button 
+                  onClick={handleClearCategory}
+                  className="px-4 py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 border bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-500/20 hover:bg-orange-100 dark:hover:bg-orange-500/20"
+                  title="Očistite sve (mečeve, grupe, poretke) ali igrači ostaju"
+                >
+                  <Trash2 size={14} /> Očisti
                 </button>
                 <button 
                   onClick={() => handleToggleStage('groups', !isGroupsCompleted)}
