@@ -236,7 +236,7 @@ const Explore = () => {
                         {filteredUpcoming.length > 0 && (
                             <section>
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="flex items-center gap-2 bg-blue-600 text-white px-3 py-1.5 rounded-lg shadow-lg shadow-blue-600/20">
+                                    <div className="flex items-center gap-2 bg-amber-400 text-black px-3 py-1.5 rounded-lg shadow-lg shadow-amber-400/20">
                                         <Clock size={14} />
                                         <span className="text-[10px] font-black uppercase tracking-widest">Nadolazeći</span>
                                     </div>
@@ -249,7 +249,7 @@ const Explore = () => {
                                             key={comp.id} 
                                             comp={comp}
                                             badge={
-                                                <div className="flex items-center gap-1.5 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest border border-blue-100 dark:border-blue-500/20">
+                                                <div className="flex items-center gap-1.5 bg-amber-50 text-amber-700 dark:bg-amber-400 dark:text-black px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest border border-amber-100 dark:border-amber-400/20">
                                                     USKORO
                                                 </div>
                                             }

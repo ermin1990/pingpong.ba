@@ -1,6 +1,6 @@
 import { Clock } from 'lucide-react';
 
-const PublicGroupMatches = ({ matches }) => {
+const PublicGroupMatches = ({ matches, onMatchClick }) => {
   return (
     <div>
       <h5 className="text-sm md:text-base font-semibold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">
@@ -23,13 +23,17 @@ const PublicGroupMatches = ({ matches }) => {
             });
 
             return (
-                <div key={match.id} className="block bg-slate-50/50 dark:bg-slate-900/40 hover:bg-white dark:hover:bg-slate-800/60 rounded-md transition-all duration-200 hover:scale-[1.01] border-b md:border border-slate-100 dark:border-slate-800 last:border-b-0">
+                <div 
+                    key={match.id} 
+                    onClick={() => onMatchClick && onMatchClick(match)}
+                    className="block cursor-pointer bg-slate-50/50 dark:bg-slate-900/40 hover:bg-white dark:hover:bg-slate-800/60 rounded-md transition-all duration-200 hover:scale-[1.01] border-b md:border border-slate-100 dark:border-slate-800 last:border-b-0"
+                >
                     
                     {/* Mobile Layout */}
                     <div className="block md:hidden py-3 px-2">
                         <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-3 flex-1 min-w-0">
-                                <div className={`text-sm font-semibold truncate ${p1Wins ? 'text-slate-900 dark:text-white font-bold' : 'text-slate-500 dark:text-slate-400'}`}>
+                                <div className={`text-sm font-semibold ${p1Wins ? 'text-slate-900 dark:text-white font-bold' : 'text-slate-500 dark:text-slate-400'}`}>
                                     {match.player1.name}
                                 </div>
                             </div>
@@ -44,7 +48,7 @@ const PublicGroupMatches = ({ matches }) => {
 
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3 flex-1 min-w-0">
-                                <div className={`text-sm font-semibold truncate ${p2Wins ? 'text-slate-900 dark:text-white font-bold' : 'text-slate-500 dark:text-slate-400'}`}>
+                                <div className={`text-sm font-semibold ${p2Wins ? 'text-slate-900 dark:text-white font-bold' : 'text-slate-500 dark:text-slate-400'}`}>
                                     {match.player2.name}
                                 </div>
                             </div>
@@ -95,33 +99,15 @@ const PublicGroupMatches = ({ matches }) => {
                             <div className="flex-1 space-y-4">
                                 {/* Home Player */}
                                 <div className="flex items-center gap-3">
-                                    <div className={`text-sm font-bold truncate flex-1 min-w-0 ${p1Wins ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
+                                    <div className={`text-sm font-bold flex-1 min-w-0 ${p1Wins ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
                                         {match.player1.name}
-                                    </div>
-                                    <div className="flex gap-1 ml-4">
-                                        {sets.map((set, idx) => (
-                                            <div key={idx} className={`w-8 text-center ${idx < 4 ? 'border-r border-slate-100 dark:border-slate-800' : ''}`}>
-                                                <span className={`text-xs px-1.5 py-0.5 rounded ${set.played ? (set.p1 > set.p2 ? 'bg-green-600 dark:bg-green-900 text-white font-bold shadow-sm' : 'text-slate-500 dark:text-slate-400') : 'text-slate-300 dark:text-slate-700'}`}>
-                                                    {set.p1}
-                                                </span>
-                                            </div>
-                                        ))}
                                     </div>
                                 </div>
 
                                 {/* Away Player */}
                                 <div className="flex items-center gap-3">
-                                    <div className={`text-sm font-bold truncate flex-1 min-w-0 ${p2Wins ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
+                                    <div className={`text-sm font-bold flex-1 min-w-0 ${p2Wins ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
                                         {match.player2.name}
-                                    </div>
-                                    <div className="flex gap-1 ml-4">
-                                        {sets.map((set, idx) => (
-                                            <div key={idx} className={`w-8 text-center ${idx < 4 ? 'border-r border-slate-100 dark:border-slate-800' : ''}`}>
-                                                <span className={`text-xs px-1.5 py-0.5 rounded ${set.played ? (set.p2 > set.p1 ? 'bg-green-600 dark:bg-green-900 text-white font-bold shadow-sm' : 'text-slate-500 dark:text-slate-400') : 'text-slate-300 dark:text-slate-700'}`}>
-                                                    {set.p2}
-                                                </span>
-                                            </div>
-                                        ))}
                                     </div>
                                 </div>
                             </div>

@@ -30,7 +30,7 @@ const PublicGroupStandings = ({ standings, advancingCount }) => {
                 <span className={`font-bold w-5 text-center text-[10px] md:text-xs ${isAdvancing ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`}>
                     {idx + 1}
                 </span>
-                <span className={`font-medium text-[11px] md:text-xs truncate ${isAdvancing ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'}`}>
+                <span className={`font-medium text-[11px] md:text-xs ${isAdvancing ? 'text-slate-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'}`}>
                     {p.name}
                 </span>
               </div>

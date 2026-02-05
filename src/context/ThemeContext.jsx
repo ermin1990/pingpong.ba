@@ -9,21 +9,18 @@ export const ThemeProvider = ({ children }) => {
     if (storedTheme) {
       return storedTheme;
     }
-    return 'dark'; // Default to dark mostly to match current design
+    return 'dark'; // Always dark for branding
   });
 
   useEffect(() => {
     const root = window.document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-    localStorage.setItem('theme', theme);
-  }, [theme]);
+    root.classList.add('dark');
+    root.style.colorScheme = 'dark';
+    localStorage.setItem('theme', 'dark');
+  }, []);
 
   const toggleTheme = () => {
-    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+    // No-op to disable switching
   };
 
   return (

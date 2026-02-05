@@ -4,7 +4,7 @@ import { db } from '../firebase/config';
 import { collection, query, where, getDocs, onSnapshot, doc, getDoc } from 'firebase/firestore';
 import PublicGroupStandings from '../components/public/PublicGroupStandings';
 import PublicGroupMatches from '../components/public/PublicGroupMatches';
-import { Trophy, Clock, Zap, Users, LayoutGrid, AlertTriangle, ChevronRight, ChevronDown, CheckCircle, ArrowUp, ArrowDown, Share2, Code, Search, ShieldCheck, Calendar, MapPin, Phone, Mail, MapPinned, Award, DollarSign, ClockIcon, Timer, ZoomIn, ZoomOut, Maximize } from 'lucide-react';
+import { Trophy, Clock, Zap, Users, LayoutGrid, AlertTriangle, ChevronRight, ChevronDown, CheckCircle, ArrowUp, ArrowDown, Share2, Code, Search, ShieldCheck, Calendar, MapPin, Phone, Mail, MapPinned, Award, DollarSign, ClockIcon, Timer, ZoomIn, ZoomOut, Maximize, X } from 'lucide-react';
 
 // Helper za generisanje URL slug-a iz imena kategorije
 const generateSlug = (name) => {
@@ -80,7 +80,7 @@ const Countdown = ({ targetDate }) => {
 };
 
 // Knockout card komponenta
-const KnockoutMatchCard = ({ match, isFinal = false }) => {
+const KnockoutMatchCard = ({ match, isFinal = false, onMatchClick, isSelected }) => {
   const p1Win = match.status === 'completed' && match.player1Score > match.player2Score;
   const p2Win = match.status === 'completed' && match.player2Score > match.player1Score;
   
@@ -90,78 +90,89 @@ const KnockoutMatchCard = ({ match, isFinal = false }) => {
                 match.player2?.name && match.player2?.id !== 'tbd' && 
                 hasScore;
 
-  const hasSets = match.sets && match.sets.some(s => s.p1 > 0 || s.p2 > 0);
-
   return (
-    <div 
-      className={`block bg-white dark:bg-slate-800/40 backdrop-blur-md rounded-xl border border-slate-200 dark:border-slate-700/50 shadow-sm dark:shadow-xl transition-all duration-200 hover:scale-[1.02] knockout-match relative pt-[3px] my-[3px] ${isFinal ? 'ring-2 ring-amber-500/20' : ''}`}
-    >
-      {isLive && (
-        <div className="absolute -top-1 -right-1 z-20">
-          <div className="bg-blue-600 text-[6px] font-black uppercase px-1.5 py-0.5 rounded shadow-lg border border-blue-400 text-white">
-            UŽIVO
+    <div className={`relative ${isSelected ? 'z-[100]' : 'z-10'}`}>
+      <div 
+        onClick={() => onMatchClick(match)}
+        className={`block bg-white dark:bg-slate-800/40 backdrop-blur-md rounded-xl border ${isSelected ? 'border-emerald-500 ring-4 ring-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.4)]' : 'border-slate-200 dark:border-slate-700/50 shadow-sm'} dark:shadow-xl transition-all duration-300 hover:scale-[1.02] knockout-match relative pt-[3px] my-[3px] cursor-pointer overflow-hidden group`}
+      >
+        {isLive && (
+          <div className="absolute -top-1 -right-1 z-20">
+            <div className="bg-blue-600 text-[6px] font-black uppercase px-1.5 py-0.5 rounded shadow-lg border border-blue-400 text-white">
+              UŽIVO
+            </div>
           </div>
+        )}
+        
+        {/* Main Content Area */}
+        <div className={`px-3 md:px-4 py-2 transition-all duration-300 ${isSelected ? 'blur-md opacity-20 scale-95' : ''}`}>
+            <div className="flex items-center justify-between mb-1.5">
+              <div className="flex items-center gap-2 flex-1 min-w-0 mr-2">
+                  <div className={`player-name font-semibold text-[13px] ${p1Win ? 'text-emerald-600 dark:text-green-500 font-bold' : 'text-slate-500 dark:text-gray-300'}`}>
+                    {match.player1?.name || "TBD"}
+                  </div>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0">
+                      <div className={`w-7 h-7 rounded flex items-center justify-center border border-slate-100 dark:border-white/5 badge-box ${p1Win ? 'bg-emerald-50 dark:bg-green-900/80' : 'bg-slate-50 dark:bg-gray-800'}`}>
+                          <div className={`text-sm font-bold badge-number ${p1Win ? 'text-emerald-700 dark:text-white' : 'text-slate-900 dark:text-white'}`}>
+                            {match.player1Score || 0}
+                          </div>
+                      </div>
+                  </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 flex-1 min-w-0 mr-2">
+                  <div className={`player-name font-semibold text-[13px] ${p2Win ? 'text-emerald-600 dark:text-green-500 font-bold' : 'text-slate-500 dark:text-gray-300'}`}>
+                    {match.player2?.name || "TBD"}
+                  </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0">
+                      <div className={`w-7 h-7 rounded flex items-center justify-center border border-slate-100 dark:border-white/5 badge-box ${p2Win ? 'bg-emerald-50 dark:bg-green-900/80' : 'bg-slate-50 dark:bg-gray-800'}`}>
+                          <div className={`text-sm font-bold badge-number ${p2Win ? 'text-emerald-700 dark:text-white' : 'text-slate-900 dark:text-white'}`}>
+                            {match.player2Score || 0}
+                          </div>
+                      </div>
+                  </div>
+              </div>
+            </div>
         </div>
-      )}
-      
-      <div className="px-3 md:px-4 py-2">
-          <div className="flex items-center justify-between mb-1.5">
-            <div className="flex items-center gap-2 flex-1 min-w-0 mr-2">
-                <div className={`player-name font-semibold text-[13px] ${p1Win ? 'text-emerald-600 dark:text-green-500 font-bold' : 'text-slate-500 dark:text-gray-300'}`}>
-                  {match.player1?.name || "TBD"}
-                </div>
-            </div>
-            
-            <div className="flex items-center gap-3">
-                {hasSets && (
-                  <div className="flex gap-0.5 justify-end">
-                    {match.sets.map((s, idx) => (s.p1 > 0 || s.p2 > 0) && (
-                      <div key={idx} className="w-4 text-center">
-                        <span className={`text-[10px] leading-none font-bold block ${s.p1 > s.p2 ? 'text-slate-600 dark:text-gray-300' : 'text-slate-300 dark:text-gray-600'}`}>
-                          {s.p1}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <div className="flex-shrink-0">
-                    <div className={`w-7 h-7 rounded flex items-center justify-center border border-slate-100 dark:border-white/5 badge-box ${p1Win ? 'bg-emerald-50 dark:bg-green-900/80' : 'bg-slate-50 dark:bg-gray-800'}`}>
-                        <div className={`text-sm font-bold badge-number ${p1Win ? 'text-emerald-700 dark:text-white' : 'text-slate-900 dark:text-white'}`}>
-                          {match.player1Score || 0}
-                        </div>
-                    </div>
-                </div>
-            </div>
-          </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 flex-1 min-w-0 mr-2">
-                <div className={`player-name font-semibold text-[13px] ${p2Win ? 'text-emerald-600 dark:text-green-500 font-bold' : 'text-slate-500 dark:text-gray-300'}`}>
-                  {match.player2?.name || "TBD"}
+        {/* Overlay Results (Visible when selected) */}
+        {isSelected && (
+          <div className="absolute inset-0 z-30 flex flex-col justify-center px-4 animate-in zoom-in-95 duration-200">
+            {match.sets && match.sets.length > 0 && match.sets.some(s => (s.p1 > 0 || s.p2 > 0)) ? (
+              <>
+                <div className="flex items-center justify-center mb-2">
+                   <span className="text-[8px] font-black uppercase tracking-[0.2em] text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded italic">Rezultati Setova</span>
                 </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-                {hasSets && (
-                  <div className="flex gap-0.5 justify-end">
-                    {match.sets.map((s, idx) => (s.p1 > 0 || s.p2 > 0) && (
-                      <div key={idx} className="w-4 text-center">
-                        <span className={`text-[10px] leading-none font-bold block ${s.p2 > s.p1 ? 'text-slate-600 dark:text-gray-300' : 'text-slate-300 dark:text-gray-600'}`}>
-                          {s.p2}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <div className="flex-shrink-0">
-                    <div className={`w-7 h-7 rounded flex items-center justify-center border border-slate-100 dark:border-white/5 badge-box ${p2Win ? 'bg-emerald-50 dark:bg-green-900/80' : 'bg-slate-50 dark:bg-gray-800'}`}>
-                        <div className={`text-sm font-bold badge-number ${p2Win ? 'text-emerald-700 dark:text-white' : 'text-slate-900 dark:text-white'}`}>
-                          {match.player2Score || 0}
-                        </div>
+                <div className="grid grid-cols-5 gap-1.5">
+                  {match.sets.map((set, idx) => (
+                    <div key={idx} className="flex flex-col gap-1">
+                       <div className={`h-6 rounded flex items-center justify-center text-[11px] font-black border transition-colors ${set.p1 > set.p2 ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' : 'bg-slate-800 border-slate-700 text-slate-500'}`}>
+                         {set.p1}
+                       </div>
+                       <div className={`h-6 rounded flex items-center justify-center text-[11px] font-black border transition-colors ${set.p2 > set.p1 ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' : 'bg-slate-800 border-slate-700 text-slate-500'}`}>
+                         {set.p2}
+                       </div>
                     </div>
+                  ))}
                 </div>
-            </div>
+              </>
+            ) : (
+              <div className="flex items-center justify-center">
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 italic bg-slate-100 dark:bg-slate-800/80 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                  Nisu unešeni poeni
+                </span>
+              </div>
+            )}
           </div>
+        )}
       </div>
     </div>
   );
@@ -201,6 +212,7 @@ const PublicCompetitionNew = () => {
   const [playerNames, setPlayerNames] = useState({});
   const [allPlayers, setAllPlayers] = useState([]);
   const [knockoutZoom, setKnockoutZoom] = useState(1);
+  const [knockoutDetailMatch, setKnockoutDetailMatch] = useState(null);
 
   const isSlotReserved = (match, slot) => {
     if (!match?.slots) return false;
@@ -511,68 +523,73 @@ const PublicCompetitionNew = () => {
     </div>
   );
 
+  // Placeholder za eventualne buduce globalne UI elemente
+  const GlobalUIElements = () => {
+    return null;
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#070b14] via-[#0a0f1a] to-[#0d1220] dark text-slate-900 dark:text-white">
+    <div className="min-h-screen bg-[#070b14] dark text-slate-900 dark:text-white overflow-x-hidden">
       {/* Hero Section / Header */}
-      <header className="relative border-b-2 border-slate-200/50 dark:border-slate-800/50 bg-gradient-to-r from-white via-slate-50 to-white dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 overflow-hidden">
+      <header className="relative border-b border-slate-800/50 bg-slate-950 overflow-hidden">
         {/* Decorative background elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-1/2 -right-1/4 w-96 h-96 bg-blue-500/5 dark:bg-blue-500/10 rounded-full blur-3xl"></div>
           <div className="absolute -bottom-1/2 -left-1/4 w-96 h-96 bg-emerald-500/5 dark:bg-emerald-500/10 rounded-full blur-3xl"></div>
         </div>
 
-        <div className="container mx-auto px-6 py-12 md:py-20 relative z-10">
+        <div className="container mx-auto px-4 md:px-6 py-8 md:py-20 relative z-10">
           <div className="max-w-7xl mx-auto">
             {/* Tournament Badge & Meta */}
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-br from-blue-600 to-blue-500 rounded-2xl text-white shadow-xl shadow-blue-600/30 backdrop-blur-sm">
-                  <Trophy size={24} />
+            <div className="flex items-center justify-between gap-4 mb-6 md:mb-8">
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="p-2 md:p-3 bg-gradient-to-br from-blue-600 to-blue-500 rounded-xl md:rounded-2xl text-white shadow-xl shadow-blue-600/30 backdrop-blur-sm">
+                  <Trophy size={20} className="md:w-6 md:h-6" />
                 </div>
                 <div>
-                  <p className="text-[9px] text-slate-400 font-black uppercase tracking-[0.3em] leading-none mb-1">Službena Stranica</p>
-                  <p className="text-xs text-blue-600 dark:text-blue-400 font-black uppercase tracking-wider">Stonoteniski Turnir</p>
+                  <p className="text-[7px] md:text-[9px] text-slate-400 font-black uppercase tracking-[0.2em] md:tracking-[0.3em] leading-none mb-1">Službena Stranica</p>
+                  <p className="text-[10px] md:text-xs text-blue-600 dark:text-blue-400 font-black uppercase tracking-wider">Stonoteniski Turnir</p>
                 </div>
               </div>
 
               {/* Social Share */}
-              <button className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-400 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-all shadow-sm">
-                <Share2 size={14} /> Podijeli
+              <button className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-400 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-all shadow-sm">
+                <Share2 size={12} className="md:w-3.5 md:h-3.5" /> Podijeli
               </button>
             </div>
 
-            <div className="grid lg:grid-cols-[1fr,420px] gap-12 items-start">
+            <div className="grid lg:grid-cols-[1fr,380px] gap-8 md:gap-12 items-start">
               {/* Left: Title & Core Info */}
-              <div className="space-y-6">
-                <h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-[0.95] drop-shadow-sm">
+              <div className="space-y-4 md:space-y-6">
+                <h1 className="text-2xl md:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-[1] md:leading-[0.95] drop-shadow-sm">
                   {competition?.name}
                 </h1>
                 
                 {/* Key Info Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 pt-2 md:pt-4">
                   {competition?.location && (
-                    <div className="group bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-2 border-slate-200/50 dark:border-slate-800/50 hover:border-emerald-500/50 p-5 rounded-2xl transition-all shadow-lg hover:shadow-xl hover:scale-[1.02]">
+                    <div className="group bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-800/50 hover:border-emerald-500/50 p-4 md:p-5 rounded-xl md:rounded-2xl transition-all shadow-lg hover:shadow-xl">
                       <div className="flex items-start gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white shadow-lg shadow-emerald-500/30 group-hover:scale-110 transition-transform">
-                          <MapPin size={20} />
+                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white shadow-lg shadow-emerald-500/30 group-hover:scale-110 transition-transform">
+                          <MapPin size={18} className="md:w-5 md:h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[8px] text-slate-400 font-black uppercase tracking-[0.15em] leading-none mb-1.5">Lokacija Turnira</p>
-                          <p className="text-sm font-black text-slate-900 dark:text-white leading-tight">{competition.location}</p>
+                          <p className="text-[7px] md:text-[8px] text-slate-400 font-black uppercase tracking-[0.15em] leading-none mb-1 md:mb-1.5">Lokacija Turnira</p>
+                          <p className="text-[13px] md:text-sm font-black text-slate-900 dark:text-white leading-tight">{competition.location}</p>
                         </div>
                       </div>
                     </div>
                   )}
                   
                   {(competition?.startDate || competition?.endDate) && (
-                    <div className="group bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-2 border-slate-200/50 dark:border-slate-800/50 hover:border-blue-500/50 p-5 rounded-2xl transition-all shadow-lg hover:shadow-xl hover:scale-[1.02]">
+                    <div className="group bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-800/50 hover:border-blue-500/50 p-3 md:p-5 rounded-xl md:rounded-2xl transition-all shadow-lg hover:shadow-xl">
                       <div className="flex items-start gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform">
-                          <Calendar size={20} />
+                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform">
+                          <Calendar size={18} className="md:w-5 md:h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[8px] text-slate-400 font-black uppercase tracking-[0.15em] leading-none mb-1.5">Vrijeme Održavanja</p>
-                          <p className="text-sm font-black text-slate-900 dark:text-white leading-tight">
+                          <p className="text-[7px] md:text-[8px] text-slate-400 font-black uppercase tracking-[0.15em] leading-none mb-1 md:mb-1.5">Vrijeme Održavanja</p>
+                          <p className="text-[13px] md:text-sm font-black text-slate-900 dark:text-white leading-tight">
                             {formatDate(competition.startDate)}
                             {competition.endDate && competition.endDate !== competition.startDate && ` - ${formatDate(competition.endDate)}`}
                           </p>
@@ -582,28 +599,28 @@ const PublicCompetitionNew = () => {
                   )}
 
                   {competition.organizer && (
-                    <div className="group bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-2 border-slate-200/50 dark:border-slate-800/50 hover:border-amber-500/50 p-5 rounded-2xl transition-all shadow-lg hover:shadow-xl hover:scale-[1.02]">
+                    <div className="group bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-800/50 hover:border-amber-500/50 p-3 md:p-5 rounded-xl md:rounded-2xl transition-all shadow-lg hover:shadow-xl">
                       <div className="flex items-start gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center text-white shadow-lg shadow-amber-500/30 group-hover:scale-110 transition-transform">
-                          <Users size={20} />
+                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center text-white shadow-lg shadow-amber-500/30 group-hover:scale-110 transition-transform">
+                          <Users size={18} className="md:w-5 md:h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[8px] text-slate-400 font-black uppercase tracking-[0.15em] leading-none mb-1.5">Organizator</p>
-                          <p className="text-sm font-black text-slate-900 dark:text-white leading-tight truncate">{competition.organizer}</p>
+                          <p className="text-[7px] md:text-[8px] text-slate-400 font-black uppercase tracking-[0.15em] leading-none mb-1 md:mb-1.5">Organizator</p>
+                          <p className="text-[13px] md:text-sm font-black text-slate-900 dark:text-white leading-tight truncate">{competition.organizer}</p>
                         </div>
                       </div>
                     </div>
                   )}
 
                   {competition.entryFee && (
-                    <div className="group bg-gradient-to-br from-emerald-500/10 to-emerald-600/10 dark:from-emerald-500/20 dark:to-emerald-600/20 backdrop-blur-sm border-2 border-emerald-500/30 dark:border-emerald-500/50 hover:border-emerald-500 p-5 rounded-2xl transition-all shadow-lg hover:shadow-xl hover:scale-[1.02]">
-                      <div className="flex items-start gap-3 mb-3">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white shadow-lg shadow-emerald-500/30 group-hover:scale-110 transition-transform">
-                          <DollarSign size={20} />
+                    <div className="group bg-emerald-500/5 dark:bg-emerald-500/10 backdrop-blur-sm border border-emerald-500/30 dark:border-emerald-500/40 hover:border-emerald-500 p-3 md:p-5 rounded-xl md:rounded-2xl transition-all shadow-lg hover:shadow-xl">
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white shadow-lg shadow-emerald-500/30 group-hover:scale-110 transition-transform">
+                          <DollarSign size={18} className="md:w-5 md:h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[8px] text-emerald-600 dark:text-emerald-400 font-black uppercase tracking-[0.15em] leading-none mb-1.5">Kotizacija</p>
-                          <p className="text-sm font-black text-emerald-700 dark:text-emerald-300 leading-tight">{competition.entryFee}</p>
+                          <p className="text-[7px] md:text-[8px] text-emerald-600 dark:text-emerald-400 font-black uppercase tracking-[0.15em] leading-none mb-1 md:mb-1.5">Kotizacija</p>
+                          <p className="text-[13px] md:text-sm font-black text-emerald-700 dark:text-emerald-300 leading-tight">{competition.entryFee}</p>
                         </div>
                       </div>
                     </div>
@@ -612,14 +629,14 @@ const PublicCompetitionNew = () => {
               </div>
 
               {/* Right: Action Panel */}
-              <div className="w-full lg:w-[420px] space-y-6">
+              <div className="w-full lg:w-[380px] space-y-4 md:space-y-6">
                 
                 {/* Countdown Timer */}
                 {competition?.startDate && new Date(competition.startDate) > new Date() && (
-                  <div className="bg-slate-900 dark:bg-slate-950 border-2 border-slate-800 rounded-3xl p-6 shadow-2xl">
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                      <p className="text-[10px] text-white font-black uppercase tracking-[0.2em]">
+                  <div className="bg-slate-900 dark:bg-slate-950 border border-slate-800/50 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-2xl">
+                    <div className="flex items-center gap-2 mb-3 md:mb-4">
+                      <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+                      <p className="text-[8px] md:text-[10px] text-white font-black uppercase tracking-[0.2em]">
                         Turnir Počinje Za
                       </p>
                     </div>
@@ -629,32 +646,32 @@ const PublicCompetitionNew = () => {
 
                 {/* CTA Card */}
                 {competition?.registration?.show !== false && (
-                  <div className="bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                  <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 dark:bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl pointer-events-none"></div>
                     
                     {competition?.registration?.isOpen ? (
                       <>
                         <div className="flex items-center gap-2 mb-4 relative z-10">
-                          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                          <p className="text-[9px] text-slate-500 dark:text-slate-400 font-black uppercase tracking-[0.2em]">Prijave Su Otvorene</p>
+                          <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
+                          <p className="text-[8px] md:text-[9px] text-slate-500 dark:text-slate-400 font-black uppercase tracking-[0.2em]">Prijave Su Otvorene</p>
                         </div>
                         <button 
                           onClick={() => competition.registration.link && window.open(competition.registration.link, '_blank')}
-                          className="w-full bg-slate-900 dark:bg-white hover:bg-black dark:hover:bg-slate-100 text-white dark:text-black px-8 py-5 rounded-xl font-black uppercase text-sm tracking-widest transition-all transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 shadow-xl mb-3 relative z-10"
+                          className="w-full bg-slate-900 dark:bg-white hover:bg-black dark:hover:bg-slate-100 text-white dark:text-black px-6 py-4 md:px-8 md:py-5 rounded-xl font-black uppercase text-xs md:text-sm tracking-widest transition-all transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 shadow-xl mb-3 relative z-10"
                         >
                           <span>Prijavi Se.</span>
-                          <ChevronRight size={18} />
+                          <ChevronRight size={16} />
                         </button>
                         {competition.registration.deadline && (
-                          <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold text-center relative z-10">
+                          <p className="text-[9px] md:text-[10px] text-slate-400 dark:text-slate-500 font-bold text-center relative z-10">
                             Rok: {formatDate(competition.registration.deadline)}
                           </p>
                         )}
                       </>
                     ) : (
                       <div className="text-center py-4 relative z-10">
-                        <p className="text-slate-900 dark:text-white font-black uppercase text-sm mb-2">Prijave Zatvorene</p>
-                        <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium tracking-wide">Kontaktirajte organizatora za više informacija</p>
+                        <p className="text-slate-900 dark:text-white font-black uppercase text-xs md:text-sm mb-2">Prijave Zatvorene</p>
+                        <p className="text-[9px] md:text-[10px] text-slate-500 dark:text-slate-400 font-medium tracking-wide">Kontaktirajte organizatora za više informacija</p>
                       </div>
                     )}
                   </div>
@@ -666,25 +683,25 @@ const PublicCompetitionNew = () => {
       </header>
 
       {/* Sticky Category Nav - UVIJEK PRIKAZUJ */}
-      <div id="category-nav" className="sticky top-0 z-40 bg-[#070b14]/95 dark:bg-[#070b14]/95 backdrop-blur-lg border-b border-slate-800 shadow-sm">
+      <div id="category-nav" className="sticky top-0 z-[100] bg-slate-950/95 backdrop-blur-lg border-b border-slate-800 shadow-sm overflow-visible">
         <div className="container mx-auto px-4 overflow-visible">
-          <div className="flex items-center h-14 gap-2 min-w-max relative">
+          <div className="flex items-center h-14 gap-2 relative py-2">
             <Link 
                 to={`/p/${slug}`}
-                className={`px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${!categorySlug ? 'bg-blue-600 text-black shadow' : 'text-slate-500 hover:bg-slate-900'}`}
+                className={`px-4 py-2 rounded-lg text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${!categorySlug ? 'bg-blue-600 text-black shadow' : 'text-slate-500 hover:text-slate-300'}`}
             >
                 Pregled
             </Link>
             
             {categories.length > 0 && (
               <>
-                <div className="h-4 w-px bg-slate-800 mx-1" />
+                <div className="h-4 w-px bg-slate-800 mx-1 shrink-0" />
                 
                 {/* Dropdown za kategorije */}
                 <div className="relative z-50">
                   <button 
                     onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
-                    className={`px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
+                    className={`px-4 py-2 rounded-lg text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 whitespace-nowrap ${
                       categorySlug 
                         ? 'bg-blue-600 text-black shadow' 
                         : 'text-slate-500 hover:text-slate-300'
@@ -1203,9 +1220,20 @@ const PublicCompetitionNew = () => {
                                   const roundExtra = round.matches.length >= 4 ? 12 : 0;
                                   const roundUnit = baseUnit + roundExtra;
                                   const columnHeight = roundUnit * maxMatchesInRound * 2;
+                                  
+                                  const isRoundContainingSelected = round.matches.some(m => m.id === knockoutDetailMatch?.id);
 
                                   return (
-                                    <div key={rIdx} className="flex-1 flex flex-col h-full" style={{ gap: '5px', minWidth: '200px' }}>
+                                    <div 
+                                      key={rIdx} 
+                                      className="flex-1 flex flex-col h-full" 
+                                      style={{ 
+                                        gap: '5px', 
+                                        minWidth: '200px', 
+                                        position: 'relative',
+                                        zIndex: isRoundContainingSelected ? 50 : 1
+                                      }}
+                                    >
                                       <div className="text-center mb-4">
                                         <h3 className="text-base font-bold text-blue-600 dark:text-amber-400 uppercase tracking-widest border-b border-blue-100 dark:border-amber-400/30 pb-2">
                                           {round.name}
@@ -1223,7 +1251,9 @@ const PublicCompetitionNew = () => {
                                               <div className="w-full max-w-[260px]">
                                                 <KnockoutMatchCard 
                                                   match={match} 
-                                                  isFinal={round.name.toLowerCase().includes('finale') && !round.name.toLowerCase().includes('polu')} 
+                                                  isFinal={round.name.toLowerCase().includes('finale') && !round.name.toLowerCase().includes('polu')}
+                                                  onMatchClick={(m) => setKnockoutDetailMatch(m.id === knockoutDetailMatch?.id ? null : m)}
+                                                  isSelected={knockoutDetailMatch?.id === match.id}
                                                 />
                                               </div>
                                             </div>
@@ -1238,6 +1268,14 @@ const PublicCompetitionNew = () => {
                           </div>
                         );
                       })()}
+                    </div>
+
+                    {/* Help Hint at the bottom of the bracket container (outside scroll) */}
+                    <div className="pt-2 flex items-center justify-center gap-4">
+                      <div className="flex items-center gap-2 bg-slate-900/40 backdrop-blur-md px-4 py-2 rounded-full border border-slate-800/50 shadow-lg">
+                         <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse" />
+                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Savjet: Kliknite na meč za prikaz poena po setovima</span>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -1276,6 +1314,9 @@ const PublicCompetitionNew = () => {
           </div>
         )}
       </main>
+
+      {/* Global UI */}
+      <GlobalUIElements />
 
       {/* Rules Full Modal */}
       {showRulesModal && (
