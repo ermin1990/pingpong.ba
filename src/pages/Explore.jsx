@@ -99,67 +99,56 @@ const Explore = () => {
         return `${day}.${month}.${year}.`;
     };
 
-    // Komponenta za Competition Card
+    // Komponenta za Competition Card - KOMPAKTNI DIZAJN
     const CompetitionCard = ({ comp, badge }) => (
         <Link 
             to={comp.slug ? `/p/${comp.slug}` : `/p/${comp.id}`}
-            className="group relative bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 rounded-2xl overflow-hidden hover:border-blue-500/50 dark:hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300"
+            className="group relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden hover:border-blue-500/50 dark:hover:border-blue-500/50 hover:shadow-xl transition-all duration-300 flex flex-col h-full"
         >
-            {/* Badge */}
-            {badge && (
-                <div className="absolute top-4 right-4 z-10">
+            <div className="p-4 flex-1">
+                {/* Header: Ikonica i Status */}
+                <div className="flex items-start justify-between mb-3">
+                    <div className="w-10 h-10 bg-slate-50 dark:bg-slate-800 rounded-lg flex items-center justify-center text-slate-400 dark:text-slate-500 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/20 group-hover:text-blue-600 transition-colors">
+                        <Trophy size={18} />
+                    </div>
                     {badge}
                 </div>
-            )}
 
-            <div className="p-6">
-                {/* Ikonica i Tip */}
-                <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/30">
-                        <Trophy size={22} className="text-white" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                        <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.15em] mb-0.5">
-                            {comp.sport || 'Stonoteniski'}
-                        </p>
-                        <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight leading-tight truncate">
-                            {comp.name}
-                        </h3>
-                    </div>
+                {/* Title and Sport */}
+                <div className="mb-4">
+                    <p className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">
+                        {comp.sport || 'Stonoteniski'}
+                    </p>
+                    <h3 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-tight leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        {comp.name}
+                    </h3>
                 </div>
 
-                {/* Info Grid */}
-                <div className="space-y-2.5 mb-4">
+                {/* Info List */}
+                <div className="space-y-1.5">
                     {comp.location && (
-                        <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
-                            <MapPin size={14} className="text-slate-400 dark:text-slate-500 flex-shrink-0" />
-                            <span className="text-xs font-bold truncate">{comp.location}</span>
+                        <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                            <MapPin size={12} className="shrink-0" />
+                            <span className="text-[10px] font-bold truncate">{comp.location}</span>
                         </div>
                     )}
                     {comp.startDate && (
-                        <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
-                            <Calendar size={14} className="text-slate-400 dark:text-slate-500 flex-shrink-0" />
-                            <span className="text-xs font-bold">
+                        <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                            <Calendar size={12} className="shrink-0" />
+                            <span className="text-[10px] font-bold">
                                 {formatDate(comp.startDate)}
-                                {comp.endDate && comp.endDate !== comp.startDate && ` - ${formatDate(comp.endDate)}`}
                             </span>
                         </div>
                     )}
-                    {comp.participantsCount > 0 && (
-                        <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
-                            <Users size={14} className="text-slate-400 dark:text-slate-500 flex-shrink-0" />
-                            <span className="text-xs font-bold">{comp.participantsCount} igrača</span>
-                        </div>
-                    )}
                 </div>
+            </div>
 
-                {/* CTA */}
-                <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
-                    <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">
-                        Pogledaj detalje
-                    </span>
-                    <ArrowRight size={18} className="text-blue-600 dark:text-blue-400 group-hover:translate-x-1 transition-transform" />
-                </div>
+            {/* Bottom Bar */}
+            <div className="px-4 py-3 bg-slate-50/50 dark:bg-white/5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest group-hover:text-blue-600 transition-colors">
+                    Otvori Rezultate
+                </span>
+                <ChevronRight size={14} className="text-slate-300 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
             </div>
         </Link>
     );
@@ -184,28 +173,24 @@ const Explore = () => {
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-6 py-16">
-                {/* Hero Header */}
-                <div className="mb-16 text-center max-w-3xl mx-auto">
-                    <div className="inline-flex items-center gap-2 bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest mb-6 border border-blue-200 dark:border-blue-500/20">
-                        <Sparkles size={14} />
-                        Sportska Platforma Bosne i Hercegovine
-                    </div>
-                    <h1 className="text-4xl md:text-6xl font-black mb-6 tracking-tighter leading-[0.95] bg-gradient-to-br from-slate-900 via-slate-800 to-slate-600 dark:from-white dark:via-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
-                        Sva Takmičenja<br />Na Jednom Mjestu
+            <div className="max-w-7xl mx-auto px-6 py-12">
+                {/* Hero Header - Minimalist */}
+                <div className="mb-12 text-left">
+                    <h1 className="text-3xl md:text-5xl font-black mb-4 tracking-tighter uppercase italic text-slate-900 dark:text-white">
+                        Sva Takmičenja
                     </h1>
-                    <p className="text-lg text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
-                        Pratite rezultate uživo, pregledajte nadolazeće turnire i istražite arhivu završenih takmičenja.
+                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium max-w-2xl">
+                        Pregledajte aktivna, nadolazeća i završena takmičenja na platformi.
                     </p>
                 </div>
 
-                {/* Search Bar */}
-                <div className="relative mb-12 max-w-2xl mx-auto">
-                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-600" size={20} />
+                {/* Search Bar - More compact */}
+                <div className="relative mb-12">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-600" size={16} />
                     <input 
                         type="text" 
-                        placeholder="Pretraži po nazivu, sportu ili lokaciji..."
-                        className="w-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-2xl py-5 pl-16 pr-6 text-sm font-bold outline-none focus:border-blue-500 dark:focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600 shadow-lg dark:shadow-2xl"
+                        placeholder="Brza pretraga turnira..."
+                        className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl py-3 pl-12 pr-4 text-xs font-bold outline-none focus:border-blue-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600 shadow-sm"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -222,23 +207,23 @@ const Explore = () => {
                         {/* LIVE TURNIRI */}
                         {filteredLive.length > 0 && (
                             <section>
-                                <div className="flex items-center gap-3 mb-8">
-                                    <div className="flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-4 py-2 rounded-xl shadow-lg shadow-emerald-500/30">
-                                        <Activity size={18} />
-                                        <span className="text-sm font-black uppercase tracking-widest">Uživo Sada</span>
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="flex items-center gap-2 bg-emerald-500 text-white px-3 py-1.5 rounded-lg shadow-lg shadow-emerald-500/20">
+                                        <Activity size={14} className="animate-pulse" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest">Uživo</span>
                                     </div>
-                                    <div className="h-[2px] flex-1 bg-gradient-to-r from-emerald-500/20 to-transparent" />
+                                    <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                                     {filteredLive.map(comp => (
                                         <CompetitionCard 
                                             key={comp.id} 
                                             comp={comp}
                                             badge={
-                                                <div className="flex items-center gap-1.5 bg-emerald-500 text-white px-3 py-1.5 rounded-full shadow-lg shadow-emerald-500/40">
-                                                    <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
-                                                    <span className="text-[9px] font-black uppercase tracking-widest">Uživo</span>
+                                                <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest border border-emerald-100 dark:border-emerald-500/20">
+                                                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                                                    <span>LIVE</span>
                                                 </div>
                                             }
                                         />
@@ -250,23 +235,22 @@ const Explore = () => {
                         {/* NADOLAZEĆI TURNIRI */}
                         {filteredUpcoming.length > 0 && (
                             <section>
-                                <div className="flex items-center gap-3 mb-8">
-                                    <div className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-xl shadow-lg shadow-blue-600/30">
-                                        <Clock size={18} />
-                                        <span className="text-sm font-black uppercase tracking-widest">Nadolazeći</span>
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="flex items-center gap-2 bg-blue-600 text-white px-3 py-1.5 rounded-lg shadow-lg shadow-blue-600/20">
+                                        <Clock size={14} />
+                                        <span className="text-[10px] font-black uppercase tracking-widest">Nadolazeći</span>
                                     </div>
-                                    <div className="h-[2px] flex-1 bg-gradient-to-r from-blue-600/20 to-transparent" />
+                                    <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                                     {filteredUpcoming.map(comp => (
                                         <CompetitionCard 
                                             key={comp.id} 
                                             comp={comp}
                                             badge={
-                                                <div className="flex items-center gap-1.5 bg-blue-600 text-white px-3 py-1.5 rounded-full shadow-lg shadow-blue-600/40">
-                                                    <Clock size={12} />
-                                                    <span className="text-[9px] font-black uppercase tracking-widest">Uskoro</span>
+                                                <div className="flex items-center gap-1.5 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest border border-blue-100 dark:border-blue-500/20">
+                                                    USKORO
                                                 </div>
                                             }
                                         />
@@ -278,23 +262,22 @@ const Explore = () => {
                         {/* ZAVRŠENI TURNIRI */}
                         {filteredFinished.length > 0 && (
                             <section>
-                                <div className="flex items-center gap-3 mb-8">
-                                    <div className="flex items-center gap-2 bg-gradient-to-r from-slate-500 to-slate-600 text-white px-4 py-2 rounded-xl shadow-lg shadow-slate-500/30">
-                                        <CheckCircle size={18} />
-                                        <span className="text-sm font-black uppercase tracking-widest">Završeni</span>
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="flex items-center gap-2 bg-slate-500 text-white px-3 py-1.5 rounded-lg shadow-lg shadow-slate-500/20">
+                                        <CheckCircle size={14} />
+                                        <span className="text-[10px] font-black uppercase tracking-widest">Završeni</span>
                                     </div>
-                                    <div className="h-[2px] flex-1 bg-gradient-to-r from-slate-500/20 to-transparent" />
+                                    <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                                     {filteredFinished.map(comp => (
                                         <CompetitionCard 
                                             key={comp.id} 
                                             comp={comp}
                                             badge={
-                                                <div className="flex items-center gap-1.5 bg-slate-500 text-white px-3 py-1.5 rounded-full shadow-lg shadow-slate-500/40">
-                                                    <CheckCircle size={12} />
-                                                    <span className="text-[9px] font-black uppercase tracking-widest">Završeno</span>
+                                                <div className="flex items-center gap-1.5 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest border border-slate-200 dark:border-slate-700">
+                                                    ZAVRŠENO
                                                 </div>
                                             }
                                         />

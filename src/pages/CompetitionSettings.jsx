@@ -36,6 +36,7 @@ const CompetitionSettings = () => {
   const [compContactEmail, setCompContactEmail] = useState('');
   const [compContactAddress, setCompContactAddress] = useState('');
   const [regIsOpen, setRegIsOpen] = useState(false);
+  const [showRegistration, setShowRegistration] = useState(true);
   const [regLink, setRegLink] = useState('');
   const [regDeadline, setRegDeadline] = useState('');
   const [compSetsToWin, setCompSetsToWin] = useState(2);
@@ -76,6 +77,7 @@ const CompetitionSettings = () => {
           setCompContactEmail(compData.contact?.email || '');
           setCompContactAddress(compData.contact?.address || '');
           setRegIsOpen(compData.registration?.isOpen || false);
+          setShowRegistration(compData.registration?.show !== false);
           setRegLink(compData.registration?.link || '');
           setRegDeadline(compData.registration?.deadline || '');
           setCompSetsToWin(compData.defaultSettings?.setsToWin || 2);
@@ -127,6 +129,7 @@ const CompetitionSettings = () => {
         },
         registration: {
           isOpen: regIsOpen,
+          show: showRegistration,
           link: regLink || '',
           deadline: regDeadline || null
         },
@@ -522,10 +525,27 @@ const CompetitionSettings = () => {
             {/* Postavke Prijava */}
             <div className="space-y-6 bg-blue-50/50 dark:bg-blue-600/5 p-6 rounded-2xl border border-blue-100 dark:border-blue-500/10">
               <div className="flex items-center justify-between border-b border-blue-100 dark:border-blue-500/10 pb-4">
-                <div className="flex items-center gap-3">
-                  <LinkIcon size={18} className="text-blue-500" />
-                  <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">Postavke Prijava</h3>
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-3">
+                    <LinkIcon size={18} className="text-blue-500" />
+                    <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">Postavke Prijava</h3>
+                  </div>
+                  
+                  {/* Global Show/Hide Toggle */}
+                  <div className="flex items-center gap-2 border-l border-blue-100 dark:border-blue-900/40 pl-6">
+                    <span className={`text-[10px] font-black uppercase tracking-widest ${showRegistration ? 'text-blue-600' : 'text-slate-400'}`}>
+                      Prikaži sekciju
+                    </span>
+                    <button 
+                      type="button"
+                      onClick={() => setShowRegistration(!showRegistration)}
+                      className={`w-10 h-5 rounded-full p-1 transition-colors relative ${showRegistration ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-700'}`}
+                    >
+                      <div className={`w-3 h-3 bg-white rounded-full shadow-sm transition-transform ${showRegistration ? 'translate-x-5' : 'translate-x-0'}`} />
+                    </button>
+                  </div>
                 </div>
+
                 <div className="flex items-center gap-2">
                   <span className={`text-[10px] font-black uppercase tracking-widest ${regIsOpen ? 'text-emerald-500' : 'text-slate-400'}`}>
                     {regIsOpen ? 'Otvoreno' : 'Zatvoreno'}
@@ -544,7 +564,7 @@ const CompetitionSettings = () => {
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Link za prijavu</label>
                   <input 
-                    disabled={!regIsOpen}
+                    disabled={!regIsOpen || !showRegistration}
                     type="text" 
                     className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-bold outline-none disabled:opacity-50 shadow-sm dark:shadow-none"
                     value={regLink}
@@ -557,7 +577,7 @@ const CompetitionSettings = () => {
                   <div className="relative">
                     <Clock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                     <input 
-                      disabled={!regIsOpen}
+                      disabled={!regIsOpen || !showRegistration}
                       type="date" 
                       className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-4 pl-12 pr-4 text-slate-900 dark:text-white font-bold outline-none disabled:opacity-50 shadow-sm dark:shadow-none"
                       value={regDeadline}

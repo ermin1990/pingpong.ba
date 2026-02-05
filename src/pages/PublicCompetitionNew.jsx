@@ -1,10 +1,26 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useParams, Link, useSearchParams } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { db } from '../firebase/config';
 import { collection, query, where, getDocs, onSnapshot, doc, getDoc } from 'firebase/firestore';
 import PublicGroupStandings from '../components/public/PublicGroupStandings';
 import PublicGroupMatches from '../components/public/PublicGroupMatches';
-import { Trophy, Clock, Zap, Users, LayoutGrid, AlertTriangle, ChevronRight, ChevronDown, CheckCircle, ArrowUp, ArrowDown, Share2, Code, Search, ShieldCheck, Calendar, MapPin, Phone, Mail, MapPinned, Award, DollarSign, ClockIcon, Timer } from 'lucide-react';
+import { Trophy, Clock, Zap, Users, LayoutGrid, AlertTriangle, ChevronRight, ChevronDown, CheckCircle, ArrowUp, ArrowDown, Share2, Code, Search, ShieldCheck, Calendar, MapPin, Phone, Mail, MapPinned, Award, DollarSign, ClockIcon, Timer, ZoomIn, ZoomOut, Maximize } from 'lucide-react';
+
+// Helper za generisanje URL slug-a iz imena kategorije
+const generateSlug = (name) => {
+  if (!name) return '';
+  return name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Ukloni dijakritike
+    .replace(/đ/g, 'd')
+    .replace(/ž/g, 'z')
+    .replace(/š/g, 's')
+    .replace(/č/g, 'c')
+    .replace(/ć/g, 'c')
+    .replace(/[^a-z0-9]+/g, '-') // Zamijeni sve non-alphanumeric sa -
+    .replace(/^-+|-+$/g, ''); // Ukloni vodeće/prateće crtice
+};
 
 // Helper za formatiranje datuma u dd.mm.yyyy. format
 const formatDate = (dateStr) => {
@@ -152,23 +168,30 @@ const KnockoutMatchCard = ({ match, isFinal = false }) => {
 };
 
 const PublicCompetitionNew = () => {
-  const { slug } = useParams();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const { slug, categorySlug } = useParams();
+  const navigate = useNavigate();
   const [competition, setCompetition] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [categories, setCategories] = useState([]);
   const [showEmbedCode, setShowEmbedCode] = useState(false);
   const [showRulesModal, setShowRulesModal] = useState(false);
+  const [activeTab, setActiveTab] = useState('groups'); // Tab state je lokalan, ne ide u URL
   
-  const selectedCategoryId = searchParams.get('category') || '';
-  const activeTab = searchParams.get('tab') || 'groups';
+  // Provjeri da li je embed mod (može ostati kao search param za embed)
+  const searchParams = new URLSearchParams(window.location.search);
   const isEmbed = searchParams.get('embed') === 'true';
+  
+  // Nadji aktivnu kategoriju na osnovu categorySlug iz URL-a
+  const activeCategory = useMemo(() => {
+    if (categories.length === 0 || !categorySlug) return null;
+    
+    // Pronađi kategoriju čiji slug odgovara URL-u
+    const cat = categories.find(c => generateSlug(c.name) === categorySlug);
+    return cat || null;
+  }, [categories, categorySlug]);
 
-  const activeCategory = useMemo(() => 
-    categories.find(c => c.id === selectedCategoryId), 
-    [categories, selectedCategoryId]
-  );
+  const selectedCategoryId = activeCategory?.id;
 
   const [allMatches, setAllMatches] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -177,21 +200,33 @@ const PublicCompetitionNew = () => {
   const [allPlayers, setAllPlayers] = useState([]);
   const [knockoutZoom, setKnockoutZoom] = useState(1);
 
+  const isSlotReserved = (match, slot) => {
+    if (!match?.slots) return false;
+    return match.slots[slot]?.isReserved || false;
+  };
+
   useEffect(() => {
     let unsubscribeCats = null;
 
     const fetchBySlug = async () => {
       try {
         let compDoc = null;
+        
+        // 1. Probaj po slug-u
         const q = query(collection(db, "competitions"), where("slug", "==", slug));
         const snap = await getDocs(q);
         
         if (!snap.empty) {
           compDoc = snap.docs[0];
         } else {
-          const dSnap = await getDoc(doc(db, "competitions", slug));
-          if (dSnap.exists()) {
-            compDoc = dSnap;
+          // 2. Probaj po ID-u
+          try {
+            const dSnap = await getDoc(doc(db, "competitions", slug));
+            if (dSnap.exists()) {
+              compDoc = dSnap;
+            }
+          } catch (e) {
+            // Not a valid ID
           }
         }
         
@@ -199,26 +234,29 @@ const PublicCompetitionNew = () => {
           const compData = { id: compDoc.id, ...compDoc.data() };
           setCompetition(compData);
 
+          // Fetch full player data for this organization
           if (compData.ownerUid) {
-            const pQ = query(collection(db, "players"), where("ownerUid", "==", compData.ownerUid));
+            const playersRef = collection(db, "players");
+            const pQ = query(playersRef, where("ownerUid", "==", compData.ownerUid));
             getDocs(pQ).then(pSnap => {
               const playersList = pSnap.docs.map(d => ({ id: d.id, ...d.data() }));
               setAllPlayers(playersList);
-              
               const names = {};
-              playersList.forEach(p => {
-                names[p.id] = p.name;
-              });
+              playersList.forEach(p => { names[p.id] = p.name; });
               setPlayerNames(names);
+            }).catch(err => {
+              console.error('Error loading players:', err);
             });
           }
           
+          // Fetch categories
           const catQ = query(collection(db, "competitions", compDoc.id, "categories"));
           unsubscribeCats = onSnapshot(catQ, (catSnap) => {
             const cats = catSnap.docs.map(d => ({ id: d.id, ...d.data() }))
               .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
             setCategories(cats);
 
+            // Fetch manual orders for all categories
             cats.forEach(async (cat) => {
               const ordersQ = query(collection(db, "competitions", compDoc.id, "categories", cat.id, "manualOrders"));
               const ordersSnap = await getDocs(ordersQ);
@@ -228,23 +266,21 @@ const PublicCompetitionNew = () => {
               });
               setManualOrders(prev => ({ ...prev, [cat.id]: orders }));
             });
+          }, (error) => {
+            console.error('Error loading categories:', error);
           });
         } else {
           setError("Takmičenje nije pronađeno.");
         }
       } catch (err) {
-        console.error(err);
-        setError("Došlo je do greške prilikom učitavanja podataka.");
+        console.error("Error fetching competition:", err);
       } finally {
         setLoading(false);
       }
     };
 
     fetchBySlug();
-
-    return () => {
-      if (unsubscribeCats) unsubscribeCats();
-    };
+    return () => unsubscribeCats?.();
   }, [slug]);
 
   useEffect(() => {
@@ -255,11 +291,26 @@ const PublicCompetitionNew = () => {
       );
       
       const unsubscribe = onSnapshot(q, (snap) => {
-        setAllMatches(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        const matchesList = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setAllMatches(matchesList);
+        
+        // Ako nema playerNames iz ownerUid, izvuci imena iz match-eva
+        if (Object.keys(playerNames).length === 0 && matchesList.length > 0) {
+          const namesFromMatches = {};
+          matchesList.forEach(match => {
+            if (match.player1?.id && match.player1?.name) {
+              namesFromMatches[match.player1.id] = match.player1.name;
+            }
+            if (match.player2?.id && match.player2?.name) {
+              namesFromMatches[match.player2.id] = match.player2.name;
+            }
+          });
+          setPlayerNames(prev => ({ ...prev, ...namesFromMatches }));
+        }
       });
       return () => unsubscribe();
     }
-  }, [competition]);
+  }, [competition, playerNames]);
 
   const matches = useMemo(() => {
     if (!selectedCategoryId) return [];
@@ -268,12 +319,12 @@ const PublicCompetitionNew = () => {
 
   const handleCategorySelect = (catId) => {
     const cat = categories.find(c => c.id === catId);
-    const hasGroups = cat?.groupConfig && Object.keys(cat.groupConfig).length > 0;
+    const catSlug = generateSlug(cat?.name || '');
     
-    setSearchParams({ 
-      category: catId, 
-      tab: hasGroups ? 'groups' : 'knockout' 
-    });
+    // Navigiraj na novi URL sa category slug-om, zadrži embed parametar ako postoji
+    const embedParam = isEmbed ? '?embed=true' : '';
+    navigate(`/p/${slug}/${catSlug}${embedParam}`);
+    
     setSearchTerm('');
     
     // Scroll to category nav instead of top
@@ -286,30 +337,45 @@ const PublicCompetitionNew = () => {
     }, 100);
   };
 
-  const setActiveTab = (tab) => {
-    setSearchParams({ category: selectedCategoryId, tab });
-  };
-
-  const setSelectedCategoryId = (catId) => {
-    if (!catId) {
-      setSearchParams({});
-    } else {
-      handleCategorySelect(catId);
+  // Postavi default tab kada se promijeni kategorija
+  useEffect(() => {
+    if (activeCategory) {
+      const hasGroups = activeCategory.groupConfig && Object.keys(activeCategory.groupConfig).length > 0;
+      setActiveTab(hasGroups ? 'groups' : 'knockout');
     }
-  };
+  }, [activeCategory]);
   
   const groups = useMemo(() => {
     if (!activeCategory || !activeCategory.groupConfig) return [];
     const config = activeCategory.groupConfig;
     const gArray = [];
     Object.keys(config).sort((a, b) => Number(a) - Number(b)).forEach(key => {
-      gArray.push(config[key].map(id => ({ 
-        id, 
-        name: playerNames[id] || "Nepoznat" 
-      })));
+      gArray.push(config[key].map(id => {
+        // Pokušaj dobiti ime iz playerNames
+        let name = playerNames[id];
+        
+        // Ako nema, probaj iz matches
+        if (!name) {
+          const matchWithPlayer = allMatches.find(m => 
+            m.player1?.id === id || m.player2?.id === id
+          );
+          if (matchWithPlayer) {
+            if (matchWithPlayer.player1?.id === id) {
+              name = matchWithPlayer.player1?.name;
+            } else if (matchWithPlayer.player2?.id === id) {
+              name = matchWithPlayer.player2?.name;
+            }
+          }
+        }
+        
+        return { 
+          id, 
+          name: name || "Nepoznat" 
+        };
+      }));
     });
     return gArray;
-  }, [activeCategory, playerNames]);
+  }, [activeCategory, playerNames, allMatches]);
 
   const calculateStandings = (groupIdx) => {
     const groupMatches = matches.filter(m => m.groupId === groupIdx && m.status === 'completed');
@@ -528,7 +594,7 @@ const PublicCompetitionNew = () => {
 
                   {competition.entryFee && (
                     <div className="group bg-gradient-to-br from-emerald-500/10 to-emerald-600/10 dark:from-emerald-500/20 dark:to-emerald-600/20 backdrop-blur-sm border-2 border-emerald-500/30 dark:border-emerald-500/50 hover:border-emerald-500 p-5 rounded-2xl transition-all shadow-lg hover:shadow-xl hover:scale-[1.02]">
-                      <div className="flex items-start gap-3">
+                      <div className="flex items-start gap-3 mb-3">
                         <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white shadow-lg shadow-emerald-500/30 group-hover:scale-110 transition-transform">
                           <DollarSign size={20} />
                         </div>
@@ -559,70 +625,79 @@ const PublicCompetitionNew = () => {
                 )}
 
                 {/* CTA Card */}
-                <div className="bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 dark:bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl pointer-events-none"></div>
-                  
-                  {competition?.registration?.isOpen ? (
-                    <>
-                      <div className="flex items-center gap-2 mb-4 relative z-10">
-                        <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                        <p className="text-[9px] text-slate-500 dark:text-slate-400 font-black uppercase tracking-[0.2em]">Prijave Su Otvorene</p>
+                {competition?.registration?.show !== false && (
+                  <div className="bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 dark:bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl pointer-events-none"></div>
+                    
+                    {competition?.registration?.isOpen ? (
+                      <>
+                        <div className="flex items-center gap-2 mb-4 relative z-10">
+                          <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                          <p className="text-[9px] text-slate-500 dark:text-slate-400 font-black uppercase tracking-[0.2em]">Prijave Su Otvorene</p>
+                        </div>
+                        <button 
+                          onClick={() => competition.registration.link && window.open(competition.registration.link, '_blank')}
+                          className="w-full bg-slate-900 dark:bg-white hover:bg-black dark:hover:bg-slate-100 text-white dark:text-black px-8 py-5 rounded-xl font-black uppercase text-sm tracking-widest transition-all transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 shadow-xl mb-3 relative z-10"
+                        >
+                          <span>Prijavi Se.</span>
+                          <ChevronRight size={18} />
+                        </button>
+                        {competition.registration.deadline && (
+                          <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold text-center relative z-10">
+                            Rok: {formatDate(competition.registration.deadline)}
+                          </p>
+                        )}
+                      </>
+                    ) : (
+                      <div className="text-center py-4 relative z-10">
+                        <p className="text-slate-900 dark:text-white font-black uppercase text-sm mb-2">Prijave Zatvorene</p>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium tracking-wide">Kontaktirajte organizatora za više informacija</p>
                       </div>
-                      <button 
-                        onClick={() => competition.registration.link && window.open(competition.registration.link, '_blank')}
-                        className="w-full bg-slate-900 dark:bg-white hover:bg-black dark:hover:bg-slate-100 text-white dark:text-black px-8 py-5 rounded-xl font-black uppercase text-sm tracking-widest transition-all transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 shadow-xl mb-3 relative z-10"
-                      >
-                        <span>Prijavi Se.</span>
-                        <ChevronRight size={18} />
-                      </button>
-                      {competition.registration.deadline && (
-                        <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold text-center relative z-10">
-                          Rok: {formatDate(competition.registration.deadline)}
-                        </p>
-                      )}
-                    </>
-                  ) : (
-                    <div className="text-center py-4 relative z-10">
-                      <p className="text-slate-900 dark:text-white font-black uppercase text-sm mb-2">Prijave Zatvorene</p>
-                      <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium tracking-wide">Kontaktirajte organizatora za više informacija</p>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Sticky Category Nav */}
-      {categories.length > 0 && (
-        <div id="category-nav" className="sticky top-0 z-50 bg-white/95 dark:bg-[#070b14]/95 backdrop-blur-lg border-b border-slate-200 dark:border-slate-800 shadow-sm">
-          <div className="container mx-auto px-4 overflow-x-auto no-scrollbar">
-            <div className="flex items-center h-14 gap-2 min-w-max">
-              <button 
-                  onClick={() => setSelectedCategoryId(null)}
-                  className={`px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${!selectedCategoryId ? 'bg-blue-600 text-white shadow' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-900'}`}
-              >
-                  Pregled
-              </button>
-              <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 mx-1" />
-              
-              {categories.map(cat => (
-                <button
-                  key={cat.id}
-                  onClick={() => handleCategorySelect(cat.id)}
-                  className={`px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${selectedCategoryId === cat.id ? 'bg-blue-600 text-white shadow' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-900'}`}
-                >
-                  {cat.name}
-                </button>
-              ))}
-            </div>
+      {/* Sticky Category Nav - UVIJEK PRIKAZUJ */}
+      <div id="category-nav" className="sticky top-0 z-50 bg-white/95 dark:bg-[#070b14]/95 backdrop-blur-lg border-b border-slate-200 dark:border-slate-800 shadow-sm">
+        <div className="container mx-auto px-4 overflow-x-auto no-scrollbar">
+          <div className="flex items-center h-14 gap-2 min-w-max">
+            <Link 
+                to={`/p/${slug}`}
+                className={`px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${!categorySlug ? 'bg-blue-600 text-white shadow' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-900'}`}
+            >
+                Pregled
+            </Link>
+            
+            {categories.length > 0 && (
+              <>
+                <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 mx-1" />
+                
+                {categories.map(cat => {
+                  const catSlug = generateSlug(cat.name);
+                  const isActive = categorySlug === catSlug;
+                  return (
+                    <Link
+                      key={cat.id}
+                      to={`/p/${slug}/${catSlug}${isEmbed ? '?embed=true' : ''}`}
+                      className={`px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${isActive ? 'bg-blue-600 text-white shadow' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-900'}`}
+                    >
+                      {cat.name}
+                    </Link>
+                  );
+                })}
+              </>
+            )}
           </div>
         </div>
-      )}
+      </div>
 
       <main className="container mx-auto px-6 py-16 max-w-7xl">
-        {!selectedCategoryId ? (
+        {!categorySlug ? (
           /* PREGLED / PROPOZICIJE */
           <div className="max-w-6xl mx-auto space-y-16">
             {/* Opšte informacije i Kontakt - Combined Section */}
@@ -745,7 +820,7 @@ const PublicCompetitionNew = () => {
             )}
 
             {/* Kategorije */}
-            {categories.length > 0 && (
+            {categories.length > 0 ? (
               <section className="space-y-8">
                 <div className="text-center space-y-2">
                   <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tighter text-slate-900 dark:text-white">
@@ -754,30 +829,45 @@ const PublicCompetitionNew = () => {
                   <p className="text-sm text-slate-500 font-medium">Kliknite na kategoriju za prikaz rezultata i rasporeda</p>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
-                  {categories.map(cat => (
-                    <button
-                      key={cat.id}
-                      onClick={() => handleCategorySelect(cat.id)}
-                      className="group bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-800/50 border-2 border-slate-200 dark:border-slate-800 hover:border-blue-500 hover:shadow-xl hover:shadow-blue-500/10 p-6 rounded-2xl transition-all text-left hover:-translate-y-1"
-                    >
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform">
-                          <Trophy size={22} />
+                  {categories.map(cat => {
+                    const catSlug = generateSlug(cat.name);
+                    return (
+                      <Link
+                        key={cat.id}
+                        to={`/p/${slug}/${catSlug}${isEmbed ? '?embed=true' : ''}`}
+                        className="group bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-800/50 border-2 border-slate-200 dark:border-slate-800 hover:border-blue-500 hover:shadow-xl hover:shadow-blue-500/10 p-6 rounded-2xl transition-all text-left hover:-translate-y-1 block"
+                      >
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform">
+                            <Trophy size={22} />
+                          </div>
+                          <ChevronRight size={20} className="text-slate-300 dark:text-slate-700 group-hover:text-blue-500 transition-colors group-hover:translate-x-1" />
                         </div>
-                        <ChevronRight size={20} className="text-slate-300 dark:text-slate-700 group-hover:text-blue-500 transition-colors group-hover:translate-x-1" />
-                      </div>
-                      <p className="text-lg font-black uppercase text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-tight mb-2">
-                        {cat.name}
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <Users size={14} className="text-slate-400" />
-                        <p className="text-xs text-slate-500 dark:text-slate-400 font-bold">
-                          {cat.playerIds?.length || 0} učesnika
+                        <p className="text-lg font-black uppercase text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-tight mb-2">
+                          {cat.name}
                         </p>
-                      </div>
-                    </button>
-                  ))}
+                        <div className="flex items-center gap-2">
+                          <Users size={14} className="text-slate-400" />
+                          <p className="text-xs text-slate-500 dark:text-slate-400 font-bold">
+                            {cat.playerIds?.length || 0} učesnika
+                          </p>
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
+              </section>
+            ) : (
+              <section className="text-center py-20">
+                <div className="w-20 h-20 bg-slate-100 dark:bg-slate-900 rounded-3xl flex items-center justify-center mb-6 mx-auto border border-slate-200 dark:border-slate-800">
+                  <Trophy size={40} className="text-slate-300 dark:text-slate-700" />
+                </div>
+                <h3 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter mb-3">
+                  Kategorije Još Nisu Dostupne
+                </h3>
+                <p className="text-slate-500 dark:text-slate-400 text-sm max-w-md mx-auto">
+                  Organizator još nije postavio takmičarske kategorije. Provjerite ponovo kasnije.
+                </p>
               </section>
             )}
 
@@ -878,37 +968,42 @@ const PublicCompetitionNew = () => {
               </section>
             )}
           </div>
-        ) : (
-          /* REZULTATI KATEGORIJE */
+        ) : activeCategory ? (
+          /* 
+             VAŽNO: REZULTATI KATEGORIJE 
+             Ovaj blok (prikaz aktivne kategorije putem slug-a) je ključan za routing.
+             Prije bilo kakvih izmjena, obavezno testirati da li se kategorije otvaraju 
+             ispravno preko URL-a (/p/slug/ime-kategorije).
+          */
           <div className="max-w-6xl mx-auto space-y-12">
             <div className="bg-gradient-to-br from-blue-50 to-slate-50 dark:from-slate-900/50 dark:to-blue-900/10 border-2 border-blue-100 dark:border-blue-900/30 rounded-3xl p-8 md:p-10 shadow-xl">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div className="space-y-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-xl shadow-blue-600/30">
-                      <Trophy size={24} className="text-white" />
-                    </div>
-                    <div>
-                      <h2 className="text-3xl md:text-5xl font-black text-slate-900 dark:text-white uppercase italic tracking-tighter leading-none mb-2">
-                        {activeCategory.name}
-                      </h2>
-                      <div className="flex items-center gap-3">
-                        <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest bg-blue-100 dark:bg-blue-900/30 px-3 py-1 rounded-full">
-                          {activeCategory.format === 'round_robin' ? 'Round Robin Liga' : 'Grupe & Eliminacije'}
-                        </span>
-                        <div className="w-1 h-1 bg-slate-300 dark:bg-slate-700 rounded-full" />
-                        <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                          <MapPin size={10} className="text-slate-400" />
-                          <span>{competition.location}</span>
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-xl shadow-blue-600/30">
+                        <Trophy size={24} className="text-white" />
+                      </div>
+                      <div>
+                        <h2 className="text-3xl md:text-5xl font-black text-slate-900 dark:text-white uppercase italic tracking-tighter leading-none mb-2">
+                          {activeCategory.name}
+                        </h2>
+                        <div className="flex items-center gap-3">
+                          <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest bg-blue-100 dark:bg-blue-900/30 px-3 py-1 rounded-full">
+                            {activeCategory.format === 'round_robin' ? 'Round Robin Liga' : 'Grupe & Eliminacije'}
+                          </span>
+                          <div className="w-1 h-1 bg-slate-300 dark:bg-slate-700 rounded-full" />
+                          <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                            <MapPin size={10} className="text-slate-400" />
+                            <span>{competition.location}</span>
+                          </div>
+                          <div className="w-1 h-1 bg-slate-300 dark:bg-slate-700 rounded-full" />
+                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                            {activeCategory.playerIds?.length || 0} IGRAČA
+                          </span>
                         </div>
-                        <div className="w-1 h-1 bg-slate-300 dark:bg-slate-700 rounded-full" />
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                          {activeCategory.playerIds?.length || 0} IGRAČA
-                        </span>
                       </div>
                     </div>
                   </div>
-                </div>
 
                 {/* Tab Navigation - Moved inside header */}
                 <div className="flex bg-white/50 dark:bg-slate-950/40 p-1.5 rounded-2xl w-full md:w-auto border border-blue-200/50 dark:border-blue-950/50 backdrop-blur-md shadow-sm">
@@ -1007,7 +1102,43 @@ const PublicCompetitionNew = () => {
 
             {activeTab === 'knockout' && (
               <div className="space-y-8">
-                <div className="bg-white dark:bg-slate-900/40 backdrop-blur-xl rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden">
+                <div className="bg-white dark:bg-slate-900/40 backdrop-blur-xl rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden relative">
+                  {/* Zoom Controls */}
+                  <div className="flex items-center justify-center gap-4 mb-8 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-2xl border border-slate-200 dark:border-slate-700/50 w-fit mx-auto sticky top-4 z-50 shadow-lg">
+                    <button 
+                      onClick={() => setKnockoutZoom(prev => Math.max(0.5, prev - 0.1))}
+                      className="p-2 hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-600 group"
+                      title="Smanji"
+                    >
+                      <ZoomOut size={18} className="text-slate-500 group-hover:text-blue-500" />
+                    </button>
+                    
+                    <div className="flex flex-col items-center min-w-[80px]">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Zoom</span>
+                      <span className="text-sm font-black text-slate-900 dark:text-white tabular-nums">
+                        {(knockoutZoom * 100).toFixed(0)}%
+                      </span>
+                    </div>
+
+                    <button 
+                      onClick={() => setKnockoutZoom(prev => Math.min(2, prev + 0.1))}
+                      className="p-2 hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-600 group"
+                      title="Povećaj"
+                    >
+                      <ZoomIn size={18} className="text-slate-500 group-hover:text-blue-500" />
+                    </button>
+
+                    <div className="w-[1px] h-8 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+
+                    <button 
+                      onClick={() => setKnockoutZoom(1)}
+                      className="p-2 hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-600 group"
+                      title="Resetuj"
+                    >
+                      <Maximize size={18} className="text-slate-500 group-hover:text-amber-500" />
+                    </button>
+                  </div>
+
                   {(() => {
                     const maxMatchesInRound = Math.max(...knockoutRounds.map(r => r.matches.length), 1);
                     const autoScale = maxMatchesInRound > 8 ? 0.7 : maxMatchesInRound > 4 ? 0.85 : 1;
@@ -1018,7 +1149,7 @@ const PublicCompetitionNew = () => {
                         <div className="min-w-max">
                           <div 
                             className="flex-1 flex flex-row h-full transition-transform duration-200" 
-                            style={{ gap: '16px', justifyContent: 'center', transform: `scale(${finalScale})`, transformOrigin: 'top left' }}
+                            style={{ gap: '16px', justifyContent: 'center', transform: `scale(${finalScale})`, transformOrigin: 'top center' }}
                           >
                             {knockoutRounds.map((round, rIdx) => {
                               const baseUnit = 32;
@@ -1063,6 +1194,24 @@ const PublicCompetitionNew = () => {
                 </div>
               </div>
             )}
+          </div>
+        ) : (
+          <div className="max-w-6xl mx-auto text-center py-20">
+            <div className="w-20 h-20 bg-slate-100 dark:bg-slate-900 rounded-3xl flex items-center justify-center mb-6 mx-auto border border-slate-200 dark:border-slate-800">
+              <AlertTriangle size={40} className="text-slate-300 dark:text-slate-700" />
+            </div>
+            <h3 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter mb-3">
+              Kategorija Nije Pronađena
+            </h3>
+            <p className="text-slate-500 dark:text-slate-400 text-sm max-w-md mx-auto mb-6">
+              Možda je kategorija uklonjena ili URL nije ispravan.
+            </p>
+            <Link 
+              to={`/p/${slug}`}
+              className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-blue-700 transition-all"
+            >
+              Nazad na Pregled
+            </Link>
           </div>
         )}
       </main>

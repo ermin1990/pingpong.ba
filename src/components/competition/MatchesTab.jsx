@@ -269,7 +269,7 @@ const MatchesTab = ({
                      <div className={`grid grid-cols-1 ${
                        groups.length === 1 
                          ? 'w-full max-w-6xl mx-auto' 
-                         : (groups.length === 2 ? 'w-full' : 'md:grid-cols-2 lg:grid-cols-3')
+                         : 'md:grid-cols-2'
                      } gap-4 md:gap-6`}>
                       {bracket.groups.map((group, localIdx) => {
                         const gIdx = localIdx + bracket.offset;
@@ -393,13 +393,13 @@ const MatchesTab = ({
                                   )}
                                 </div>
                                 <div className="space-y-1">
-                                  <div className={`grid grid-cols-12 gap-2 mb-2 ${isCompact ? 'text-[9px]' : 'text-xs'} font-bold text-slate-500 dark:text-slate-500 px-2`}>
-                                    <div className="col-span-6">Igrač</div>
+                                  <div className={`grid grid-cols-12 gap-2 mb-1 ${isCompact ? 'text-[9px]' : 'text-xs'} font-bold text-slate-500 dark:text-slate-500 px-2 uppercase tracking-widest`}>
+                                    <div className="col-span-6"></div>
                                     <div className="col-span-1 text-center">P</div>
                                     <div className="col-span-1 text-center">I</div>
-                                    <div className="col-span-1 text-center">Set±</div>
-                                    <div className="col-span-1 text-center">Poen±</div>
-                                    <div className={`col-span-2 text-center text-blue-600 dark:text-blue-400 font-bold ${isCompact ? 'text-[8px]' : ''}`}>Bodovi</div>
+                                    <div className="col-span-1 text-center text-blue-500/80">S±</div>
+                                    <div className="col-span-1 text-center text-emerald-500/80">P±</div>
+                                    <div className={`col-span-2 text-center text-blue-600 dark:text-blue-400`}>B</div>
                                   </div>
                                   {groupStandings.map((p, idx) => {
                                     const isAdvancing = idx < (activeCategory?.advancingPlayers ?? 2);
@@ -411,14 +411,14 @@ const MatchesTab = ({
                                                            clubsInGroup.filter(c => c === clubName.toLowerCase()).length > 1;
 
                                     return (
-                                      <div key={p.id} className={`grid grid-cols-12 gap-1 items-center py-1.5 px-2 rounded-lg ${isCompact ? 'text-[9px]' : 'text-[10px]'} transition-all duration-200 border ${
+                                      <div key={p.id} className={`grid grid-cols-12 gap-1 items-center py-1.5 px-2 rounded-md ${isCompact ? 'text-[10px]' : 'text-[11px]'} transition-all duration-200 border-b border-slate-100 dark:border-slate-800 last:border-b-0 ${
                                       isAdvancing 
-                                        ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30 hover:bg-emerald-100 dark:hover:bg-emerald-500/15' 
-                                        : 'bg-slate-50 dark:bg-slate-800/30 border-transparent hover:bg-slate-100 dark:hover:bg-slate-700/40 hover:border-slate-200 dark:hover:border-slate-700'
-                                    }`}>
+                                        ? 'bg-emerald-500/10 dark:bg-emerald-500/20' 
+                                        : 'bg-slate-50/40 dark:bg-slate-900/40'
+                                    } hover:bg-white dark:hover:bg-slate-800/60`}>
                                       <div className="col-span-6 flex items-center space-x-1.5 truncate">
                                         {isManualEdit ? (
-                                          <div className="flex flex-col gap-0.5">
+                                          <div className="flex flex-col gap-0.5 shrink-0">
                                             <button 
                                               onClick={(e) => { e.stopPropagation(); moveManual(gIdx, idx, 'up', groupStandings); }}
                                               disabled={idx === 0}
@@ -435,23 +435,26 @@ const MatchesTab = ({
                                             </button>
                                           </div>
                                         ) : (
-                                          <span className={`font-black w-3 text-center ${isAdvancing ? 'text-emerald-600 dark:text-emerald-500' : 'text-slate-400 dark:text-slate-700'}`}>{idx + 1}</span>
+                                          <span className={`font-black w-3 text-center text-[10px] ${isAdvancing ? 'text-emerald-600 dark:text-emerald-500' : 'text-slate-400 dark:text-slate-700'}`}>{idx + 1}</span>
                                         )}
-                                        <div className="truncate">
+                                        <div className="truncate flex-1">
                                           <div className="flex items-center gap-1 leading-tight">
                                             <div className="text-slate-900 dark:text-white font-bold uppercase truncate">{p.name}</div>
                                             {seededPlayerIds.includes(p.id) && (
                                               <Star size={isCompact ? 8 : 9} className="text-amber-500 fill-amber-500" />
                                             )}
                                           </div>
-                                          <div className="text-[7px] text-slate-500 font-bold uppercase truncate opacity-80">{p.club || 'Bez kluba'}</div>
                                         </div>
                                       </div>
-                                      <div className="col-span-1 text-center font-bold text-slate-400 dark:text-slate-500">{p.played}</div>
-                                      <div className="col-span-1 text-center font-bold text-slate-400 dark:text-slate-500">{p.won}</div>
-                                      <div className="col-span-1 text-center font-bold text-slate-500">{p.setsWon - p.setsLost}</div>
-                                      <div className="col-span-1 text-center font-bold text-slate-400 dark:text-slate-600">{p.pointDiff}</div>
-                                      <div className={`col-span-2 text-center font-black ${isAdvancing ? 'text-emerald-600 dark:text-emerald-400' : 'text-blue-600 dark:text-blue-400'}`}>{p.points}</div>
+                                      <div className="col-span-1 text-center text-slate-500 dark:text-slate-400 font-medium">{p.won}</div>
+                                      <div className="col-span-1 text-center text-slate-500 dark:text-slate-400 font-medium">{p.lost}</div>
+                                      <div className={`col-span-1 text-center font-bold ${(p.setsWon - p.setsLost) >= 0 ? 'text-emerald-600 dark:text-emerald-500' : 'text-rose-500'}`}>
+                                        {(p.setsWon - p.setsLost) > 0 ? `+${p.setsWon - p.setsLost}` : p.setsWon - p.setsLost}
+                                      </div>
+                                      <div className={`col-span-1 text-center font-medium ${p.pointDiff >= 0 ? 'text-green-500/80 dark:text-green-400' : 'text-rose-500/80'}`}>
+                                        {p.pointDiff > 0 ? `+${p.pointDiff}` : p.pointDiff}
+                                      </div>
+                                      <div className={`col-span-2 text-center font-bold text-blue-600 dark:text-blue-500`}>{p.points}</div>
                                     </div>
                                   );
                                 })}
@@ -461,11 +464,11 @@ const MatchesTab = ({
 
                             {/* Mečevi Section - Samo ako nije draft */}
                             {activeCategory?.status !== 'draft' && (
-                              <div>
-                                <h5 className={`${isCompact ? 'text-[10px]' : 'text-xs'} font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2`}>
-                                    <PlayCircle size={isCompact ? 12 : 14} /> Mečevi ({groupMatches.length})
+                              <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                                <h5 className={`${isCompact ? 'text-[10px]' : 'text-xs'} font-bold text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2 uppercase tracking-widest`}>
+                                    <PlayCircle size={isCompact ? 12 : 14} className="text-blue-500" /> Mečevi ({groupMatches.length})
                                 </h5>
-                                <div className="space-y-1">
+                                <div className="space-y-2">
                                     {groupMatches.map((match) => {
                                       const p1Winner = match.status === 'completed' && match.player1Score > match.player2Score;
                                       const p2Winner = match.status === 'completed' && match.player2Score > match.player1Score;
@@ -473,86 +476,74 @@ const MatchesTab = ({
                                       return (
                                         <div 
                                           key={match.id} 
-                                          className="group relative bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/80 rounded-lg border border-slate-200 dark:border-slate-800 hover:border-blue-500 transition-all duration-200 shadow-sm cursor-pointer flex flex-col"
+                                          className="group relative bg-white dark:bg-slate-900/60 hover:bg-white dark:hover:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-800 transition-all duration-200 cursor-pointer flex flex-col overflow-hidden shadow-sm"
                                           onClick={() => { setEditingMatch(match); setShowMatchModal(true); }}
                                         >
                                             {/* Player 1 Row */}
-                                            <div className={`flex items-center justify-between ${isCompact ? 'px-2 py-1' : 'px-4 py-2'} flex-1 group/p1 transition-colors rounded-t-lg ${p1Winner ? 'bg-emerald-50/40 dark:bg-emerald-500/5' : 'hover:bg-blue-50/50 dark:hover:bg-blue-900/10'}`}>
+                                            <div className={`flex items-center justify-between ${isCompact ? 'px-2 py-1.5' : 'px-3 py-2'} flex-1`}>
                                                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                                                    <div className={`w-1 h-1 rounded-full ${p1Winner ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'}`}></div>
-                                                    <div className="flex flex-col truncate group/name relative flex-1">
-                                                        <div className={`${isCompact ? 'text-[11px]' : 'text-[13px]'} font-black truncate transition-colors flex items-center gap-1.5 ${p1Winner ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-slate-200 group-hover/p1:text-blue-600 dark:group-hover/p1:text-blue-400'}`}>
-                                                            {match.player1.name}
-                                                        </div>
-                                                        <span className="text-[8px] text-slate-500 dark:text-slate-400 font-bold uppercase truncate leading-tight tracking-wider opacity-60">
-                                                            {allPlayers.find(p => p.id === match.player1.id)?.club || 'Individual'}
-                                                        </span>
+                                                    <div className={`text-[12px] font-black truncate ${p1Winner ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
+                                                        {match.player1.name}
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-2 ml-2">
                                                     {match.status === 'completed' && match.sets && match.sets.length > 0 && (
-                                                        <div className="flex gap-0.5 items-center opacity-30">
+                                                        <div className="flex gap-0.5 items-center opacity-40">
                                                             {match.sets.map((set, sIdx) => (
-                                                                <span key={sIdx} className={`text-[8px] font-black min-w-[10px] text-center ${set.p1 > set.p2 ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500'}`}>
+                                                                <span key={sIdx} className={`text-[8px] font-bold min-w-[8px] text-center ${set.p1 > set.p2 ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500'}`}>
                                                                     {set.p1}
                                                                 </span>
                                                             ))}
                                                         </div>
                                                     )}
-                                                    <div className={`${isCompact ? 'w-6 h-6 text-xs' : 'w-8 h-8 text-sm'} flex items-center justify-center rounded-lg font-black transition-all ${p1Winner ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 group-hover/p1:bg-white dark:group-hover/p1:bg-slate-700 shadow-sm'}`}>
+                                                    <div className={`${isCompact ? 'w-6 h-6 text-[10px]' : 'w-7 h-7 text-xs'} flex items-center justify-center rounded font-bold transition-all ${p1Winner ? 'bg-green-600/20 text-green-600 dark:bg-green-900/80 dark:text-green-300' : 'bg-slate-200 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400'}`}>
                                                         {match.player1Score ?? 0}
                                                     </div>
                                                 </div>
                                             </div>
 
                                             {/* Player 2 Row */}
-                                            <div className={`flex items-center justify-between ${isCompact ? 'px-2 py-1' : 'px-4 py-2'} flex-1 group/p2 transition-colors rounded-b-lg ${p2Winner ? 'bg-emerald-50/40 dark:bg-emerald-500/5' : 'hover:bg-blue-50/50 dark:hover:bg-blue-900/10'}`}>
+                                            <div className={`flex items-center justify-between ${isCompact ? 'px-2 py-1.5' : 'px-3 py-2'} flex-1`}>
                                                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                                                    <div className={`w-1 h-1 rounded-full ${p2Winner ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'}`}></div>
-                                                    <div className="flex flex-col truncate group/name relative flex-1">
-                                                        <div className={`${isCompact ? 'text-[11px]' : 'text-[13px]'} font-black truncate transition-colors flex items-center gap-1.5 ${p2Winner ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-slate-200 group-hover/p2:text-blue-600 dark:group-hover/p2:text-blue-400'}`}>
-                                                            {match.player2.name}
-                                                        </div>
-                                                        <span className="text-[8px] text-slate-500 dark:text-slate-400 font-bold uppercase truncate leading-tight tracking-wider opacity-60">
-                                                            {allPlayers.find(p => p.id === match.player2.id)?.club || 'Individual'}
-                                                        </span>
+                                                    <div className={`text-[12px] font-black truncate ${p2Winner ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
+                                                        {match.player2.name}
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-2 ml-2">
                                                     {match.status === 'completed' && match.sets && match.sets.length > 0 && (
-                                                        <div className="flex gap-0.5 items-center opacity-30">
+                                                        <div className="flex gap-0.5 items-center opacity-40">
                                                             {match.sets.map((set, sIdx) => (
-                                                                <span key={sIdx} className={`text-[8px] font-black min-w-[10px] text-center ${set.p2 > set.p1 ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500'}`}>
+                                                                <span key={sIdx} className={`text-[8px] font-bold min-w-[8px] text-center ${set.p2 > set.p1 ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500'}`}>
                                                                     {set.p2}
                                                                 </span>
                                                             ))}
                                                         </div>
                                                     )}
-                                                    <div className={`${isCompact ? 'w-6 h-6 text-xs' : 'w-8 h-8 text-sm'} flex items-center justify-center rounded-lg font-black transition-all ${p2Winner ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 group-hover/p2:bg-white dark:group-hover/p2:bg-slate-700 shadow-sm'}`}>
+                                                    <div className={`${isCompact ? 'w-6 h-6 text-[10px]' : 'w-7 h-7 text-xs'} flex items-center justify-center rounded font-bold transition-all ${p2Winner ? 'bg-green-600/20 text-green-600 dark:bg-green-900/80 dark:text-green-300' : 'bg-slate-200 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400'}`}>
                                                         {match.player2Score ?? 0}
                                                     </div>
                                                 </div>
                                             </div>
 
                                             {/* Action Menu (Floating) */}
-                                            <div className="absolute -top-10 left-0 right-0 opacity-0 invisible group-hover:opacity-100 group-hover:visible flex items-center justify-center transition-all duration-200 z-40 pointer-events-none">
-                                                <div className="bg-white/95 dark:bg-slate-800/95 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl p-1 flex items-center gap-1.5 pointer-events-auto backdrop-blur-md">
+                                            <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 opacity-0 invisible group-hover:opacity-100 group-hover:visible flex items-center justify-center transition-all duration-200 z-40">
+                                                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-xl p-0.5 flex items-center gap-1 backdrop-blur-md">
                                                     <button 
-                                                        className="bg-amber-400 hover:bg-amber-500 text-black px-2.5 py-1.5 rounded-md text-[9px] font-black uppercase tracking-wider shadow-sm flex items-center gap-1.5 active:scale-95 transition-all"
+                                                        className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-[8px] font-black uppercase tracking-wider transition-all"
                                                         onClick={(e) => { 
                                                             e.stopPropagation();
                                                             setEditingMatch(match); 
                                                             setShowMatchModal(true); 
                                                         }}
                                                     >
-                                                        <PlayCircle size={12} /> Rezultat
+                                                        Unos
                                                     </button>
                                                     <button 
                                                         onClick={(e) => { e.stopPropagation(); handleDeleteMatch(match.id); }} 
-                                                        className="p-1.5 bg-slate-100 dark:bg-slate-700/50 hover:bg-red-50 dark:hover:bg-red-900/40 text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 rounded-md transition-all flex items-center border border-transparent hover:border-red-200 dark:hover:border-red-800" 
-                                                        title="Obriši meč"
+                                                        className="p-1 text-slate-400 hover:text-red-500 transition-all" 
+                                                        title="Obriši"
                                                     >
-                                                        <Trash2 size={12} />
+                                                        <Trash2 size={10} />
                                                     </button>
                                                 </div>
                                             </div>

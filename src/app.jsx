@@ -349,7 +349,7 @@ export function App() {
                 <Route path="/settings" element={<Navigate to="/admin/settings" replace />} />
                 <Route path="/profile" element={<Navigate to="/admin/profile" replace />} />
 
-                <Route path="/p/:slug" element={<PublicCompetition />} />
+                <Route path="/p/:slug/:categorySlug?" element={<PublicCompetition />} />
                 <Route path="/p/help" element={<PublicOverview />} />
                 <Route path="/explore" element={<Explore />} />
 

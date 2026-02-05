@@ -217,7 +217,7 @@ const Home = () => {
                         Postani Organizator <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                     </button>
                     <Link to="/explore" className="bg-white/5 text-white border border-white/10 px-10 py-5 rounded-lg font-bold hover:bg-white/20 transition-all text-base md:text-lg flex items-center justify-center backdrop-blur-sm active:scale-95 gap-3">
-                        <Activity size={20} className="text-emerald-500" /> Rezultati Uživo
+                        <Activity size={20} className="text-emerald-500" /> Takmičenja
                     </Link>
                 </div>
 
