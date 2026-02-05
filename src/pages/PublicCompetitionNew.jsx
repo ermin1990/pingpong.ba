@@ -4,7 +4,7 @@ import { db } from '../firebase/config';
 import { collection, query, where, getDocs, onSnapshot, doc, getDoc } from 'firebase/firestore';
 import PublicGroupStandings from '../components/public/PublicGroupStandings';
 import PublicGroupMatches from '../components/public/PublicGroupMatches';
-import { Trophy, Clock, Zap, Users, LayoutGrid, AlertTriangle, ChevronRight, ChevronDown, CheckCircle, ArrowUp, ArrowDown, Share2, Code, Search, ShieldCheck, Calendar, MapPin, Phone, Mail, MapPinned, Award, DollarSign, ClockIcon, Timer, ZoomIn, ZoomOut, Maximize, Sun, Moon } from 'lucide-react';
+import { Trophy, Clock, Zap, Users, LayoutGrid, AlertTriangle, ChevronRight, ChevronDown, CheckCircle, ArrowUp, ArrowDown, Share2, Code, Search, ShieldCheck, Calendar, MapPin, Phone, Mail, MapPinned, Award, DollarSign, ClockIcon, Timer, ZoomIn, ZoomOut, Maximize } from 'lucide-react';
 
 // Helper za generisanje URL slug-a iz imena kategorije
 const generateSlug = (name) => {
@@ -179,7 +179,6 @@ const PublicCompetitionNew = () => {
   const [activeTab, setActiveTab] = useState('groups'); // Tab state je lokalan, ne ide u URL
   const [selectedMatchModal, setSelectedMatchModal] = useState(null);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(true);
   
   // Provjeri da li je embed mod (može ostati kao search param za embed)
   const searchParams = new URLSearchParams(window.location.search);
@@ -513,9 +512,9 @@ const PublicCompetitionNew = () => {
   );
 
   return (
-    <div className={`min-h-screen ${isDarkMode ? 'bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-[#070b14] dark:via-[#0a0f1a] dark:to-[#0d1220]' : 'bg-gradient-to-br from-slate-50 via-white to-blue-50'} ${isDarkMode ? 'dark' : ''} text-slate-900 dark:text-white`}>
+    <div className="min-h-screen bg-gradient-to-br from-[#070b14] via-[#0a0f1a] to-[#0d1220] dark text-slate-900 dark:text-white">
       {/* Hero Section / Header */}
-      <header className={`relative border-b-2 ${isDarkMode ? 'border-slate-200/50 dark:border-slate-800/50 bg-gradient-to-r from-white via-slate-50 to-white dark:from-slate-950 dark:via-slate-900 dark:to-slate-950' : 'border-slate-200 bg-gradient-to-r from-white via-slate-50 to-white'} overflow-hidden`}>
+      <header className="relative border-b-2 border-slate-200/50 dark:border-slate-800/50 bg-gradient-to-r from-white via-slate-50 to-white dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 overflow-hidden">
         {/* Decorative background elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-1/2 -right-1/4 w-96 h-96 bg-blue-500/5 dark:bg-blue-500/10 rounded-full blur-3xl"></div>
@@ -667,79 +666,68 @@ const PublicCompetitionNew = () => {
       </header>
 
       {/* Sticky Category Nav - UVIJEK PRIKAZUJ */}
-      <div id="category-nav" className={`sticky top-0 z-50 ${isDarkMode ? 'bg-[#070b14]/95 dark:bg-[#070b14]/95' : 'bg-white/95'} backdrop-blur-lg border-b ${isDarkMode ? 'border-slate-800' : 'border-slate-200'} shadow-sm`}>
-        <div className="container mx-auto px-4">
-          <div className="flex items-center h-14 gap-3 justify-between">
-            <div className="flex items-center gap-2">
-              <Link 
-                  to={`/p/${slug}`}
-                  className={`px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${!categorySlug ? 'bg-blue-600 text-white shadow' : `${isDarkMode ? 'text-slate-500 hover:bg-slate-900' : 'text-slate-600 hover:bg-slate-100'}`}`}
-              >
-                  Pregled
-              </Link>
-              
-              {categories.length > 0 && (
-                <>
-                  <div className={`h-4 w-px ${isDarkMode ? 'bg-slate-800' : 'bg-slate-200'} mx-1`} />
-                  
-                  {/* Dropdown za kategorije */}
-                  <div className="relative">
-                    <button 
-                      onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
-                      className={`px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
-                        categorySlug 
-                          ? 'bg-blue-600 text-white shadow' 
-                          : `${isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-600 hover:text-slate-900'}`
-                      }`}
-                    >
-                      {categorySlug ? categories.find(c => generateSlug(c.name) === categorySlug)?.name || 'Kategorije' : 'Kategorije'}
-                      <ChevronDown size={12} className={`transition-transform ${showCategoryDropdown ? 'rotate-180' : ''}`} />
-                    </button>
-                    
-                    {/* Dropdown meni */}
-                    {showCategoryDropdown && (
-                      <div className={`absolute left-0 top-full mt-1 w-48 ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'} border rounded-xl shadow-xl z-50 animate-in fade-in slide-in-from-top-2`}>
-                        {categories.length === 0 ? (
-                          <div className={`px-4 py-3 text-[10px] ${isDarkMode ? 'text-slate-500' : 'text-slate-600'} font-bold uppercase tracking-widest text-center`}>
-                            Nema kategorija
-                          </div>
-                        ) : (
-                          <div className="py-2">
-                            {categories.map(cat => {
-                              const catSlug = generateSlug(cat.name);
-                              const isActive = categorySlug === catSlug;
-                              return (
-                                <Link
-                                  key={cat.id}
-                                  to={`/p/${slug}/${catSlug}${isEmbed ? '?embed=true' : ''}`}
-                                  onClick={() => setShowCategoryDropdown(false)}
-                                  className={`w-full px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest transition-all block ${
-                                    isActive 
-                                      ? `${isDarkMode ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-600'}` 
-                                      : `${isDarkMode ? 'text-slate-300 hover:bg-slate-800' : 'text-slate-700 hover:bg-slate-50'}`
-                                  }`}
-                                >
-                                  {cat.name}
-                                </Link>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Light Mode Toggle */}
-            <button
-              onClick={() => setIsDarkMode(!isDarkMode)}
-              className={`w-10 h-10 rounded-lg transition-all flex items-center justify-center border ${isDarkMode ? 'bg-slate-800 border-slate-700 text-yellow-400 hover:bg-slate-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
-              title={isDarkMode ? 'Prijeđi na light mode' : 'Prijeđi na dark mode'}
+      <div id="category-nav" className="sticky top-0 z-50 bg-[#070b14]/95 dark:bg-[#070b14]/95 backdrop-blur-lg border-b border-slate-800 shadow-sm">
+        <div className="container mx-auto px-4 overflow-x-auto no-scrollbar">
+          <div className="flex items-center h-14 gap-2 min-w-max">
+            <Link 
+                to={`/p/${slug}`}
+                className={`px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${!categorySlug ? 'bg-blue-600 text-white shadow' : 'text-slate-500 hover:bg-slate-900'}`}
             >
-              {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
+                Pregled
+            </Link>
+            
+            {categories.length > 0 && (
+              <>
+                <div className="h-4 w-px bg-slate-800 mx-1" />
+                
+                {/* Dropdown za kategorije */}
+                <div className="relative">
+                  <button 
+                    onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
+                    className={`px-5 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${
+                      categorySlug 
+                        ? 'bg-blue-600 text-white shadow' 
+                        : 'text-slate-500 hover:text-slate-300'
+                    }`}
+                  >
+                    {categorySlug ? categories.find(c => generateSlug(c.name) === categorySlug)?.name || 'Kategorije' : 'Kategorije'}
+                    <ChevronDown size={12} className={`transition-transform ${showCategoryDropdown ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  {/* Dropdown meni */}
+                  {showCategoryDropdown && (
+                    <div className="absolute left-0 top-full mt-1 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-xl z-50 animate-in fade-in slide-in-from-top-2">
+                      {categories.length === 0 ? (
+                        <div className="px-4 py-3 text-[10px] text-slate-500 font-bold uppercase tracking-widest text-center">
+                          Nema kategorija
+                        </div>
+                      ) : (
+                        <div className="py-2">
+                          {categories.map(cat => {
+                            const catSlug = generateSlug(cat.name);
+                            const isActive = categorySlug === catSlug;
+                            return (
+                              <Link
+                                key={cat.id}
+                                to={`/p/${slug}/${catSlug}${isEmbed ? '?embed=true' : ''}`}
+                                onClick={() => setShowCategoryDropdown(false)}
+                                className={`w-full px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest transition-all block ${
+                                  isActive 
+                                    ? 'bg-blue-500/10 text-blue-400' 
+                                    : 'text-slate-300 hover:bg-slate-800'
+                                }`}
+                              >
+                                {cat.name}
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
