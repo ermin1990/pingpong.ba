@@ -77,8 +77,8 @@ const Unauthorized = () => {
       const currentUser = auth.currentUser;
       const selectedPlan = plans.find(p => p.id === formData.plan);
       
-      const token = import.meta.env.VITE_TELEGRAM_BOT_TOKEN;
-      const chatId = import.meta.env.VITE_TELEGRAM_CHAT_ID;
+      const token = process.env.EXPO_PUBLIC_VITE_TELEGRAM_BOT_TOKEN || process.env.VITE_TELEGRAM_BOT_TOKEN;
+      const chatId = process.env.EXPO_PUBLIC_VITE_TELEGRAM_CHAT_ID || process.env.VITE_TELEGRAM_CHAT_ID;
       
       const text = `🚨 *ZAHTJEV IZ SISTEMA (Banned User)* 🚨\n\n` + 
                    `👤 *Osoba:* ${formData.contactPerson}\n` +

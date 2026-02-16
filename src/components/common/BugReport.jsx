@@ -59,8 +59,8 @@ const BugReport = () => {
             await addDoc(collection(db, "reports"), reportData);
 
             // 2. Send Telegram Notification
-            const token = import.meta.env.VITE_TELEGRAM_BOT_TOKEN;
-            const chatId = import.meta.env.VITE_TELEGRAM_CHAT_ID;
+            const token = process.env.EXPO_PUBLIC_VITE_TELEGRAM_BOT_TOKEN || process.env.VITE_TELEGRAM_BOT_TOKEN;
+            const chatId = process.env.EXPO_PUBLIC_VITE_TELEGRAM_CHAT_ID || process.env.VITE_TELEGRAM_CHAT_ID;
 
             if (token && chatId) {
                 const telegramMessage = `🚨 *NOVA PRIJAVA (${type === 'bug' ? 'GREŠKA' : 'UNAPRIJEĐENJE'})*\n\n` +

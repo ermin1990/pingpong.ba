@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "PingPong BIH",
+    "slug": "pingpong-bih",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./public/favicon/apple-touch-icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./public/favicon/android-chrome-512x512.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#070b14"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./public/favicon/android-chrome-192x192.png",
+        "backgroundColor": "#070b14"
+      },
+      "package": "com.pingpongbih.app",
+      "googleServicesFile": "./google-services.json"
+    },
+    "platforms": [
+      "android",
+      "ios"
+    ]
+  }
+}

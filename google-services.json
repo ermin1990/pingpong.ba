@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "541745757662",
+    "project_id": "pingpong-bih",
+    "storage_bucket": "pingpong-bih.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:541745757662:android:cd98bbc04f98dcb27db14f",
+        "android_client_info": {
+          "package_name": "pingpongbih.web.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "541745757662-7hrrrp55316g7gvr86bq0i87galc33dh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAe8zQ8MyxX8qDiwWoE63UQajBIohvolZU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "541745757662-7hrrrp55316g7gvr86bq0i87galc33dh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

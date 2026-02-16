@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { auth, db } from '../firebase/config';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc, setDoc, addDoc, collection, updateDoc, query, where, getDocs } from 'firebase/firestore';
 
 const AuthContext = createContext({
@@ -10,7 +10,9 @@ const AuthContext = createContext({
   isSuperAdmin: false,
   isAdmin: false,
   loading: true,
-  logout: () => {}
+  logout: () => {},
+  loginWithEmail: () => {},
+  registerWithEmail: () => {}
 });
 
 export const AuthProvider = ({ children }) => {
@@ -128,6 +130,14 @@ export const AuthProvider = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
+  const loginWithEmail = async (email, password) => {
+    return signInWithEmailAndPassword(auth, email.trim(), password);
+  };
+
+  const registerWithEmail = async (email, password) => {
+    return createUserWithEmailAndPassword(auth, email.trim(), password);
+  };
+
   const logout = () => signOut(auth);
 
   const value = {
@@ -137,7 +147,9 @@ export const AuthProvider = ({ children }) => {
     isSuperAdmin: userData?.role === 'super_admin',
     isAdmin: userData?.role === 'org_admin' || userData?.role === 'super_admin',
     loading,
-    logout
+    logout,
+    loginWithEmail,
+    registerWithEmail
   };
 
   return (
