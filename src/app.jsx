@@ -26,6 +26,8 @@ const PublicCompetition = lazy(() => import('./pages/PublicCompetitionNew'));
 const PublicOverview = lazy(() => import('./pages/PublicOverview'));
 const MyProfile = lazy(() => import('./pages/MyProfile'));
 const Explore = lazy(() => import('./pages/Explore'));
+const RefereeLogin = lazy(() => import('./pages/RefereeLogin'));
+const RefereeDashboard = lazy(() => import('./pages/RefereeDashboard'));
 
 const Unauthorized = () => {
   const [showRequestForm, setShowRequestForm] = useState(false);
@@ -329,6 +331,9 @@ export function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/unauthorized" element={<Unauthorized />} />
+
+              <Route path="/sudija" element={<RefereeLogin />} />
+              <Route path="/sudija-dashboard" element={<RefereeDashboard />} />
 
               {/* Admin Routes */}
               <Route path="/admin/dashboard" element={<Dashboard />} />

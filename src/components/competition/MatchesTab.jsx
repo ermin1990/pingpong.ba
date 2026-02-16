@@ -32,8 +32,13 @@ const MatchesTab = ({
   handleClearCategory,
   handleDeleteMatch,
   handleAutoAssignGroups,
+  togglePlayerSeed,
+  seededPlayers,
   planDetails, // Receive planDetails
-  isSuperAdmin  // Receive isSuperAdmin
+  isSuperAdmin,  // Receive isSuperAdmin
+  handleAssignTableToGroup,
+  handleAssignTableToCategory,
+  tables
 }) => {
   const [manualEditingGroups, setManualEditingGroups] = useState({});
   const seededPlayerIds = activeCategory?.seededPlayerIds || [];
@@ -67,25 +72,29 @@ const MatchesTab = ({
         {/* Draft Sidebar */}
         {activeCategory?.status === 'draft' && (
           <div className="lg:col-span-1 space-y-4 lg:sticky lg:top-24 self-start">
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <Users size={16} className="text-blue-600 dark:text-blue-400" />
-                <span className="text-sm font-bold text-slate-900 dark:text-white">Dostupni Igrači</span>
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center text-blue-600 dark:text-blue-400">
+                  <Users size={16} />
+                </div>
+                <div>
+                  <span className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-tighter">Igrači na Čekanju</span>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-none mt-0.5">Dodaj u grupe ispod</p>
+                </div>
               </div>
-              <p className="text-xs text-slate-600 dark:text-slate-400 mb-4">
-                Prevuci igrače u grupe desno →
-              </p>
-              <div className="relative mb-3">
+
+              <div className="relative mb-4">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
                 <input 
                   type="text" 
-                  placeholder="Traži po imenu..." 
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-lg pl-9 pr-4 py-2 text-xs text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500/20 transition-all" 
+                  placeholder="TRAŽI PO IMENU..." 
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-9 pr-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-white outline-none focus:border-blue-500/50 transition-all" 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              <div className="grid grid-cols-1 gap-2 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+
+              <div className="grid grid-cols-1 gap-2 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                 {allPlayers
                   .filter(p => !showOnlySelected || selectedPlayers.includes(p.id))
                   .filter(p => !assignedPlayerIds.includes(p.id))
@@ -105,31 +114,41 @@ const MatchesTab = ({
                         e.dataTransfer.setData('playerId', player.id);
                         e.dataTransfer.effectAllowed = 'move';
                       }}
-                      className="bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-700 p-2.5 rounded-lg cursor-grab active:cursor-grabbing hover:border-blue-500/50 hover:bg-white dark:hover:bg-slate-900 transition-all"
+                      className="bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 p-3 rounded-2xl cursor-grab active:cursor-grabbing hover:border-blue-500/50 hover:bg-white dark:hover:bg-slate-900 transition-all shadow-sm group"
                     >
-                      <div className="flex items-center justify-between gap-1">
-                        <p className="font-bold text-xs truncate">{player.name}</p>
-                        {seededPlayerIds.includes(player.id) && (
-                          <Star size={12} className="text-amber-500 fill-amber-500 shrink-0" />
-                        )}
+                      <div className="flex items-center justify-between gap-2">
+                        <button 
+                          onClick={() => togglePlayerSeed(player.id)}
+                          className="flex items-center gap-2 group/btn"
+                          title={seededPlayerIds.includes(player.id) ? "Ukloni nosioca" : "Postavi za nosioca"}
+                        >
+                          <Star 
+                            size={12} 
+                            className={seededPlayerIds.includes(player.id) ? "text-amber-500 fill-amber-500" : "text-slate-300 dark:text-slate-600 group-hover/btn:text-amber-500/50"} 
+                          />
+                          <p className="font-black text-[11px] uppercase tracking-tight text-slate-700 dark:text-slate-200 truncate">{player.name}</p>
+                        </button>
                       </div>
-                      <p className="text-[10px] text-slate-500 dark:text-slate-600 truncate mt-0.5">{player.club || 'Bez kluba'}</p>
+                      <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest truncate mt-1">{player.club || 'Individualac'}</p>
                     </div>
                 ))}
                 {allPlayers.filter(p => assignedPlayerIds.includes(p.id)).length === allPlayers.length && (
-                  <div className="text-center py-10 opacity-30 text-slate-500">
-                    <CheckCircle size={24} className="mx-auto mb-2 text-emerald-500" />
-                    <p className="text-xs font-bold">Svi raspoređeni</p>
+                  <div className="text-center py-10 opacity-30">
+                    <CheckCircle size={32} className="mx-auto mb-3 text-emerald-500" />
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Svi su raspoređeni</p>
                   </div>
                 )}
               </div>
-              <button 
-                onClick={handleClearCategory}
-                className="w-full mt-4 px-4 py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 border bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-500/20 hover:bg-orange-100 dark:hover:bg-orange-500/20"
-                title="Očistite sve (mečeve, grupe, poretke) ali igrači ostaju"
-              >
-                <Trash2 size={14} /> Očisti kategoriju
-              </button>
+              
+              <div className="pt-4 border-t border-slate-100 dark:border-slate-800/50 mt-4">
+                <button 
+                  onClick={handleClearCategory}
+                  className="w-full px-4 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-500/20 hover:bg-red-500 hover:text-white hover:border-red-500"
+                  title="Očistite sve (mečeve, grupe, poretke) ali igrači ostaju"
+                >
+                  <Trash2 size={14} /> Resetuj kategoriju
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -138,57 +157,50 @@ const MatchesTab = ({
         <div className={`${activeCategory?.status === 'draft' ? 'lg:col-span-3' : 'w-full'} space-y-12`}>
           {/* Quick status bar above groups */}
           {activeCategory?.status !== 'draft' && (activeCategory?.format === 'groups_knockout' || activeCategory?.format === 'round_robin') && (
-            <div className={`mb-6 p-5 rounded-lg border transition-all backdrop-blur-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 ${
+            <div className={`mb-8 p-6 rounded-[32px] border transition-all backdrop-blur-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 ${
               isGroupsCompleted 
-              ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20' 
-              : 'bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/20'
+              ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20 shadow-lg shadow-emerald-500/5' 
+              : 'bg-amber-400 border-amber-500 shadow-xl shadow-amber-500/20'
             }`}>
-              <div className="flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
+              <div className="flex items-center gap-5">
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-inner ${
                   isGroupsCompleted 
                     ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' 
-                    : 'bg-blue-500/20 text-blue-600 dark:text-blue-400'
+                    : 'bg-black/10 text-black'
                 }`}>
-                  {isGroupsCompleted ? <CheckCircle size={24} /> : <Zap size={24} />}
+                  {isGroupsCompleted ? <CheckCircle size={28} /> : <Zap size={28} />}
                 </div>
                 <div>
-                  <h4 className={`text-base font-bold ${isGroupsCompleted ? 'text-emerald-900 dark:text-emerald-300' : 'text-blue-900 dark:text-blue-300'}`}>
-                    {(activeCategory?.format === 'round_robin' ? 'Liga' : 'Grupna faza')} {isGroupsCompleted ? 'je završena' : 'u toku'}
+                  <h4 className={`text-lg font-black uppercase tracking-tighter ${isGroupsCompleted ? 'text-emerald-900 dark:text-emerald-300' : 'text-black'}`}>
+                    {(activeCategory?.format === 'round_robin' ? 'Liga' : 'Grupna faza')} {isGroupsCompleted ? 'Završena' : 'u Toku'}
                   </h4>
-                  <p className={`text-xs mt-1 ${isGroupsCompleted ? 'text-emerald-600/80 dark:text-emerald-500/80' : 'text-blue-600/80 dark:text-blue-400/80'}`}>
+                  <p className={`text-[10px] font-bold uppercase tracking-widest mt-1 ${isGroupsCompleted ? 'text-emerald-600/80 dark:text-emerald-500/80' : 'text-black/70'}`}>
                     {isGroupsCompleted 
-                      ? (activeCategory?.format === 'round_robin' ? 'Rezultati su zaključani. Možete resetovati ako treba.' : 'Možete generisati knockout žrijeb u tabu "Eliminacije".')
-                      : 'Nakon svih mečeva, kliknite "Završi" da zaključate rezultate.'}
+                      ? (activeCategory?.format === 'round_robin' ? 'Rezultati su zaključani i spremni za finalnu tabelu.' : 'Svi mečevi su završeni. Generišite eliminacije.')
+                      : 'Unesite sve rezultate da biste mogli formalno završiti fazu.'}
                   </p>
                 </div>
               </div>
-              <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+              <div className="flex flex-wrap gap-3 w-full md:w-auto">
                 <button 
                   onClick={handleReturnToDraft}
-                  className={`px-4 py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 border ${
+                  className={`px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 border ${
                     isGroupsCompleted 
-                      ? 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border-red-200 dark:border-red-500/20 hover:bg-red-100 dark:hover:bg-red-500/20' 
-                      : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700'
+                      ? 'bg-white dark:bg-slate-900 text-red-600 border-red-100 hover:bg-red-600 hover:text-white transition-all shadow-sm' 
+                      : 'bg-white/20 text-black border-black/10 hover:bg-white/40'
                   }`}
                 >
-                  <RotateCcw size={14} /> Resetuj
-                </button>
-                <button 
-                  onClick={handleClearCategory}
-                  className="px-4 py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 border bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-500/20 hover:bg-orange-100 dark:hover:bg-orange-500/20"
-                  title="Očistite sve (mečeve, grupe, poretke) ali igrači ostaju"
-                >
-                  <Trash2 size={14} /> Očisti
+                  <RotateCcw size={14} /> Resetuj u Draft
                 </button>
                 <button 
                   onClick={() => handleToggleStage('groups', !isGroupsCompleted)}
-                  className={`px-6 py-2.5 rounded-lg text-xs font-bold transition-all ${
+                  className={`px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl ${
                     isGroupsCompleted 
-                    ? 'bg-slate-700 dark:bg-slate-600 text-slate-300 hover:bg-slate-600 dark:hover:bg-slate-500 border border-slate-600' 
-                    : 'bg-amber-400 text-black hover:bg-amber-500 shadow-md'
+                    ? 'bg-slate-900 text-white hover:bg-slate-800' 
+                    : 'bg-white text-black hover:bg-slate-100'
                   }`}
                 >
-                  {isGroupsCompleted ? (activeCategory?.format === 'round_robin' ? 'Otvori ligu' : 'Ponovo otvori') : (activeCategory?.format === 'round_robin' ? 'Završi ligu' : 'Završi grupu')}
+                  {isGroupsCompleted ? 'Ponovo Otvori' : 'Završi Fazu'}
                 </button>
               </div>
             </div>
@@ -196,40 +208,55 @@ const MatchesTab = ({
 
           {(activeCategory?.format === 'groups_knockout' || activeCategory?.format === 'round_robin') && groups.length > 0 ? (
             <div className="space-y-8">
-              <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+              <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
                 <div>
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white">{activeCategory?.format === 'round_robin' ? 'Liga - Tabela & Mečevi' : 'Grupe - Tabele & Raspored'}</h3>
-                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                    {activeCategory?.status === 'draft' ? 'Prevucite igrače sa lijeve strane u grupe' : 'Kliknite na meč da unesete rezultat'}
+                   <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">
+                    {activeCategory?.format === 'round_robin' ? 'Ligaška Tabela' : 'Grupni Poredak'}
+                   </h3>
+                   <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">
+                    {activeCategory?.status === 'draft' ? 'PRIPREMA ŽRIJEBA' : 'PRAĆENJE REZULTATA U REALNOM VREMENU'}
                   </p>
                 </div>
+
+                {activeCategory?.status !== 'draft' && (
+                    <div className="flex bg-slate-100 dark:bg-slate-950 p-1 rounded-2xl border border-slate-200 dark:border-slate-800 w-full lg:w-auto">
+                        <select 
+                            className="bg-transparent border-none py-2 px-4 text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 outline-none cursor-pointer w-full"
+                            onChange={(e) => {
+                                if(confirm(`Rasporediti SVE mečeve ove kategorije na stol ${tables?.find(t => t.id === e.target.value)?.name}?`)) {
+                                    handleAssignTableToCategory(e.target.value);
+                                }
+                            }}
+                            value=""
+                        >
+                            <option value="" disabled>RASPOREDI NA STOL...</option>
+                             {tables?.map(t => (
+                                <option key={t.id} value={t.id}>{t.name}</option>
+                            ))}
+                        </select>
+                    </div>
+                )}
                 
                 {activeCategory?.status === 'draft' && (
                    <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-                      <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 p-2 rounded-lg border border-slate-200 dark:border-slate-700">
-                        <span className="text-xs text-slate-600 dark:text-slate-400 font-medium pl-2">Grupe: {groups.length}</span>
-                        <div className="flex gap-1">
+                      <div className="flex items-center gap-3 bg-slate-100 dark:bg-slate-950 p-2 rounded-2xl border border-slate-200 dark:border-slate-800">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 pl-2">Grupe: {groups.length}</span>
+                        <div className="flex gap-1.5">
                           <button 
                             onClick={() => setGroups(prev => prev.length > 1 ? prev.slice(0, -1) : prev)} 
-                            className="w-7 h-7 rounded-md flex items-center justify-center bg-white dark:bg-slate-700 hover:bg-red-50 dark:hover:bg-red-500/20 text-slate-900 dark:text-white font-bold transition-all border border-slate-200 dark:border-slate-600"
+                            className="w-10 h-10 rounded-xl flex items-center justify-center bg-white dark:bg-slate-800 hover:bg-red-500 hover:text-white text-slate-900 dark:text-white font-black transition-all border border-slate-200 dark:border-slate-700 shadow-sm"
                           >
                             -
                           </button>
                           <button 
                             onClick={() => {
                               if (!isSuperAdmin) {
-                                if (!planDetails) {
-                                   alert("Podaci o planu se učitavaju. Molimo pričekajte.");
-                                   return;
-                                }
-                                if (groups.length >= (planDetails.groupsLimit || 1)) {
-                                  alert(`Limit vašeg plana je ${planDetails.groupsLimit} grupa po kategoriji.`);
-                                  return;
-                                }
+                                if (!planDetails) return;
+                                if (groups.length >= (planDetails.groupsLimit || 1)) return;
                               }
                               setGroups(prev => [...prev, []]);
                             }} 
-                            className="w-7 h-7 rounded-md flex items-center justify-center bg-white dark:bg-slate-700 hover:bg-emerald-50 dark:hover:bg-emerald-500/20 text-slate-900 dark:text-white font-bold transition-all border border-slate-200 dark:border-slate-600"
+                            className="w-10 h-10 rounded-xl flex items-center justify-center bg-white dark:bg-slate-800 hover:bg-emerald-500 hover:text-white text-slate-900 dark:text-white font-black transition-all border border-slate-200 dark:border-slate-700 shadow-sm"
                           >
                             +
                           </button>
@@ -238,36 +265,24 @@ const MatchesTab = ({
 
                       <button 
                         onClick={handleAutoAssignGroups}
-                        className="bg-amber-400 hover:bg-amber-500 text-black px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all shadow-sm active:scale-95 border border-amber-500/20"
-                        title="Automatski rasporedi preostale igrače"
+                        className="flex-1 lg:flex-none bg-amber-400 hover:bg-amber-500 text-black px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-lg shadow-amber-500/20 active:scale-95"
                       >
                         <Zap size={14} /> Auto popuni
                       </button>
 
                       <button 
-                        onClick={() => {
-                          if(confirm("Obrisati sve igrače iz grupa?")) {
-                            setGroups(groups.map(() => []));
-                          }
-                        }}
-                        className="bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/20 px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all hover:bg-red-100 dark:hover:bg-red-500/20"
-                      >
-                        <Trash2 size={14} /> Isprazni
-                      </button>
-
-                      <button 
                         onClick={handleGenerateMatches}
                         disabled={generating || selectedPlayers.length < 2}
-                        className="bg-blue-600 dark:bg-blue-500 text-white px-6 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all shadow-md hover:bg-blue-700 dark:hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex-1 lg:flex-none bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-500/20 disabled:opacity-50"
                       >
-                        <PlayCircle size={14} /> Spremi i Generiši
+                        <PlayCircle size={14} /> Generiši
                       </button>
                    </div>
                 )}
               </div>
               
               {/* Render helper for brackets */}
-              <div className={activeCategory?.format === 'groups_knockout' && groups.length === 2 ? 'grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12' : 'space-y-8'}>
+              <div className="space-y-16">
                 {(activeCategory?.format === 'round_robin' ? 
                   [{ title: "Tabela i mečevi", color: "bg-blue-600", groups: groups, offset: 0 }] : 
                   [
@@ -275,17 +290,13 @@ const MatchesTab = ({
                     { title: "Donji Žrijeb", color: "bg-indigo-500", groups: groups.slice(Math.ceil(groups.length / 2)), offset: Math.ceil(groups.length / 2) }
                   ]
                 ).map((bracket, bIdx) => (
-                  <div key={bIdx} className={`space-y-6 ${bIdx > 0 ? (activeCategory?.format === 'groups_knockout' && groups.length === 2 ? 'pt-10 lg:pt-0 lg:border-l lg:pl-8 lg:border-t-0 border-t border-slate-200 dark:border-slate-800/50' : 'pt-10 border-t border-slate-200 dark:border-slate-800/50') : ''}`}>
+                  <div key={bIdx} className={`space-y-6 ${bIdx > 0 ? 'pt-10 border-t border-slate-200 dark:border-slate-800/10' : ''}`}>
                      <div className="flex items-center gap-2 px-1">
                         <div className={`h-6 w-1 ${bracket.color} rounded-full`}></div>
                         <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-[0.2em]">{bracket.title}</h4>
                      </div>
 
-                     <div className={`grid grid-cols-1 ${
-                       groups.length === 1 
-                         ? 'w-full max-w-6xl mx-auto' 
-                         : 'md:grid-cols-2'
-                     } gap-4 md:gap-6`}>
+                     <div className={`grid grid-cols-1 ${bracket.groups.length > 1 ? 'lg:grid-cols-2' : 'max-w-4xl'} gap-6`}>
                       {bracket.groups.map((group, localIdx) => {
                         const gIdx = localIdx + bracket.offset;
                         const isCompact = groups.length >= 3;
@@ -326,37 +337,53 @@ const MatchesTab = ({
                               const playerId = e.dataTransfer.getData('playerId');
                               if (playerId) movePlayerToGroup(playerId, gIdx);
                             }}
-                            className={`bg-white dark:bg-slate-800/40 backdrop-blur-xl rounded-lg ${isCompact ? 'p-3 md:p-4' : 'p-4 md:p-5'} border shadow-md flex flex-col transition-all duration-300 ${hasSameClub && activeCategory?.status === 'draft' && activeCategory?.format !== 'round_robin' ? 'border-amber-400 ring-2 ring-amber-400/20' : 'border-slate-200 dark:border-slate-700'}`}
+                            className={`bg-white dark:bg-slate-900 border shadow-sm flex flex-col transition-all duration-300 rounded-3xl ${hasSameClub && activeCategory?.status === 'draft' && activeCategory?.format !== 'round_robin' ? 'border-amber-400 ring-2 ring-amber-400/20' : 'border-slate-200 dark:border-slate-800'}`}
                           >
-                            <div className={`flex justify-between items-center ${isCompact ? 'mb-3' : 'mb-4'}`}>
+                            <div className={`flex justify-between items-center ${isCompact ? 'mb-3' : 'mb-4'} p-4 pb-0`}>
                               <div className="flex items-center gap-3">
-                                <h4 className={`${isCompact ? 'text-base' : 'text-lg'} font-bold text-slate-900 dark:text-white`}>
+                                <h4 className={`${isCompact ? 'text-[10px]' : 'text-xs'} font-black text-slate-900 dark:text-white uppercase tracking-widest`}>
                                    {activeCategory?.format === 'round_robin' ? 'LIGA' : `Grupa ${String.fromCharCode(65 + gIdx)}`}
                                 </h4>
+                                
+                                {activeCategory?.status !== 'draft' && (
+                                    <div className="relative">
+                                        <select 
+                                            className="appearance-none bg-slate-100 dark:bg-slate-950 border-none rounded-xl px-3 py-1 text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest outline-none cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors pr-6 w-24"
+                                            onChange={(e) => handleAssignTableToGroup(gIdx, e.target.value)}
+                                            defaultValue=""
+                                        >
+                                            <option value="" disabled>Stol...</option>
+                                            <option value="">-- Bez stola --</option>
+                                            {tables?.map(t => (
+                                                <option key={t.id} value={t.id}>{t.name}</option>
+                                            ))}
+                                        </select>
+                                        <ChevronDown size={10} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                                    </div>
+                                )}
+
                                 {hasSameClub && activeCategory?.status === 'draft' && activeCategory?.format !== 'round_robin' && (
-                                  <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 px-2 py-1 rounded-md border border-amber-200 dark:border-amber-500/20" title="Igrači iz istog kluba su u ovoj grupi!">
-                                    <AlertTriangle size={isCompact ? 10 : 12} />
-                                    <span className={`${isCompact ? 'text-[10px]' : 'text-xs'} font-bold`}>Isti klub</span>
+                                  <div className="flex items-center gap-1 bg-amber-400 text-black px-2 py-1 rounded-lg" title="Igrači iz istog kluba su u ovoj grupi!">
+                                    <AlertTriangle size={10} />
+                                    <span className="text-[10px] font-black uppercase tracking-tight italic">Isti klub</span>
                                   </div>
                                 )}
                               </div>
                               <div className="flex items-center gap-2">
                                  <button 
                                    onClick={() => toggleManual(gIdx)}
-                                   className={`p-1.5 rounded-lg transition-all ${isManualEdit ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                                   className={`w-8 h-8 flex items-center justify-center rounded-xl transition-all ${isManualEdit ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                                    title="Ručno poredaj"
                                  >
-                                   <ListOrdered size={isCompact ? 12 : 14} />
+                                   <ListOrdered size={14} />
                                  </button>
-                                 <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{group.length} Igrača</span>
+                                 <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest">{group.length} Igrača</span>
                               </div>
                             </div>
 
+                            <div className="p-4">
                             {activeCategory?.status === 'draft' && (
                               <div className={`${isCompact ? 'mb-4' : 'mb-5'} space-y-2`}>
-                                <p className="text-xs text-slate-600 dark:text-slate-400 font-medium mb-2">
-                                  Igrači u grupi ({group.length}):
-                                </p>
                                 {[...group]
                                   .sort((a, b) => {
                                     const aSeeded = seededPlayerIds.includes(a.id);
@@ -373,24 +400,31 @@ const MatchesTab = ({
                                                          clubsInGroup.filter(c => c === clubName.toLowerCase()).length > 1;
 
                                   return (
-                                    <div key={p.id} className={`${isCompact ? 'p-2' : 'p-2.5'} bg-slate-50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-700 rounded-lg flex justify-between items-center group/p hover:border-blue-400 dark:hover:border-blue-500 transition-all`}>
+                                    <div key={p.id} className="p-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl flex justify-between items-center group/p hover:border-blue-500 transition-all">
                                       <div className="truncate flex-1">
                                         <div className="flex items-center gap-2">
-                                          <p className={`font-bold text-slate-900 dark:text-white ${isCompact ? 'text-xs' : 'text-sm'} truncate`}>{p.name}</p>
-                                          {seededPlayerIds.includes(p.id) && (
-                                            <Star size={isCompact ? 10 : 12} className="text-amber-500 fill-amber-500" />
-                                          )}
-                                          {isDuplicateClub && <AlertTriangle size={isCompact ? 10 : 12} className="text-amber-500 shrink-0" />}
+                                          <button 
+                                            onClick={() => togglePlayerSeed(p.id)}
+                                            className="p-1 hover:bg-amber-500/10 rounded-lg transition-all"
+                                            title={seededPlayerIds.includes(p.id) ? "Ukloni nosioca" : "Postavi za nosioca"}
+                                          >
+                                            <Star 
+                                              size={12} 
+                                              className={seededPlayerIds.includes(p.id) ? "text-amber-500 fill-amber-500" : "text-slate-400 dark:text-slate-600"} 
+                                            />
+                                          </button>
+                                          <p className="font-black text-slate-900 dark:text-white text-[11px] uppercase tracking-wider truncate">{p.name}</p>
+                                          {isDuplicateClub && <AlertTriangle size={10} className="text-amber-500 shrink-0" />}
                                         </div>
-                                        <p className={`${isCompact ? 'text-[10px]' : 'text-xs'} text-slate-500 dark:text-slate-400 truncate`}>{p.club || 'Bez kluba'}</p>
+                                        <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest truncate">{p.club || 'Bez kluba'}</p>
                                       </div>
-                                      <button onClick={() => removePlayerFromGroups(p.id)} className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded opacity-0 group-hover/p:opacity-100 transition-all"><X size={isCompact ? 12 : 14} /></button>
+                                      <button onClick={() => removePlayerFromGroups(p.id)} className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all"><X size={14} /></button>
                                     </div>
                                   );
                                 })}
                                 {group.length === 0 && (
-                                  <div className={`${isCompact ? 'py-4' : 'py-8'} border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg flex flex-col items-center justify-center text-slate-400 dark:text-slate-600 bg-slate-50/50 dark:bg-slate-900/20`}>
-                                    <span className="text-xs font-bold">Prevucite igrače ovdje</span>
+                                  <div className="py-8 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl flex flex-col items-center justify-center text-slate-400 dark:text-slate-600 bg-slate-50 dark:bg-slate-950/50">
+                                    <span className="text-[10px] font-black uppercase tracking-widest">Prevucite igrače ovdje</span>
                                   </div>
                                 )}
                               </div>
@@ -398,40 +432,34 @@ const MatchesTab = ({
 
                             {/* Tabela Section - Samo ako nije draft */}
                             {activeCategory?.status !== 'draft' && (
-                              <div className={isCompact ? 'mb-4' : 'mb-6'}>
-                                <div className="flex justify-between items-center mb-3">
-                                  <h5 className={`${isCompact ? 'text-[10px]' : 'text-xs'} font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2`}>
-                                    <LayoutGrid size={isCompact ? 12 : 14} /> Tabela
+                              <div className={isCompact ? 'mb-6' : 'mb-8'}>
+                                <div className="flex justify-between items-center mb-4">
+                                  <h5 className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                    <LayoutGrid size={12} /> Tabela
                                   </h5>
                                   {isManualEdit && (
-                                    <span className={`${isCompact ? 'text-[9px]' : 'text-xs'} font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-2 py-1 rounded-md border border-blue-200 dark:border-blue-500/20`}>Ručno Poredaj</span>
+                                    <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest bg-blue-500/10 px-2 py-1 rounded-lg">Ručno Poredaj</span>
                                   )}
                                 </div>
-                                <div className="space-y-1">
-                                  <div className={`grid grid-cols-12 gap-2 mb-1 ${isCompact ? 'text-[9px]' : 'text-xs'} font-bold text-slate-500 dark:text-slate-500 px-2 uppercase tracking-widest`}>
-                                    <div className="col-span-6"></div>
+                                <div className="space-y-1 bg-slate-50 dark:bg-slate-950 p-2 rounded-2xl border border-slate-200 dark:border-slate-800">
+                                  <div className="grid grid-cols-12 gap-2 mb-2 text-[8px] font-black text-slate-400 px-2 uppercase tracking-widest">
+                                    <div className="col-span-6">IGRAČ</div>
                                     <div className="col-span-1 text-center">P</div>
                                     <div className="col-span-1 text-center">I</div>
-                                    <div className="col-span-1 text-center text-blue-500/80">S±</div>
-                                    <div className="col-span-1 text-center text-emerald-500/80">P±</div>
-                                    <div className={`col-span-2 text-center text-blue-600 dark:text-blue-400`}>B</div>
+                                    <div className="col-span-1 text-center">S±</div>
+                                    <div className="col-span-1 text-center">P±</div>
+                                    <div className="col-span-2 text-right">B</div>
                                   </div>
                                   {groupStandings.map((p, idx) => {
                                     const isAdvancing = idx < (activeCategory?.advancingPlayers ?? 2);
                                     
-                                    const clubName = (p.club || '').trim();
-                                    const isDuplicateClub = clubName && 
-                                                           clubName.toLowerCase() !== 'individual' && 
-                                                           clubName.toLowerCase() !== 'bez kluba' && 
-                                                           clubsInGroup.filter(c => c === clubName.toLowerCase()).length > 1;
-
                                     return (
-                                      <div key={p.id} className={`grid grid-cols-12 gap-1 items-center py-1.5 px-2 rounded-md ${isCompact ? 'text-[10px]' : 'text-[11px]'} transition-all duration-200 border-b border-slate-100 dark:border-slate-800 last:border-b-0 ${
+                                      <div key={p.id} className={`grid grid-cols-12 gap-1 items-center py-2 px-2 rounded-xl text-[10px] transition-all border-b border-white/5 last:border-b-0 ${
                                       isAdvancing 
                                         ? 'bg-emerald-500/10 dark:bg-emerald-500/20' 
-                                        : 'bg-slate-50/40 dark:bg-slate-900/40'
-                                    } hover:bg-white dark:hover:bg-slate-800/60`}>
-                                      <div className="col-span-6 flex items-center space-x-1.5 truncate">
+                                        : ''
+                                    }`}>
+                                      <div className="col-span-6 flex items-center space-x-2 truncate">
                                         {isManualEdit ? (
                                           <div className="flex flex-col gap-0.5 shrink-0">
                                             <button 
@@ -450,26 +478,23 @@ const MatchesTab = ({
                                             </button>
                                           </div>
                                         ) : (
-                                          <span className={`font-black w-3 text-center text-[10px] ${isAdvancing ? 'text-emerald-600 dark:text-emerald-500' : 'text-slate-400 dark:text-slate-700'}`}>{idx + 1}</span>
+                                          <span className="font-black w-4 text-center text-[9px] text-slate-500">{idx + 1}.</span>
                                         )}
                                         <div className="truncate flex-1">
                                           <div className="flex items-center gap-1 leading-tight">
-                                            <div className="text-slate-900 dark:text-white font-bold uppercase truncate">{p.name}</div>
-                                            {seededPlayerIds.includes(p.id) && (
-                                              <Star size={isCompact ? 8 : 9} className="text-amber-500 fill-amber-500" />
-                                            )}
+                                            <div className="text-slate-900 dark:text-white font-black uppercase truncate tracking-wider">{p.name}</div>
                                           </div>
                                         </div>
                                       </div>
-                                      <div className="col-span-1 text-center text-slate-500 dark:text-slate-400 font-medium">{p.won}</div>
-                                      <div className="col-span-1 text-center text-slate-500 dark:text-slate-400 font-medium">{p.lost}</div>
-                                      <div className={`col-span-1 text-center font-bold ${(p.setsWon - p.setsLost) >= 0 ? 'text-emerald-600 dark:text-emerald-500' : 'text-rose-500'}`}>
+                                      <div className="col-span-1 text-center text-slate-500 font-bold">{p.won}</div>
+                                      <div className="col-span-1 text-center text-slate-400">{p.lost}</div>
+                                      <div className={`col-span-1 text-center font-black ${(p.setsWon - p.setsLost) >= 0 ? 'text-blue-500' : 'text-rose-500'}`}>
                                         {(p.setsWon - p.setsLost) > 0 ? `+${p.setsWon - p.setsLost}` : p.setsWon - p.setsLost}
                                       </div>
-                                      <div className={`col-span-1 text-center font-medium ${p.pointDiff >= 0 ? 'text-green-500/80 dark:text-green-400' : 'text-rose-500/80'}`}>
+                                      <div className={`col-span-1 text-center font-bold ${p.pointDiff >= 0 ? 'text-emerald-500/80' : 'text-rose-500/80'}`}>
                                         {p.pointDiff > 0 ? `+${p.pointDiff}` : p.pointDiff}
                                       </div>
-                                      <div className={`col-span-2 text-center font-bold text-blue-600 dark:text-blue-500`}>{p.points}</div>
+                                      <div className="col-span-2 text-right font-black text-slate-900 dark:text-white">{p.points}</div>
                                     </div>
                                   );
                                 })}
@@ -479,11 +504,11 @@ const MatchesTab = ({
 
                             {/* Mečevi Section - Samo ako nije draft */}
                             {activeCategory?.status !== 'draft' && (
-                              <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-                                <h5 className={`${isCompact ? 'text-[10px]' : 'text-xs'} font-bold text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2 uppercase tracking-widest`}>
-                                    <PlayCircle size={isCompact ? 12 : 14} className="text-blue-500" /> Mečevi ({groupMatches.length})
+                              <div className="mt-2">
+                                <h5 className="text-[9px] font-black text-slate-400 mb-3 flex items-center gap-2 uppercase tracking-widest">
+                                    <PlayCircle size={10} className="text-blue-500" /> Mečevi ({groupMatches.length})
                                 </h5>
-                                <div className="space-y-2">
+                                <div className="space-y-1.5">
                                     {groupMatches.map((match) => {
                                       const p1Winner = match.status === 'completed' && match.player1Score > match.player2Score;
                                       const p2Winner = match.status === 'completed' && match.player2Score > match.player1Score;
@@ -491,76 +516,40 @@ const MatchesTab = ({
                                       return (
                                         <div 
                                           key={match.id} 
-                                          className="group relative bg-white dark:bg-slate-900/60 hover:bg-white dark:hover:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-800 transition-all duration-200 cursor-pointer flex flex-col overflow-hidden shadow-sm"
+                                          className="group relative bg-white dark:bg-slate-950 hover:bg-white dark:hover:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-800 transition-all duration-200 cursor-pointer flex flex-col overflow-hidden shadow-sm"
                                           onClick={() => { setEditingMatch(match); setShowMatchModal(true); }}
                                         >
-                                            {/* Player 1 Row */}
-                                            <div className={`flex items-center justify-between ${isCompact ? 'px-2 py-1.5' : 'px-3 py-2'} flex-1`}>
+                                            <div className="flex items-center justify-between px-3 py-2 flex-1">
                                                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                                                    <div className={`text-[12px] font-black truncate ${p1Winner ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
+                                                    <div className={`text-[11px] font-black uppercase tracking-wider truncate ${p1Winner ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-500/50'}`}>
                                                         {match.player1.name}
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-2 ml-2">
-                                                    {match.status === 'completed' && match.sets && match.sets.length > 0 && (
-                                                        <div className="flex gap-0.5 items-center opacity-40">
-                                                            {match.sets.map((set, sIdx) => (
-                                                                <span key={sIdx} className={`text-[8px] font-bold min-w-[8px] text-center ${set.p1 > set.p2 ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500'}`}>
-                                                                    {set.p1}
-                                                                </span>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                    <div className={`${isCompact ? 'w-6 h-6 text-[10px]' : 'w-7 h-7 text-xs'} flex items-center justify-center rounded font-bold transition-all ${p1Winner ? 'bg-green-600/20 text-green-600 dark:bg-green-900/80 dark:text-green-300' : 'bg-slate-200 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400'}`}>
+                                                    <div className={`w-8 h-8 flex items-center justify-center rounded-xl font-black text-[11px] transition-all ${p1Winner ? 'bg-green-500 text-white' : 'bg-slate-50 dark:bg-slate-900 text-slate-400'}`}>
                                                         {match.player1Score ?? 0}
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            {/* Player 2 Row */}
-                                            <div className={`flex items-center justify-between ${isCompact ? 'px-2 py-1.5' : 'px-3 py-2'} flex-1`}>
+                                            <div className="flex items-center justify-between px-3 py-2 pt-0 flex-1">
                                                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                                                    <div className={`text-[12px] font-black truncate ${p2Winner ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
+                                                    <div className={`text-[11px] font-black uppercase tracking-wider truncate ${p2Winner ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-500/50'}`}>
                                                         {match.player2.name}
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-2 ml-2">
-                                                    {match.status === 'completed' && match.sets && match.sets.length > 0 && (
-                                                        <div className="flex gap-0.5 items-center opacity-40">
-                                                            {match.sets.map((set, sIdx) => (
-                                                                <span key={sIdx} className={`text-[8px] font-bold min-w-[8px] text-center ${set.p2 > set.p1 ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500'}`}>
-                                                                    {set.p2}
-                                                                </span>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                    <div className={`${isCompact ? 'w-6 h-6 text-[10px]' : 'w-7 h-7 text-xs'} flex items-center justify-center rounded font-bold transition-all ${p2Winner ? 'bg-green-600/20 text-green-600 dark:bg-green-900/80 dark:text-green-300' : 'bg-slate-200 dark:bg-slate-700/50 text-slate-500 dark:text-slate-400'}`}>
+                                                    <div className={`w-8 h-8 flex items-center justify-center rounded-xl font-black text-[11px] transition-all ${p2Winner ? 'bg-green-500 text-white' : 'bg-slate-50 dark:bg-slate-900 text-slate-400'}`}>
                                                         {match.player2Score ?? 0}
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            {/* Action Menu (Floating) */}
-                                            <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 opacity-0 invisible group-hover:opacity-100 group-hover:visible flex items-center justify-center transition-all duration-200 z-40">
-                                                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-xl p-0.5 flex items-center gap-1 backdrop-blur-md">
-                                                    <button 
-                                                        className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-[8px] font-black uppercase tracking-wider transition-all"
-                                                        onClick={(e) => { 
-                                                            e.stopPropagation();
-                                                            setEditingMatch(match); 
-                                                            setShowMatchModal(true); 
-                                                        }}
-                                                    >
-                                                        Unos
-                                                    </button>
-                                                    <button 
-                                                        onClick={(e) => { e.stopPropagation(); handleDeleteMatch(match.id); }} 
-                                                        className="p-1 text-slate-400 hover:text-red-500 transition-all" 
-                                                        title="Obriši"
-                                                    >
-                                                        <Trash2 size={10} />
-                                                    </button>
-                                                </div>
+                                            {/* Action Menu (Floating Overlay) */}
+                                            <div className="absolute inset-0 bg-blue-600/20 items-center justify-center hidden group-hover:flex z-10">
+                                                <button className="text-white text-[10px] font-black uppercase tracking-widest px-4 py-2 border-2 border-white/20 rounded-full hover:bg-white hover:text-blue-600 transition-all">
+                                                    Unos rezultata
+                                                </button>
                                             </div>
                                         </div>
                                       );
@@ -568,6 +557,7 @@ const MatchesTab = ({
                                 </div>
                               </div>
                             )}
+                            </div>
                           </div>
                         );
                       })}
@@ -588,12 +578,12 @@ const MatchesTab = ({
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 rounded-lg overflow-hidden shadow-lg dark:shadow-2xl">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm text-left border-collapse">
                     <thead>
-                      <tr className="bg-slate-100 dark:bg-slate-950 border-b border-slate-300 dark:border-slate-800 text-slate-600 dark:text-slate-400 uppercase text-[11px] font-bold tracking-wider">
-                        <th className="px-6 py-4">Kolo</th>
+                      <tr className="bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 text-slate-500 uppercase text-[10px] font-black tracking-widest">
+                        <th className="px-6 py-4 italic">Kolo</th>
                         <th className="px-6 py-4">Igrač 1</th>
                         <th className="px-6 py-4 text-center">Rezultat</th>
                         <th className="px-6 py-4">Igrač 2</th>
@@ -602,64 +592,48 @@ const MatchesTab = ({
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
                       {matches.map((match) => (
-                        <tr key={match.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
+                        <tr key={match.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                           <td className="px-6 py-5">
-                            <span className="font-bold text-slate-900 dark:text-white text-sm">Kolo {match.round}</span>
+                            <span className="font-black text-slate-400 text-[10px] uppercase tracking-widest">Kolo {match.round}</span>
                           </td>
-                          <td className="px-6 py-5 font-semibold text-slate-900 dark:text-white">
+                          <td className="px-6 py-5">
                             <div className="flex flex-col">
                               <div className="flex items-center gap-1.5">
-                                <span>{match.player1.name}</span>
-                                {seededPlayerIds.includes(match.player1.id) && (
-                                  <Star size={10} className="text-amber-500 fill-amber-500" />
-                                )}
+                                <span className="font-black text-slate-900 dark:text-white uppercase tracking-wider text-[11px]">{match.player1.name}</span>
                               </div>
-                              <span className="text-[8px] text-slate-500 font-bold uppercase truncate">{allPlayers.find(p => p.id === match.player1.id)?.club || 'Individual'}</span>
-                              {match.sets?.length > 0 && (
-                                <span className="text-[9px] text-slate-500 dark:text-slate-400 font-bold">
-                                  ({match.sets.map(s => s.p1).join(', ')})
-                                </span>
-                              )}
+                              <span className="text-[9px] text-slate-400 font-bold uppercase truncate">{allPlayers.find(p => p.id === match.player1.id)?.club || 'Individual'}</span>
                             </div>
                           </td>
                           <td className="px-6 py-5">
                             <div className="flex items-center justify-center gap-2">
                               <input 
                                 type="number" 
-                                className="w-12 h-12 text-center bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl font-bold text-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all shadow-sm dark:shadow-none" 
+                                className="w-10 h-10 text-center bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl font-black text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all shadow-sm" 
                                 value={match.player1Score || 0}
                                 onChange={(e) => handleScoreChange(match.id, 'player1', e.target.value)}
                               />
-                              <span className="text-slate-500 dark:text-slate-600 font-bold">:</span>
+                              <span className="text-slate-300 dark:text-slate-700 font-bold">:</span>
                               <input 
                                 type="number" 
-                                className="w-12 h-12 text-center bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl font-bold text-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all shadow-sm dark:shadow-none" 
+                                className="w-10 h-10 text-center bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl font-black text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all shadow-sm" 
                                 value={match.player2Score || 0}
                                 onChange={(e) => handleScoreChange(match.id, 'player2', e.target.value)}
                               />
                             </div>
                           </td>
-                          <td className="px-6 py-5 font-semibold text-slate-900 dark:text-white">
+                          <td className="px-6 py-5">
                             <div className="flex flex-col">
                               <div className="flex items-center gap-1.5">
-                                <span>{match.player2.name}</span>
-                                {seededPlayerIds.includes(match.player2.id) && (
-                                  <Star size={10} className="text-amber-500 fill-amber-500" />
-                                )}
+                                <span className="font-black text-slate-900 dark:text-white uppercase tracking-wider text-[11px]">{match.player2.name}</span>
                               </div>
-                              <span className="text-[8px] text-slate-500 font-bold uppercase truncate">{allPlayers.find(p => p.id === match.player2.id)?.club || 'Individual'}</span>
-                              {match.sets?.length > 0 && (
-                                <span className="text-[9px] text-slate-500 dark:text-slate-400 font-bold">
-                                  ({match.sets.map(s => s.p2).join(', ')})
-                                </span>
-                              )}
+                              <span className="text-[9px] text-slate-400 font-bold uppercase truncate">{allPlayers.find(p => p.id === match.player2.id)?.club || 'Individual'}</span>
                             </div>
                           </td>
                           <td className="px-6 py-5 text-right">
                             <button 
                               onClick={() => saveMatchResult(match)}
                               disabled={savingMatchId === match.id}
-                              className={`text-[11px] font-bold uppercase tracking-wider py-2.5 px-5 rounded-lg transition-all ${match.status === 'completed' ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-default' : 'bg-amber-400 text-black hover:bg-amber-500 active:scale-95 shadow-md shadow-amber-600/20'}`}
+                              className={`text-[9px] font-black uppercase tracking-widest py-2 px-4 rounded-xl transition-all ${match.status === 'completed' ? 'bg-slate-100 dark:bg-slate-800 text-slate-400' : 'bg-amber-400 text-black hover:bg-amber-500 active:scale-95 shadow-sm shadow-amber-600/20'}`}
                             >
                               {savingMatchId === match.id ? '...' : (match.status === 'completed' ? 'ZAVRŠENO' : 'SAČUVAJ')}
                             </button>

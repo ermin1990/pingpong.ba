@@ -11,25 +11,29 @@ const SettingsTab = ({
   const isGroupsCompleted = activeCategory?.stages?.groups?.completed || false;
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8">
+    <div className="max-w-4xl mx-auto space-y-6">
       {/* Dugme za status faze */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-6 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${isGroupsCompleted ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-500' : 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-500'}`}>
-              {isGroupsCompleted ? <CheckCircle size={24} /> : <Clock size={24} />}
+      <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-900 rounded-[32px] p-6 shadow-sm">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-4 w-full sm:w-auto">
+            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${isGroupsCompleted ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-blue-500 text-white shadow-lg shadow-blue-500/20'}`}>
+              {isGroupsCompleted ? <CheckCircle size={28} /> : <Clock size={28} />}
             </div>
             <div>
-              <h4 className="text-base font-bold text-slate-900 dark:text-white">Grupna faza je {isGroupsCompleted ? 'završena' : 'u toku'}</h4>
-              <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">Markiranje završetka omogućava prelazak u knockout fazu</p>
+              <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest italic">
+                Grupna faza je {isGroupsCompleted ? 'završena' : 'u toku'}
+              </h4>
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">
+                Markiranje završetka omogućava prelazak u knockout fazu
+              </p>
             </div>
           </div>
           <button 
             onClick={() => handleToggleStage('groups', !isGroupsCompleted)}
-            className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${
+            className={`w-full sm:w-auto px-6 py-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
               isGroupsCompleted 
-              ? 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700' 
-              : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-600/20'
+              ? 'bg-slate-100 dark:bg-slate-900 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800' 
+              : 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-lg shadow-emerald-600/30 hover:scale-105 active:scale-95'
             }`}
           >
             {isGroupsCompleted ? 'Ponovo otvori grupe' : 'Završi grupnu fazu'}
@@ -37,14 +41,14 @@ const SettingsTab = ({
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-8 shadow-sm">
-        <div className="flex items-center gap-4 mb-10">
-          <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-blue-600/20">
+      <div className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-900 rounded-[32px] p-8 shadow-sm">
+        <div className="flex items-center gap-4 mb-8">
+          <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-600/20">
             <Settings2 size={24} />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white">Postavke Kategorije</h3>
-            <p className="text-slate-500 dark:text-slate-400 text-xs font-medium">Definišite sistem bodovanja i pravila za {activeCategory?.name}</p>
+            <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase italic tracking-tighter">Postavke Kategorije</h3>
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Definišite sistem bodovanja i pravila za {activeCategory?.name}</p>
           </div>
         </div>
 

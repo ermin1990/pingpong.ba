@@ -97,10 +97,11 @@ const KnockoutMatchCard = ({ match, isFinal = false, onMatchClick, isSelected })
         className={`block bg-white dark:bg-slate-800/40 backdrop-blur-md rounded-xl border ${isSelected ? 'border-emerald-500 ring-4 ring-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.4)]' : 'border-slate-200 dark:border-slate-700/50 shadow-sm'} dark:shadow-xl transition-all duration-300 hover:scale-[1.02] knockout-match relative pt-[3px] my-[3px] cursor-pointer overflow-hidden group`}
       >
         {isLive && (
-          <div className="absolute -top-1 -right-1 z-20">
-            <div className="bg-blue-600 text-[6px] font-black uppercase px-1.5 py-0.5 rounded shadow-lg border border-blue-400 text-white">
-              UŽIVO
-            </div>
+          <div className="absolute top-0 right-0 z-20">
+             <div className="bg-red-600 text-white text-[8px] font-black px-2 py-0.5 rounded-bl-lg shadow-lg flex items-center gap-1 animate-pulse">
+                <div className="w-1 h-1 rounded-full bg-white"></div>
+                LIVE
+             </div>
           </div>
         )}
         

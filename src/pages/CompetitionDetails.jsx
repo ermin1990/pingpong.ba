@@ -22,6 +22,8 @@ import CompetitionHeader from '../components/competition/CompetitionHeader';
 import MatchUpdateModal from '../components/competition/MatchUpdateModal';
 import AllMatchesTab from '../components/competition/AllMatchesTab';
 import AllPlayersTab from '../components/competition/AllPlayersTab';
+import RefereesTab from '../components/competition/RefereesTab';
+import TablesTab from '../components/competition/TablesTab';
 
 const CompetitionDetails = () => {
   const { id } = useParams();
@@ -86,6 +88,7 @@ const CompetitionDetails = () => {
   const [showMatchModal, setShowMatchModal] = useState(false);
   const [allMatchesForSearch, setAllMatchesForSearch] = useState([]);
   const [matchSearchQuery, setMatchSearchQuery] = useState('');
+  const [searchTableId, setSearchTableId] = useState('');
   
   const [compName, setCompName] = useState('');
   const [compSlug, setCompSlug] = useState('');
@@ -113,6 +116,7 @@ const CompetitionDetails = () => {
   const [collaborators, setCollaborators] = useState([]);
   const [isPublic, setIsPublic] = useState(false);
   const [savingComp, setSavingComp] = useState(false);
+  const [referees, setReferees] = useState([]);
   
   // Grouping state
   const [groups, setGroups] = useState([]); // Array of arrays of player objects
@@ -125,6 +129,15 @@ const CompetitionDetails = () => {
   const [editPlayerName, setEditPlayerName] = useState('');
   const [editPlayerClub, setEditPlayerClub] = useState('');
   const [updatingPlayer, setUpdatingPlayer] = useState(false);
+
+  useEffect(() => {
+    if (!id) return;
+    const q = query(collection(db, "referees"), where("competitionId", "==", id));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setReferees(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+    return () => unsubscribe();
+  }, [id]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -258,13 +271,23 @@ const CompetitionDetails = () => {
   const activeCategory = categories.find(c => c.id === selectedCategoryId);
 
   const filteredGlobalMatches = useMemo(() => {
-    if (!matchSearchQuery.trim()) return [];
+    // Ako nema ni upita ni filtera za stol, ne prikazujemo ništa (da ne zakrčimo ekran svim mečevima)
+    if (!matchSearchQuery.trim() && !searchTableId) return [];
+    
     const lower = matchSearchQuery.toLowerCase();
-    return allMatchesForSearch.filter(m => 
-      m.player1?.name?.toLowerCase().includes(lower) || 
-      m.player2?.name?.toLowerCase().includes(lower)
-    ).sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-  }, [allMatchesForSearch, matchSearchQuery]);
+    
+    return allMatchesForSearch.filter(m => {
+      // Provjera imena (ako je uneseno)
+      const nameMatch = !matchSearchQuery.trim() || 
+        m.player1?.name?.toLowerCase().includes(lower) || 
+        m.player2?.name?.toLowerCase().includes(lower);
+        
+      // Provjera stola (ako je odabran)
+      const tableMatch = !searchTableId || m.tableId === searchTableId;
+      
+      return nameMatch && tableMatch;
+    }).sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+  }, [allMatchesForSearch, matchSearchQuery, searchTableId]);
 
   // Sinhronizacija grupa iz baze ili inicijalizacija
   useEffect(() => {
@@ -531,6 +554,7 @@ const CompetitionDetails = () => {
 
       await batch.commit();
       alert("Kategorija vraćena u Draft. Svi mečevi su obrisani.");
+      window.location.reload();
     } catch (err) {
       console.error(err);
       alert("Greška pri resetovanju kategorije.");
@@ -554,6 +578,7 @@ const CompetitionDetails = () => {
         await batch.commit();
       }
       alert("Knockout faza je resetovana.");
+      window.location.reload();
     } catch (err) {
       console.error(err);
       alert("Greška pri brisanju knockout faze.");
@@ -609,6 +634,7 @@ const CompetitionDetails = () => {
       // Resetuj lokalni state
       setMatches(prev => prev.filter(m => m.categoryId !== selectedCategoryId));
       alert("Kategorija je očišćena! Igrači su sačuvani.");
+      window.location.reload();
       
     } catch (err) {
       console.error("Greška pri čišćenju kategorije:", err);
@@ -1176,6 +1202,10 @@ const CompetitionDetails = () => {
         round: match.round !== undefined ? match.round : 1,
         roundName: match.roundName || '',
         bracketIndex: match.bracketIndex || 0,
+        tableId: match.tableId || null,
+        table: match.table || null,
+        refereeId: match.refereeId || null,
+        refereeName: match.refereeName || null,
         updatedAt: serverTimestamp()
       });
 
@@ -1263,6 +1293,23 @@ const CompetitionDetails = () => {
     } finally {
       setSavingMatchId(null);
     }
+  };
+
+  const handleAssignTableToGroup = async (groupIdx, tableId) => {
+    const groupMatches = matches.filter(m => m.groupId === groupIdx);
+    if (!groupMatches.length) return;
+    const tableName = competition?.tables?.find(t => t.id === tableId)?.name || '';
+    const batch = writeBatch(db);
+    groupMatches.forEach(m => batch.update(doc(db, 'matches', m.id), { tableId, table: tableName, updatedAt: serverTimestamp() }));
+    try { await batch.commit(); } catch (err) { console.error("Error group table:", err); alert("Greška pri dodjeli stola."); }
+  };
+
+  const handleAssignTableToCategory = async (tableId) => {
+    if (!matches.length) return;
+    const tableName = competition?.tables?.find(t => t.id === tableId)?.name || '';
+    const batch = writeBatch(db);
+    matches.forEach(m => batch.update(doc(db, 'matches', m.id), { tableId, table: tableName, updatedAt: serverTimestamp() }));
+    try { await batch.commit(); } catch (err) { console.error("Error category table:", err); alert("Greška pri dodjeli stola."); }
   };
 
   const handleDeleteMatch = async (matchId) => {
@@ -1778,10 +1825,13 @@ const CompetitionDetails = () => {
 
   return (
     <DashboardLayout title={competition.name}>
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-2 py-4 sm:py-8">
         <GlobalMatchSearch 
           matchSearchQuery={matchSearchQuery}
           setMatchSearchQuery={setMatchSearchQuery}
+          searchTableId={searchTableId}
+          setSearchTableId={setSearchTableId}
+          tables={competition.tables || []}
           filteredGlobalMatches={filteredGlobalMatches}
           categories={categories}
           setEditingMatch={setEditingMatch}
@@ -1832,6 +1882,26 @@ const CompetitionDetails = () => {
           />
         )}
 
+        {activeTab === 'referees' && (
+          <RefereesTab 
+            competitionId={id} 
+            tables={competition?.tables || []} 
+            categories={categories || []}
+          />
+        )}
+
+        {activeTab === 'tables' && (
+          <TablesTab 
+            competition={competition} 
+            id={id} 
+            matches={matches}
+            referees={referees}
+            setEditingMatch={setEditingMatch}
+            setShowMatchModal={setShowMatchModal}
+            saveMatchResult={saveMatchResult}
+          />
+        )}
+
         {activeTab === 'matches' && (
           <MatchesTab 
             activeCategory={activeCategory}
@@ -1860,8 +1930,13 @@ const CompetitionDetails = () => {
             handleReturnToDraft={handleReturnToDraft}
             handleClearCategory={handleClearCategory}
             handleAutoAssignGroups={handleAutoAssignGroups}
+            togglePlayerSeed={togglePlayerSeed}
+            seededPlayers={seededPlayers}
             planDetails={planDetails}
             isSuperAdmin={isSuperAdmin}
+            handleAssignTableToGroup={handleAssignTableToGroup}
+            handleAssignTableToCategory={handleAssignTableToCategory}
+            tables={competition?.tables || []}
           />
         )}
 
@@ -1898,6 +1973,7 @@ const CompetitionDetails = () => {
                 generating={generating}
                 saveMatchResult={saveMatchResult}
                 handleDeleteMatch={handleDeleteMatch}
+                tables={competition?.tables || []}
                 handleDeleteAllMatches={handleDeleteAllMatches}
               />
             )}
@@ -1943,6 +2019,8 @@ const CompetitionDetails = () => {
         setShowMatchModal={setShowMatchModal}
         saveMatchResult={saveMatchResult}
         activeCategory={activeCategory}
+        tables={competition?.tables || []}
+        referees={referees || []}
       />
 
       {/* Edit Player Modal */}

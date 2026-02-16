@@ -50,21 +50,40 @@ const DashboardLayout = ({ children, title }) => {
 
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-[#070b14] text-slate-900 dark:text-slate-200 transition-colors duration-300">
-      {/* Mobile Sidebar Toggle */}
-      <button 
-        onClick={() => setSidebarOpen(!isSidebarOpen)}
-        className="fixed top-4 left-4 z-50 p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl lg:hidden text-slate-500 dark:text-slate-400"
-      >
-        {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
-      </button>
+      {/* Mobile Sidebar Toggle - Moved and styled better */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 z-50 flex items-center px-4">
+        <button 
+          onClick={() => setSidebarOpen(true)}
+          className="p-2 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-500 transition-colors"
+        >
+          <Menu size={20} />
+        </button>
+        <div className="ml-4 font-black tracking-tighter text-blue-600 dark:text-blue-500 text-lg">PINGPONG.BA</div>
+      </div>
+
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-950/60 z-[55] lg:hidden backdrop-blur-sm transition-opacity"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
       {/* Sidebar */}
       <aside className={`
-        fixed inset-y-0 left-0 z-40 bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-900 transition-all duration-300 lg:static
-        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        fixed inset-y-0 left-0 z-[60] bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-900 transition-all duration-300 lg:static
+        ${isSidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0 lg:shadow-none'}
         ${isSidebarCollapsed ? 'lg:w-20' : 'lg:w-64 w-64'}
       `}>
         <div className="h-full flex flex-col relative">
+          {/* Mobile Close Button */}
+          <button 
+            onClick={() => setSidebarOpen(false)}
+            className="lg:hidden absolute top-4 right-4 p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white z-50 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+          >
+            <X size={20} />
+          </button>
+
           {/* Collapse Toggle Desktop */}
           <button 
             onClick={toggleSidebar}
@@ -115,11 +134,11 @@ const DashboardLayout = ({ children, title }) => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto p-6 lg:p-10">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">{title}</h1>
+      <main className="flex-1 overflow-y-auto p-2">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 lg:mb-10 gap-4">
+          <h1 className="text-xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight uppercase">{title}</h1>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
             <button
               onClick={toggleDarkMode}
               className="p-2 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors shadow-sm dark:shadow-none"
@@ -128,12 +147,12 @@ const DashboardLayout = ({ children, title }) => {
               {isDark ? <Sun size={20} /> : <Moon size={20} />}
             </button>
 
-            <div className="flex items-center gap-4 bg-white dark:bg-slate-900/50 p-2 pl-4 rounded-full border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-none">
-              <div className="text-right">
-                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider leading-none">{userData?.role === 'super_admin' ? 'Super Admin' : 'Administrator'}</div>
-                <div className="text-xs text-slate-700 dark:text-slate-300 font-medium">{user.email}</div>
+            <div className="flex items-center gap-3 bg-white dark:bg-slate-900/50 p-1.5 pl-3 rounded-full border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-none">
+              <div className="text-right hidden sm:block">
+                <div className="text-[9px] font-black text-slate-500 uppercase tracking-wider leading-none">{userData?.role === 'super_admin' ? 'Super Admin' : 'Admin'}</div>
+                <div className="text-[11px] text-slate-700 dark:text-slate-300 font-bold truncate max-w-[120px]">{user.email}</div>
               </div>
-              <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-bold text-blue-600 dark:text-blue-400 border border-slate-200 dark:border-slate-700">
+              <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-[10px] font-black text-white border border-blue-500 shadow-lg shadow-blue-500/20">
                 {user.email.charAt(0).toUpperCase()}
               </div>
             </div>
