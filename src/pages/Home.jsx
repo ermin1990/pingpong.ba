@@ -156,10 +156,10 @@ const Home = () => {
                     <div className="bg-blue-600 p-1.5 rounded-lg">
                         <Trophy size={20} className="text-white" />
                     </div>
-                    <div className="text-xl md:text-2xl font-black text-white tracking-tighter">PINGPONG.BA</div>
+                    <div className="text-xl md:text-2xl font-semibold text-white tracking-tight">PINGPONG.BA</div>
                 </div>
                 <div className="flex gap-4 md:gap-8 items-center">
-                    <Link to="/login" className="bg-blue-600/10 text-blue-400 border border-blue-500/20 px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-lg shadow-blue-900/20">
+                    <Link to="/login" className="bg-blue-600/10 text-blue-400 border border-blue-500/20 px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-lg shadow-blue-900/20">
                         Prijava
                     </Link>
                     <Link to="/p/help" className="hidden md:inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white/90 px-3 py-2 rounded-lg border border-transparent hover:border-slate-700 transition">
@@ -170,7 +170,7 @@ const Home = () => {
             </nav>
 
             <div className="flex flex-col items-center justify-center pt-20 pb-32 px-4 text-center max-w-7xl mx-auto z-10 relative">
-                 <div className="inline-flex items-center gap-2 px-4 py-2 mb-8 text-xs md:text-sm font-bold tracking-wide text-blue-400 uppercase bg-blue-950/40 border border-blue-500/20 rounded-full animate-fade-in-up">
+                 <div className="inline-flex items-center gap-2 px-4 py-2 mb-8 text-xs md:text-sm font-medium tracking-wide text-blue-400 uppercase bg-blue-950/40 border border-blue-500/20 rounded-full animate-fade-in-up">
                     <span className="relative flex h-2 w-2">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
@@ -178,33 +178,33 @@ const Home = () => {
                     Profesionalni Sistem za Turnire
                 </div>
                 
-                <h1 className="text-5xl md:text-7xl lg:text-8xl font-black mb-8 leading-tight tracking-tighter">
+                <h1 className="text-5xl md:text-7xl lg:text-8xl font-semibold mb-8 leading-tight tracking-tight">
                     <span className="text-white">Organizuj.</span> <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400">Pobjedi.</span>
                     <br/>
                     <span className="text-slate-600">Dominiraj.</span>
                 </h1>
                 
-                <p className="text-lg md:text-xl text-slate-400 mb-12 max-w-2xl mx-auto leading-relaxed font-medium">
+                <p className="text-lg md:text-xl text-slate-400 mb-12 max-w-2xl mx-auto leading-relaxed font-normal">
                     Sveobuhvatna platforma za stonoteniske klubove i organizatore. 
-                    Kreiraj <span className="text-blue-400 font-bold">Bergerove tabele</span>, 
-                    upravljaj <span className="text-indigo-400 font-bold">eliminacijama</span> i 
-                    prati rezultate <span className="text-purple-400 font-bold">uživo</span>.
+                    Kreiraj <span className="text-blue-400 font-medium">Bergerove tabele</span>, 
+                    upravljaj <span className="text-indigo-400 font-medium">eliminacijama</span> i 
+                    prati rezultate <span className="text-purple-400 font-medium">uživo</span>.
                 </p>
 
                 {/* Stats & Live link */}
                 <div className="flex flex-wrap justify-center gap-10 md:gap-20 mb-16">
                     <div className="flex flex-col items-center group">
-                        <div className="text-5xl md:text-6xl font-black text-white group-hover:text-blue-500 transition-colors">{stats.tournaments}</div>
+                        <div className="text-5xl md:text-6xl font-medium text-white group-hover:text-blue-500 transition-colors">{stats.tournaments}</div>
                         <div className="flex items-center gap-2 mt-2">
                              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></div>
-                             <span className="text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-[0.3em]">Turnira Online</span>
+                             <span className="text-xs md:text-sm font-medium text-slate-500 uppercase tracking-wide">Turnira Online</span>
                         </div>
                     </div>
                     <div className="flex flex-col items-center group">
-                        <div className="text-5xl md:text-6xl font-black text-white group-hover:text-emerald-500 transition-colors">{stats.leagues}</div>
+                        <div className="text-5xl md:text-6xl font-medium text-white group-hover:text-emerald-500 transition-colors">{stats.leagues}</div>
                         <div className="flex items-center gap-2 mt-2">
                              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
-                             <span className="text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-[0.3em]">Liga Online</span>
+                             <span className="text-xs md:text-sm font-medium text-slate-500 uppercase tracking-wide">Liga Online</span>
                         </div>
                     </div>
                 </div>
@@ -212,11 +212,11 @@ const Home = () => {
                 <div className="flex flex-col sm:flex-row gap-5 w-full sm:w-auto z-20">
                     <button 
                         onClick={() => setShowForm(true)}
-                        className="group bg-blue-600 text-white px-10 py-5 rounded-lg font-black hover:bg-blue-500 transition-all shadow-[0_0_40px_-10px_rgba(37,99,235,0.5)] hover:shadow-[0_0_60px_-15px_rgba(37,99,235,0.6)] text-base md:text-lg flex items-center justify-center gap-3 active:scale-95"
+                        className="group bg-blue-600 text-white px-10 py-5 rounded-lg font-semibold hover:bg-blue-500 transition-all shadow-[0_0_40px_-10px_rgba(37,99,235,0.5)] hover:shadow-[0_0_60px_-15px_rgba(37,99,235,0.6)] text-base md:text-lg flex items-center justify-center gap-3 active:scale-95"
                     >
                         Postani Organizator <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                     </button>
-                    <Link to="/explore" className="bg-white/5 text-white border border-white/10 px-10 py-5 rounded-lg font-bold hover:bg-white/20 transition-all text-base md:text-lg flex items-center justify-center backdrop-blur-sm active:scale-95 gap-3">
+                    <Link to="/explore" className="bg-white/5 text-white border border-white/10 px-10 py-5 rounded-lg font-medium hover:bg-white/20 transition-all text-base md:text-lg flex items-center justify-center backdrop-blur-sm active:scale-95 gap-3">
                         <Activity size={20} className="text-emerald-500" /> Takmičenja
                     </Link>
                 </div>

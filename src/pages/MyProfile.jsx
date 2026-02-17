@@ -86,15 +86,15 @@ const MyProfile = () => {
         <div className="bg-slate-900 border border-slate-800 rounded-lg p-6">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-xs text-slate-400 uppercase font-black tracking-wider">Korisnik</div>
-              <div className="text-lg font-bold text-white">{userData?.displayName || user?.email}</div>
+              <div className="text-xs text-slate-400 uppercase font-medium tracking-wide">Korisnik</div>
+              <div className="text-lg font-medium text-white">{userData?.displayName || user?.email}</div>
               <div className="text-sm text-slate-500">{userData?.email}</div>
             </div>
             <div className="text-right">
               <div className="text-xs text-slate-400">Trenutni plan</div>
-              <div className="text-lg font-black text-blue-400">{currentPlanName}</div>
+              <div className="text-lg font-semibold text-blue-400">{currentPlanName}</div>
               {userData?.subscriptionExpiry && (
-                <div className="text-[10px] text-slate-500">
+                <div className="text-xs text-slate-500">
                   Ističe: {userData.subscriptionExpiry.seconds ? new Date(userData.subscriptionExpiry.toMillis()).toLocaleDateString() : new Date(userData.subscriptionExpiry).toLocaleDateString()}
                 </div>
               )}
@@ -105,7 +105,7 @@ const MyProfile = () => {
         <div className="grid md:grid-cols-3 gap-6">
           <div className="bg-slate-900 border border-slate-800 rounded-lg p-6 md:col-span-2 space-y-6">
             <div>
-              <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+              <h3 className="text-sm font-medium text-white mb-4 flex items-center gap-2">
                 <Layout size={18} className="text-blue-500" />
                 Mogućnosti vašeg plana
               </h3>
@@ -119,33 +119,33 @@ const MyProfile = () => {
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="bg-slate-800/30 border border-slate-700/50 p-4 rounded-xl">
-                      <div className="flex items-center gap-2 text-slate-400 text-[10px] font-black uppercase mb-1">
+                      <div className="flex items-center gap-2 text-slate-400 text-xs font-medium uppercase mb-1.5">
                         <Trophy size={12} /> Limit takmičenja
                       </div>
-                      <div className="text-xl font-bold text-white">{planDetails.tournamentsLimit}</div>
-                      <div className="text-[10px] text-slate-500">Turnira ili liga ukupno</div>
+                      <div className="text-xl font-semibold text-white">{planDetails.tournamentsLimit}</div>
+                      <div className="text-xs text-slate-500">Turnira ili liga ukupno</div>
                     </div>
                     
                     <div className="bg-slate-800/30 border border-slate-700/50 p-4 rounded-xl">
-                      <div className="flex items-center gap-2 text-slate-400 text-[10px] font-black uppercase mb-1">
+                      <div className="flex items-center gap-2 text-slate-400 text-xs font-medium uppercase mb-1.5">
                         <Layout size={12} /> Limit grupa
                       </div>
-                      <div className="text-xl font-bold text-white">{planDetails.groupsLimit}</div>
-                      <div className="text-[10px] text-slate-500">Po turniru</div>
+                      <div className="text-xl font-semibold text-white">{planDetails.groupsLimit}</div>
+                      <div className="text-xs text-slate-500">Po turniru</div>
                     </div>
 
                     <div className="bg-slate-800/30 border border-slate-700/50 p-4 rounded-xl">
-                      <div className="flex items-center gap-2 text-slate-400 text-[10px] font-black uppercase mb-1">
+                      <div className="flex items-center gap-2 text-slate-400 text-xs font-medium uppercase mb-1.5">
                         <Users size={12} /> Igrača po grupi
                       </div>
-                      <div className="text-xl font-bold text-white">{planDetails.playersPerGroupLimit}</div>
-                      <div className="text-[10px] text-slate-500">Maksimalno</div>
+                      <div className="text-xl font-semibold text-white">{planDetails.playersPerGroupLimit}</div>
+                      <div className="text-xs text-slate-500">Maksimalno</div>
                     </div>
                   </div>
 
                   {planDetails.features && planDetails.features.length > 0 && (
                     <div className="space-y-3">
-                      <div className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Uključene opcije:</div>
+                      <div className="text-xs font-medium uppercase text-slate-500 tracking-wide">Uključene opcije:</div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {planDetails.features.map((feature, idx) => (
                           <div key={idx} className="flex items-center gap-2 text-sm text-slate-300">

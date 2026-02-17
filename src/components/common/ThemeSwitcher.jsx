@@ -54,7 +54,7 @@ const ThemeSwitcher = () => {
 
                 {/* Active indicator */}
                 {isActive && (
-                  <div className="absolute -top-2 -right-2 bg-blue-500 dark:bg-amber-400 text-white dark:text-gray-900 rounded-full p-1 shadow-lg">
+                  <div className="absolute -top-2 -right-2 bg-blue-500 dark:bg-amber-400 text-white dark:text-slate-900 rounded-full p-1 shadow-lg">
                     <Check size={12} strokeWidth={3} />
                   </div>
                 )}

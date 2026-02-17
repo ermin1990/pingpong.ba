@@ -70,9 +70,9 @@ const Countdown = ({ targetDate }) => {
         { label: 'MIN', val: timeLeft.minutes },
         { label: 'SEC', val: timeLeft.seconds }
       ].map((item, idx) => (
-        <div key={idx} className="flex flex-col items-center bg-white/10 dark:bg-white/5 border border-white/20 px-2 py-1.5 rounded-lg min-w-[45px] animate-in fade-in zoom-in duration-300">
-          <span className="text-lg font-black leading-none tabular-nums text-white">{item.val}</span>
-          <span className="text-[7px] font-black uppercase tracking-tighter text-white/70 mt-1">{item.label}</span>
+        <div key={idx} className="flex flex-col items-center bg-white/10 dark:bg-white/5 border border-white/20 px-2.5 py-2 rounded-lg min-w-[48px] animate-in fade-in zoom-in duration-300">
+          <span className="text-lg font-medium leading-none tabular-nums text-white">{item.val}</span>
+          <span className="text-[10px] font-medium uppercase tracking-wider text-white/70 mt-1">{item.label}</span>
         </div>
       ))}
     </div>
@@ -98,8 +98,8 @@ const KnockoutMatchCard = ({ match, isFinal = false, onMatchClick, isSelected })
       >
         {isLive && (
           <div className="absolute top-0 right-0 z-20">
-             <div className="bg-red-600 text-white text-[8px] font-black px-2 py-0.5 rounded-bl-lg shadow-lg flex items-center gap-1 animate-pulse">
-                <div className="w-1 h-1 rounded-full bg-white"></div>
+             <div className="bg-red-600 text-white text-[10px] font-medium px-2.5 py-1 rounded-bl-lg shadow-lg flex items-center gap-1.5 animate-pulse">
+                <div className="w-1.5 h-1.5 rounded-full bg-white"></div>
                 LIVE
              </div>
           </div>
@@ -109,15 +109,15 @@ const KnockoutMatchCard = ({ match, isFinal = false, onMatchClick, isSelected })
         <div className={`px-3 md:px-4 py-2 transition-all duration-300 ${isSelected ? 'blur-md opacity-20 scale-95' : ''}`}>
             <div className="flex items-center justify-between mb-1.5">
               <div className="flex items-center gap-2 flex-1 min-w-0 mr-2">
-                  <div className={`player-name font-semibold text-[13px] ${p1Win ? 'text-emerald-600 dark:text-green-500 font-bold' : 'text-slate-500 dark:text-gray-300'}`}>
+                  <div className={`player-name font-medium text-sm ${p1Win ? 'text-emerald-600 dark:text-green-500 font-semibold' : 'text-slate-600 dark:text-gray-300'}`}>
                     {match.player1?.name || "TBD"}
                   </div>
               </div>
               
               <div className="flex items-center gap-3">
                   <div className="flex-shrink-0">
-                      <div className={`w-7 h-7 rounded flex items-center justify-center border border-slate-100 dark:border-white/5 badge-box ${p1Win ? 'bg-emerald-50 dark:bg-green-900/80' : 'bg-slate-50 dark:bg-gray-800'}`}>
-                          <div className={`text-sm font-bold badge-number ${p1Win ? 'text-emerald-700 dark:text-white' : 'text-slate-900 dark:text-white'}`}>
+                      <div className={`w-8 h-8 rounded flex items-center justify-center border border-slate-100 dark:border-white/5 badge-box ${p1Win ? 'bg-emerald-50 dark:bg-green-900/80' : 'bg-slate-50 dark:bg-gray-800'}`}>
+                          <div className={`text-sm font-semibold badge-number ${p1Win ? 'text-emerald-700 dark:text-white' : 'text-slate-900 dark:text-white'}`}>
                             {match.player1Score || 0}
                           </div>
                       </div>
@@ -127,15 +127,15 @@ const KnockoutMatchCard = ({ match, isFinal = false, onMatchClick, isSelected })
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 flex-1 min-w-0 mr-2">
-                  <div className={`player-name font-semibold text-[13px] ${p2Win ? 'text-emerald-600 dark:text-green-500 font-bold' : 'text-slate-500 dark:text-gray-300'}`}>
+                  <div className={`player-name font-medium text-sm ${p2Win ? 'text-emerald-600 dark:text-green-500 font-semibold' : 'text-slate-600 dark:text-gray-300'}`}>
                     {match.player2?.name || "TBD"}
                   </div>
               </div>
 
               <div className="flex items-center gap-3">
                   <div className="flex-shrink-0">
-                      <div className={`w-7 h-7 rounded flex items-center justify-center border border-slate-100 dark:border-white/5 badge-box ${p2Win ? 'bg-emerald-50 dark:bg-green-900/80' : 'bg-slate-50 dark:bg-gray-800'}`}>
-                          <div className={`text-sm font-bold badge-number ${p2Win ? 'text-emerald-700 dark:text-white' : 'text-slate-900 dark:text-white'}`}>
+                      <div className={`w-8 h-8 rounded flex items-center justify-center border border-slate-100 dark:border-white/5 badge-box ${p2Win ? 'bg-emerald-50 dark:bg-green-900/80' : 'bg-slate-50 dark:bg-gray-800'}`}>
+                          <div className={`text-sm font-semibold badge-number ${p2Win ? 'text-emerald-700 dark:text-white' : 'text-slate-900 dark:text-white'}`}>
                             {match.player2Score || 0}
                           </div>
                       </div>
@@ -150,15 +150,15 @@ const KnockoutMatchCard = ({ match, isFinal = false, onMatchClick, isSelected })
             {match.sets && match.sets.length > 0 && match.sets.some(s => (s.p1 > 0 || s.p2 > 0)) ? (
               <>
                 <div className="flex items-center justify-center mb-2">
-                   <span className="text-[8px] font-black uppercase tracking-[0.2em] text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded italic">Rezultati Setova</span>
+                   <span className="text-[10px] font-medium uppercase tracking-wider text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded italic">Rezultati Setova</span>
                 </div>
                 <div className="grid grid-cols-5 gap-1.5">
                   {match.sets.map((set, idx) => (
                     <div key={idx} className="flex flex-col gap-1">
-                       <div className={`h-6 rounded flex items-center justify-center text-[11px] font-black border transition-colors ${set.p1 > set.p2 ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' : 'bg-slate-800 border-slate-700 text-slate-500'}`}>
+                       <div className={`h-7 rounded flex items-center justify-center text-xs font-medium border transition-colors ${set.p1 > set.p2 ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' : 'bg-slate-800 border-slate-700 text-slate-500'}`}>
                          {set.p1}
                        </div>
-                       <div className={`h-6 rounded flex items-center justify-center text-[11px] font-black border transition-colors ${set.p2 > set.p1 ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' : 'bg-slate-800 border-slate-700 text-slate-500'}`}>
+                       <div className={`h-7 rounded flex items-center justify-center text-xs font-medium border transition-colors ${set.p2 > set.p1 ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' : 'bg-slate-800 border-slate-700 text-slate-500'}`}>
                          {set.p2}
                        </div>
                     </div>
@@ -167,7 +167,7 @@ const KnockoutMatchCard = ({ match, isFinal = false, onMatchClick, isSelected })
               </>
             ) : (
               <div className="flex items-center justify-center">
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 italic bg-slate-100 dark:bg-slate-800/80 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                <span className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400 italic bg-slate-100 dark:bg-slate-800/80 px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
                   Nisu unešeni poeni
                 </span>
               </div>
@@ -548,13 +548,13 @@ const PublicCompetitionNew = () => {
                   <Trophy size={20} className="md:w-6 md:h-6" />
                 </div>
                 <div>
-                  <p className="text-[7px] md:text-[9px] text-slate-400 font-black uppercase tracking-[0.2em] md:tracking-[0.3em] leading-none mb-1">Službena Stranica</p>
-                  <p className="text-[10px] md:text-xs text-blue-600 dark:text-blue-400 font-black uppercase tracking-wider">Stonoteniski Turnir</p>
+                  <p className="text-[10px] md:text-xs text-slate-400 font-medium uppercase tracking-wide leading-none mb-1">Službena Stranica</p>
+                  <p className="text-xs md:text-sm text-blue-600 dark:text-blue-400 font-semibold uppercase tracking-wide">Stonoteniski Turnir</p>
                 </div>
               </div>
 
               {/* Social Share */}
-              <button className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-400 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-all shadow-sm">
+              <button className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg md:rounded-xl text-[10px] md:text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-all shadow-sm">
                 <Share2 size={12} className="md:w-3.5 md:h-3.5" /> Podijeli
               </button>
             </div>
@@ -562,7 +562,7 @@ const PublicCompetitionNew = () => {
             <div className="grid lg:grid-cols-[1fr,380px] gap-8 md:gap-12 items-start">
               {/* Left: Title & Core Info */}
               <div className="space-y-4 md:space-y-6">
-                <h1 className="text-2xl md:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-[1] md:leading-[0.95] drop-shadow-sm">
+                <h1 className="text-3xl md:text-5xl lg:text-6xl font-semibold text-slate-900 dark:text-white uppercase tracking-tight leading-[1.1] md:leading-[0.95] drop-shadow-sm">
                   {competition?.name}
                 </h1>
                 
@@ -575,8 +575,8 @@ const PublicCompetitionNew = () => {
                           <MapPin size={18} className="md:w-5 md:h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[7px] md:text-[8px] text-slate-400 font-black uppercase tracking-[0.15em] leading-none mb-1 md:mb-1.5">Lokacija Turnira</p>
-                          <p className="text-[13px] md:text-sm font-black text-slate-900 dark:text-white leading-tight">{competition.location}</p>
+                          <p className="text-[10px] md:text-xs text-slate-400 font-medium uppercase tracking-wide leading-none mb-1.5 md:mb-2">Lokacija Turnira</p>
+                          <p className="text-sm md:text-base font-medium text-slate-900 dark:text-white leading-tight">{competition.location}</p>
                         </div>
                       </div>
                     </div>
@@ -589,8 +589,8 @@ const PublicCompetitionNew = () => {
                           <Calendar size={18} className="md:w-5 md:h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[7px] md:text-[8px] text-slate-400 font-black uppercase tracking-[0.15em] leading-none mb-1 md:mb-1.5">Vrijeme Održavanja</p>
-                          <p className="text-[13px] md:text-sm font-black text-slate-900 dark:text-white leading-tight">
+                          <p className="text-[10px] md:text-xs text-slate-400 font-medium uppercase tracking-wide leading-none mb-1.5 md:mb-2">Vrijeme Održavanja</p>
+                          <p className="text-sm md:text-base font-medium text-slate-900 dark:text-white leading-tight">
                             {formatDate(competition.startDate)}
                             {competition.endDate && competition.endDate !== competition.startDate && ` - ${formatDate(competition.endDate)}`}
                           </p>
@@ -606,8 +606,8 @@ const PublicCompetitionNew = () => {
                           <Users size={18} className="md:w-5 md:h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[7px] md:text-[8px] text-slate-400 font-black uppercase tracking-[0.15em] leading-none mb-1 md:mb-1.5">Organizator</p>
-                          <p className="text-[13px] md:text-sm font-black text-slate-900 dark:text-white leading-tight truncate">{competition.organizer}</p>
+                          <p className="text-[10px] md:text-xs text-slate-400 font-medium uppercase tracking-wide leading-none mb-1.5 md:mb-2">Organizator</p>
+                          <p className="text-sm md:text-base font-medium text-slate-900 dark:text-white leading-tight truncate">{competition.organizer}</p>
                         </div>
                       </div>
                     </div>
@@ -620,8 +620,8 @@ const PublicCompetitionNew = () => {
                           <DollarSign size={18} className="md:w-5 md:h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[7px] md:text-[8px] text-emerald-600 dark:text-emerald-400 font-black uppercase tracking-[0.15em] leading-none mb-1 md:mb-1.5">Kotizacija</p>
-                          <p className="text-[13px] md:text-sm font-black text-emerald-700 dark:text-emerald-300 leading-tight">{competition.entryFee}</p>
+                          <p className="text-[10px] md:text-xs text-emerald-600 dark:text-emerald-400 font-medium uppercase tracking-wide leading-none mb-1.5 md:mb-2">Kotizacija</p>
+                          <p className="text-sm md:text-base font-semibold text-emerald-700 dark:text-emerald-300 leading-tight">{competition.entryFee}</p>
                         </div>
                       </div>
                     </div>
@@ -634,10 +634,10 @@ const PublicCompetitionNew = () => {
                 
                 {/* Countdown Timer */}
                 {competition?.startDate && new Date(competition.startDate) > new Date() && (
-                  <div className="bg-slate-900 dark:bg-slate-950 border border-slate-800/50 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-2xl">
-                    <div className="flex items-center gap-2 mb-3 md:mb-4">
+                  <div className="bg-slate-900 dark:bg-slate-950 border border-slate-800/50 rounded-2xl md:rounded-3xl p-5 md:p-6 shadow-2xl">
+                    <div className="flex items-center gap-2 mb-4">
                       <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
-                      <p className="text-[8px] md:text-[10px] text-white font-black uppercase tracking-[0.2em]">
+                      <p className="text-[10px] md:text-xs text-white font-medium uppercase tracking-wide">
                         Turnir Počinje Za
                       </p>
                     </div>
@@ -654,25 +654,25 @@ const PublicCompetitionNew = () => {
                       <>
                         <div className="flex items-center gap-2 mb-4 relative z-10">
                           <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
-                          <p className="text-[8px] md:text-[9px] text-slate-500 dark:text-slate-400 font-black uppercase tracking-[0.2em]">Prijave Su Otvorene</p>
+                          <p className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wide">Prijave Su Otvorene</p>
                         </div>
                         <button 
                           onClick={() => competition.registration.link && window.open(competition.registration.link, '_blank')}
-                          className="w-full bg-slate-900 dark:bg-white hover:bg-black dark:hover:bg-slate-100 text-white dark:text-black px-6 py-4 md:px-8 md:py-5 rounded-xl font-black uppercase text-xs md:text-sm tracking-widest transition-all transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 shadow-xl mb-3 relative z-10"
+                          className="w-full bg-slate-900 dark:bg-white hover:bg-black dark:hover:bg-slate-100 text-white dark:text-black px-6 py-4 md:px-8 md:py-5 rounded-xl font-semibold uppercase text-xs md:text-sm tracking-wide transition-all transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 shadow-xl mb-3 relative z-10"
                         >
-                          <span>Prijavi Se.</span>
+                          <span>Prijavi Se</span>
                           <ChevronRight size={16} />
                         </button>
                         {competition.registration.deadline && (
-                          <p className="text-[9px] md:text-[10px] text-slate-400 dark:text-slate-500 font-bold text-center relative z-10">
+                          <p className="text-[10px] md:text-xs text-slate-400 dark:text-slate-500 font-medium text-center relative z-10">
                             Rok: {formatDate(competition.registration.deadline)}
                           </p>
                         )}
                       </>
                     ) : (
                       <div className="text-center py-4 relative z-10">
-                        <p className="text-slate-900 dark:text-white font-black uppercase text-xs md:text-sm mb-2">Prijave Zatvorene</p>
-                        <p className="text-[9px] md:text-[10px] text-slate-500 dark:text-slate-400 font-medium tracking-wide">Kontaktirajte organizatora za više informacija</p>
+                        <p className="text-slate-900 dark:text-white font-semibold uppercase text-sm mb-2">Prijave Zatvorene</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 font-normal tracking-normal">Kontaktirajte organizatora za više informacija</p>
                       </div>
                     )}
                   </div>
@@ -689,7 +689,7 @@ const PublicCompetitionNew = () => {
           <div className="flex items-center h-14 gap-2 relative py-2">
             <Link 
                 to={`/p/${slug}`}
-                className={`px-4 py-2 rounded-lg text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${!categorySlug ? 'bg-blue-600 text-black shadow' : 'text-slate-500 hover:text-slate-300'}`}
+                className={`px-4 py-2.5 rounded-lg text-xs font-medium uppercase tracking-wide transition-all whitespace-nowrap ${!categorySlug ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200'}`}
             >
                 Pregled
             </Link>
@@ -702,10 +702,10 @@ const PublicCompetitionNew = () => {
                 <div className="relative z-50">
                   <button 
                     onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
-                    className={`px-4 py-2 rounded-lg text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 whitespace-nowrap ${
+                    className={`px-4 py-2.5 rounded-lg text-xs font-medium uppercase tracking-wide transition-all flex items-center gap-2 whitespace-nowrap ${
                       categorySlug 
-                        ? 'bg-blue-600 text-black shadow' 
-                        : 'text-slate-500 hover:text-slate-300'
+                        ? 'bg-blue-600 text-white shadow-lg' 
+                        : 'text-slate-400 hover:text-slate-200'
                     }`}
                   >
                     {categorySlug ? categories.find(c => generateSlug(c.name) === categorySlug)?.name || 'Kategorije' : 'Kategorije'}
@@ -716,7 +716,7 @@ const PublicCompetitionNew = () => {
                   {showCategoryDropdown && (
                     <div className="absolute left-0 top-full mt-1 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl z-50 animate-in fade-in slide-in-from-top-2">
                       {categories.length === 0 ? (
-                        <div className="px-4 py-3 text-[10px] text-slate-500 font-bold uppercase tracking-widest text-center">
+                        <div className="px-4 py-3 text-xs text-slate-500 font-medium uppercase tracking-wide text-center">
                           Nema kategorija
                         </div>
                       ) : (
@@ -729,7 +729,7 @@ const PublicCompetitionNew = () => {
                                 key={cat.id}
                                 to={`/p/${slug}/${catSlug}${isEmbed ? '?embed=true' : ''}`}
                                 onClick={() => setShowCategoryDropdown(false)}
-                                className={`w-full px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest transition-all block ${
+                                className={`w-full px-4 py-3 text-left text-xs font-medium uppercase tracking-wide transition-all block ${
                                   isActive 
                                     ? 'bg-blue-500/10 text-blue-400' 
                                     : 'text-slate-300 hover:bg-slate-800'
@@ -1051,7 +1051,7 @@ const PublicCompetitionNew = () => {
                             <span>{competition.location}</span>
                           </div>
                           <div className="w-1 h-1 bg-slate-300 dark:bg-slate-700 rounded-full" />
-                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                          <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">
                             {activeCategory.playerIds?.length || 0} IGRAČA
                           </span>
                         </div>
@@ -1064,27 +1064,27 @@ const PublicCompetitionNew = () => {
                   <div className="flex bg-white/50 dark:bg-slate-950/40 p-1.5 rounded-2xl w-full md:w-auto border border-blue-200/50 dark:border-blue-950/50 backdrop-blur-md shadow-sm">
                     <button 
                       onClick={() => setActiveTab('players')}
-                      className={`flex-1 md:px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === 'players' ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-600/30' : 'text-slate-500 hover:text-slate-900 dark:hover:white hover:bg-white/80 dark:hover:bg-slate-800'}`}
+                      className={`flex-1 md:px-6 py-3 rounded-xl text-xs font-medium uppercase tracking-wide transition-all whitespace-nowrap ${activeTab === 'players' ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-600/30' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-slate-800'}`}
                     >
                       Igrači
                     </button>
                     <button 
                       onClick={() => setActiveTab('groups')}
-                      className={`flex-1 md:px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === 'groups' ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-600/30' : 'text-slate-500 hover:text-slate-900 dark:hover:white hover:bg-white/80 dark:hover:bg-slate-800'}`}
+                      className={`flex-1 md:px-6 py-3 rounded-xl text-xs font-medium uppercase tracking-wide transition-all whitespace-nowrap ${activeTab === 'groups' ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-600/30' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-slate-800'}`}
                     >
                       Grupe
                     </button>
                     <button 
                       onClick={() => setActiveTab('knockout')}
-                      className={`flex-1 md:px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === 'knockout' ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-600/30' : 'text-slate-500 hover:text-slate-900 dark:hover:white hover:bg-white/80 dark:hover:bg-slate-800'}`}
+                      className={`flex-1 md:px-6 py-3 rounded-xl text-xs font-medium uppercase tracking-wide transition-all whitespace-nowrap ${activeTab === 'knockout' ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-600/30' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-slate-800'}`}
                     >
                       Eliminacije
                     </button>
                   </div>
                 ) : (
-                  <div className="bg-amber-500/10 border border-amber-500/20 px-6 py-3 rounded-2xl flex items-center gap-3">
+                  <div className="bg-amber-500/10 border border-amber-500/20 px-6 py-3.5 rounded-2xl flex items-center gap-3">
                     <Clock size={16} className="text-amber-500" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-500 italic">
+                    <span className="text-xs font-medium uppercase tracking-wide text-amber-600 dark:text-amber-500 italic">
                       Raspored i rezultati će biti objavljeni uskoro
                     </span>
                   </div>
@@ -1097,7 +1097,7 @@ const PublicCompetitionNew = () => {
               <>
                 {activeTab === 'players' && (
                   <div className="bg-white dark:bg-slate-900/40 backdrop-blur-xl rounded-xl p-8 border border-slate-200 dark:border-slate-800 shadow-xl max-w-4xl mx-auto">
-                    <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tighter mb-6">Spisak Učesnika</h3>
+                    <h3 className="text-xl font-semibold text-slate-900 dark:text-white uppercase tracking-tight mb-6">Spisak Učesnika</h3>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {(() => {
@@ -1112,17 +1112,17 @@ const PublicCompetitionNew = () => {
                           .sort((a,b) => a.name.localeCompare(b.name));
 
                         if (participatingPlayers.length === 0) {
-                          return <div className="col-span-full py-12 text-center text-slate-500 font-bold uppercase text-[10px] tracking-widest">Nema registrovanih igrača</div>;
+                          return <div className="col-span-full py-12 text-center text-slate-500 font-medium uppercase text-xs tracking-wide">Nema registrovanih igrača</div>;
                         }
 
                         return participatingPlayers.map((player, idx) => (
                           <div key={player.id} className="bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 p-4 rounded-xl flex items-center gap-4 group hover:border-blue-500/50 transition-all">
-                            <div className="w-10 h-10 bg-white dark:bg-slate-900 rounded-xl flex items-center justify-center text-xs font-black text-slate-500 border border-slate-200 dark:border-slate-700 group-hover:text-blue-500 transition-colors">
+                            <div className="w-10 h-10 bg-white dark:bg-slate-900 rounded-xl flex items-center justify-center text-sm font-medium text-slate-500 border border-slate-200 dark:border-slate-700 group-hover:text-blue-500 transition-colors">
                               {idx + 1}
                             </div>
                             <div className="min-w-0">
-                              <p className="text-sm font-black text-slate-900 dark:text-white uppercase truncate">{player.name}</p>
-                              <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest truncate">{player.club || 'Individual'}</p>
+                              <p className="text-sm font-medium text-slate-900 dark:text-white uppercase truncate">{player.name}</p>
+                              <p className="text-xs text-slate-500 font-normal uppercase tracking-wide truncate">{player.club || 'Individual'}</p>
                             </div>
                           </div>
                         ));
@@ -1169,7 +1169,7 @@ const PublicCompetitionNew = () => {
                   <div className="space-y-8">
                     <div className="bg-white dark:bg-slate-900/40 backdrop-blur-xl rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden relative">
                       {/* Zoom Controls */}
-                      <div className="flex items-center justify-center gap-4 mb-8 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-2xl border border-slate-200 dark:border-slate-700/50 w-fit mx-auto sticky top-4 z-50 shadow-lg">
+                      <div className="flex items-center justify-center gap-4 mb-8 bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-2xl border border-slate-200 dark:border-slate-700/50 w-fit mx-auto sticky top-4 z-50 shadow-lg">
                         <button 
                           onClick={() => setKnockoutZoom(prev => Math.max(0.5, prev - 0.1))}
                           className="p-2 hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-600 group"
@@ -1179,8 +1179,8 @@ const PublicCompetitionNew = () => {
                         </button>
                         
                         <div className="flex flex-col items-center min-w-[80px]">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Zoom</span>
-                          <span className="text-sm font-black text-slate-900 dark:text-white tabular-nums">
+                          <span className="text-xs font-medium uppercase tracking-wide text-slate-400">Zoom</span>
+                          <span className="text-sm font-semibold text-slate-900 dark:text-white tabular-nums">
                             {(knockoutZoom * 100).toFixed(0)}%
                           </span>
                         </div>
@@ -1272,10 +1272,10 @@ const PublicCompetitionNew = () => {
                     </div>
 
                     {/* Help Hint at the bottom of the bracket container (outside scroll) */}
-                    <div className="pt-2 flex items-center justify-center gap-4">
-                      <div className="flex items-center gap-2 bg-slate-900/40 backdrop-blur-md px-4 py-2 rounded-full border border-slate-800/50 shadow-lg">
+                    <div className="pt-3 flex items-center justify-center gap-4">
+                      <div className="flex items-center gap-2 bg-slate-900/40 backdrop-blur-md px-4 py-2.5 rounded-full border border-slate-800/50 shadow-lg">
                          <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse" />
-                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Savjet: Kliknite na meč za prikaz poena po setovima</span>
+                         <span className="text-xs font-medium text-slate-400 uppercase tracking-wide italic">Savjet: Kliknite na meč za prikaz poena po setovima</span>
                       </div>
                     </div>
                   </div>

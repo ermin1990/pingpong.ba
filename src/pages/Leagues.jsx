@@ -156,7 +156,7 @@ const Leagues = () => {
                 }`}
               >
                 <div className="flex justify-between items-start mb-3">
-                  <h3 className={`font-black uppercase tracking-tighter text-lg ${league.status === 'active' ? 'text-white' : 'text-slate-900 dark:text-white'}`}>{league.name}</h3>
+                  <h3 className={`font-semibold uppercase tracking-tight text-lg ${league.status === 'active' ? 'text-white' : 'text-slate-900 dark:text-white'}`}>{league.name}</h3>
                   <div className={`flex items-center gap-1.5 p-1 rounded-lg border ${league.status === 'active' ? 'bg-white/10 border-white/10' : 'bg-slate-50 dark:bg-slate-950/50 border-slate-100 dark:border-slate-800'}`}>
                     {league.slug && (
                       <a 
@@ -170,27 +170,27 @@ const Leagues = () => {
                         <ExternalLink size={12} />
                       </a>
                     )}
-                    <span className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest ${league.status === 'active' ? 'bg-white/20 text-white' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'}`}>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium uppercase tracking-wide ${league.status === 'active' ? 'bg-white/20 text-white' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'}`}>
                       {league.status === 'active' ? 'Aktivan' : 'U pripremi'}
                     </span>
                   </div>
                 </div>
                 
                 <div className="flex justify-between items-center">
-                  <span className={`text-[10px] font-black uppercase tracking-widest ${league.status === 'active' ? 'text-blue-100' : 'text-slate-500'}`}>Liga</span>
-                  <span className={`text-[10px] font-black uppercase tracking-widest ${league.status === 'active' ? 'text-white' : 'text-blue-600'}`}>{league.participantsCount || 0} Igrača</span>
+                  <span className={`text-xs font-medium uppercase tracking-wide ${league.status === 'active' ? 'text-blue-100' : 'text-slate-500'}`}>Liga</span>
+                  <span className={`text-xs font-medium uppercase tracking-wide ${league.status === 'active' ? 'text-white' : 'text-blue-600'}`}>{league.participantsCount || 0} Igrača</span>
                 </div>
 
                 <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center gap-2">
                   <button 
                     onClick={(e) => { e.stopPropagation(); /* handleDeleteLeague is not defined in the scope but maybe it should be */ }}
-                    className="px-3 py-1.5 bg-red-500/20 text-red-100 hover:bg-red-500/40 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+                    className="px-3 py-1.5 bg-red-500/20 text-red-100 hover:bg-red-500/40 rounded-xl text-xs font-medium uppercase tracking-wide transition-all"
                   >
                     <Trash2 size={12} />
                   </button>
                   <Link 
                     to={`/admin/leagues/${league.id}`}
-                    className={`flex-1 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all shadow-lg flex items-center justify-center gap-2 ${
+                    className={`flex-1 rounded-xl px-4 py-2 text-xs font-semibold uppercase tracking-wide transition-all shadow-lg flex items-center justify-center gap-2 ${
                       league.status === 'active' 
                         ? 'bg-white text-blue-600 hover:bg-blue-50' 
                         : 'bg-emerald-600 text-white hover:bg-emerald-700'
@@ -217,7 +217,7 @@ const Leagues = () => {
               
               <form onSubmit={handleCreate} className="p-6 space-y-5">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Naziv Lige</label>
+                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Naziv Lige</label>
                   <input
                     required
                     type="text"
@@ -229,7 +229,7 @@ const Leagues = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Sport</label>
+                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Sport</label>
                   <select
                     value={sport}
                     onChange={(e) => setSport(e.target.value)}
@@ -245,7 +245,7 @@ const Leagues = () => {
 
                 <div className="grid grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Bodova (Pob)</label>
+                    <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Bodova (Pob)</label>
                     <input
                       type="number"
                       value={pointsWin}
@@ -254,7 +254,7 @@ const Leagues = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Bodova (Ner)</label>
+                    <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Bodova (Ner)</label>
                     <input
                       type="number"
                       value={pointsDraw}
@@ -263,7 +263,7 @@ const Leagues = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Bodova (Por)</label>
+                    <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Bodova (Por)</label>
                     <input
                       type="number"
                       value={pointsLoss}

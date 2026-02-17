@@ -268,7 +268,7 @@ const Players = () => {
                 </form>
               ) : (
                 <form onSubmit={handleBulkAdd} className="space-y-4">
-                  <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-bold px-1">Format: Ime Prezime, Klub;</p>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 uppercase font-medium px-1">Format: Ime Prezime, Klub;</p>
                   <textarea 
                     placeholder="Marko Marković, STK Spin;&#10;Jovan Jovanović, STK Sarajevo;" 
                     rows={8} 
@@ -277,7 +277,7 @@ const Players = () => {
                   />
                   <button 
                     disabled={isSubmitting}
-                    className="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 py-3 rounded-xl font-bold text-sm hover:bg-blue-600 dark:hover:bg-blue-500 hover:text-white transition-all shadow-xl active:scale-95 disabled:opacity-50"
+                    className="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 py-3 rounded-xl font-semibold text-sm hover:bg-blue-600 dark:hover:bg-blue-500 hover:text-white transition-all shadow-xl active:scale-95 disabled:opacity-50"
                   >
                     Procesiraj Listu
                   </button>

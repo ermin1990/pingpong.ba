@@ -124,12 +124,12 @@ const Competitions = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-black text-slate-900 dark:text-white uppercase italic tracking-tighter">Moji Turniri</h1>
-            <p className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-widest">Upravljajte svojim sportskim događajima</p>
+            <h1 className="text-3xl font-semibold text-slate-900 dark:text-white uppercase italic tracking-tight">Moji Turniri</h1>
+            <p className="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wide">Upravljajte svojim sportskim događajima</p>
           </div>
           <button 
             onClick={() => navigate('/admin/competitions/new')}
-            className="w-full md:w-auto bg-amber-400 hover:bg-amber-500 text-black px-6 py-4 rounded-xl font-black uppercase text-xs tracking-widest transition-all shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2"
+            className="w-full md:w-auto bg-amber-400 hover:bg-amber-500 text-black px-6 py-4 rounded-xl font-semibold uppercase text-xs tracking-wide transition-all shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2"
           >
             <Plus size={18} /> Novi Turnir
           </button>
@@ -164,7 +164,7 @@ const Competitions = () => {
                 }`}
               >
                 <div className="flex justify-between items-start mb-3">
-                  <h3 className={`font-black uppercase tracking-tighter text-lg ${comp.status === 'active' ? 'text-black' : 'text-slate-900 dark:text-white'}`}>{comp.name}</h3>
+                  <h3 className={`font-semibold uppercase tracking-tight text-lg ${comp.status === 'active' ? 'text-black' : 'text-slate-900 dark:text-white'}`}>{comp.name}</h3>
                   <div className={`flex items-center gap-1.5 p-1 rounded-lg border ${comp.status === 'active' ? 'bg-black/10 border-black/10' : 'bg-slate-50 dark:bg-slate-950/50 border-slate-100 dark:border-slate-800'}`}>
                     {comp.slug && (
                       <a 
@@ -178,29 +178,29 @@ const Competitions = () => {
                         <ExternalLink size={12} />
                       </a>
                     )}
-                    <span className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest ${comp.status === 'active' ? 'bg-black/20 text-black' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'}`}>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium uppercase tracking-wide ${comp.status === 'active' ? 'bg-black/20 text-black' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'}`}>
                       {comp.status === 'active' ? 'Aktivan' : 'Draft'}
                     </span>
                   </div>
                 </div>
                 
                 <div className="flex justify-between items-center">
-                  <span className={`text-[10px] font-black uppercase tracking-widest ${comp.status === 'active' ? 'text-black/70' : 'text-slate-500'}`}>{comp.type === 'Groups' ? 'Turnir' : 'Takmičenje'}</span>
-                  <span className={`text-[10px] font-black uppercase tracking-widest ${comp.status === 'active' ? 'text-black' : 'text-blue-600'}`}>{comp.participantsCount || 0} Igrača</span>
+                  <span className={`text-xs font-medium uppercase tracking-wide ${comp.status === 'active' ? 'text-black/70' : 'text-slate-500'}`}>{comp.type === 'Groups' ? 'Turnir' : 'Takmičenje'}</span>
+                  <span className={`text-xs font-medium uppercase tracking-wide ${comp.status === 'active' ? 'text-black' : 'text-blue-600'}`}>{comp.participantsCount || 0} Igrača</span>
                 </div>
 
                 <div className="mt-4 pt-4 border-t border-black/10 flex justify-between items-center gap-2">
                   <button 
                     onClick={(e) => { e.stopPropagation(); /* handleDelete would go here */ }}
-                    className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${comp.status === 'active' ? 'bg-black/10 text-black hover:bg-black/20' : 'bg-red-500/10 text-red-500 hover:bg-red-500/20'}`}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-medium uppercase tracking-wide transition-all ${comp.status === 'active' ? 'bg-black/10 text-black hover:bg-black/20' : 'bg-red-500/10 text-red-500 hover:bg-red-500/20'}`}
                   >
                     <Trash2 size={12} />
                   </button>
                   <Link 
                     to={`/admin/competitions/${comp.id}`} 
-                    className={`flex-1 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all shadow-lg flex items-center justify-center gap-2 ${
+                    className={`flex-1 rounded-xl px-4 py-2 text-xs font-semibold uppercase tracking-wide transition-all shadow-lg flex items-center justify-center gap-2 ${
                       comp.status === 'active' 
-                        ? 'bg-black text-white hover:bg-slate-900' 
+                        ? 'bg-slate-900 text-white hover:bg-slate-800' 
                         : 'bg-amber-400 text-black hover:bg-amber-500 shadow-amber-500/20'
                     }`}
                   >

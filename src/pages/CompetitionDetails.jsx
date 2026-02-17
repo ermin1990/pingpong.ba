@@ -1947,10 +1947,10 @@ const CompetitionDetails = () => {
                 <div className="w-16 h-16 bg-red-500/20 rounded-lg flex items-center justify-center mx-auto mb-6 text-red-500">
                   <AlertTriangle size={32} />
                 </div>
-                <h3 className="text-xl font-black text-white uppercase italic tracking-tighter mb-2">Kategorija nije pronađena</h3>
+                <h3 className="text-xl font-semibold text-white uppercase italic tracking-tight mb-2">Kategorija nije pronađena</h3>
                 <button 
                   onClick={() => setActiveTab('categories')} 
-                  className="bg-blue-600 text-white px-6 py-3 rounded-xl text-xs font-black uppercase"
+                  className="bg-blue-600 text-white px-6 py-3 rounded-xl text-xs font-semibold uppercase"
                 >
                   Nazad na kategorije
                 </button>
@@ -2028,14 +2028,14 @@ const CompetitionDetails = () => {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
           <div className="bg-slate-900 border border-slate-800 w-full max-w-md rounded-lg overflow-hidden shadow-2xl">
             <div className="p-6 border-b border-white/5 flex justify-between items-center bg-gradient-to-r from-blue-600/10 to-transparent">
-              <h3 className="text-xl font-black text-white uppercase tracking-tight">Uredi Igrača</h3>
+              <h3 className="text-xl font-semibold text-white uppercase tracking-tight">Uredi Igrača</h3>
               <button onClick={() => setEditingPlayer(null)} className="text-slate-500 hover:text-white transition-colors">
                 <X size={24} />
               </button>
             </div>
             <form onSubmit={handleUpdatePlayer} className="p-6 space-y-4">
               <div>
-                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2 px-1">Ime i prezime</label>
+                <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-2 px-1">Ime i prezime</label>
                 <input
                   type="text"
                   required
@@ -2045,7 +2045,7 @@ const CompetitionDetails = () => {
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2 px-1">Klub / Grad</label>
+                <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-2 px-1">Klub / Grad</label>
                 <input
                   type="text"
                   value={editPlayerClub}
@@ -2058,14 +2058,14 @@ const CompetitionDetails = () => {
                 <button
                   type="button"
                   onClick={() => setEditingPlayer(null)}
-                  className="flex-1 px-6 py-4 rounded-lg text-xs font-black uppercase tracking-widest text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition-all border border-slate-700"
+                  className="flex-1 px-6 py-4 rounded-lg text-xs font-medium uppercase tracking-wide text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition-all border border-slate-700"
                 >
                   Odustani
                 </button>
                 <button
                   type="submit"
                   disabled={updatingPlayer}
-                  className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-4 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20"
+                  className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-4 rounded-lg text-xs font-semibold uppercase tracking-wide transition-all shadow-lg shadow-blue-600/20"
                 >
                   {updatingPlayer ? 'Spašavam...' : 'Sačuvaj izmjene'}
                 </button>
@@ -2081,8 +2081,8 @@ const CompetitionDetails = () => {
           <div className="bg-slate-900 border border-slate-800 rounded-[32px] w-full max-w-md overflow-hidden shadow-2xl">
             <div className="p-8 border-b border-slate-800 flex justify-between items-center">
               <div>
-                <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">Novi Igrač(i)</h3>
-                <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">Dodajte direktno u sistem</p>
+                <h3 className="text-xl font-semibold text-white uppercase italic tracking-tight">Novi Igrač(i)</h3>
+                <p className="text-slate-500 text-xs font-medium uppercase tracking-wide mt-1">Dodajte direktno u sistem</p>
               </div>
               <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
                 <button 
@@ -2104,7 +2104,7 @@ const CompetitionDetails = () => {
               {playerFormMode === 'single' ? (
                 <form onSubmit={handleQuickAddPlayer} className="space-y-5">
                   <div className="space-y-2">
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Ime i Prezime</label>
+                      <label className="text-xs font-medium text-slate-500 uppercase tracking-wide ml-1">Ime i Prezime</label>
                       <input 
                       required
                       className="w-full bg-slate-950 border border-slate-800 rounded-lg px-5 py-4 text-white focus:outline-none focus:border-blue-500 transition-all placeholder:text-slate-700"
@@ -2114,7 +2114,7 @@ const CompetitionDetails = () => {
                       />
                   </div>
                   <div className="space-y-2">
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Klub (opciono)</label>
+                      <label className="text-xs font-medium text-slate-500 uppercase tracking-wide ml-1">Klub (opciono)</label>
                       <input 
                       className="w-full bg-slate-950 border border-slate-800 rounded-lg px-5 py-4 text-white focus:outline-none focus:border-blue-500 transition-all placeholder:text-slate-700"
                       placeholder="npr. STK Spin"
@@ -2126,13 +2126,13 @@ const CompetitionDetails = () => {
                     <button 
                       type="button"
                       onClick={() => setShowAddPlayer(false)}
-                      className="flex-1 py-4 text-slate-500 font-bold text-xs uppercase tracking-widest hover:text-white transition-all"
+                      className="flex-1 py-4 text-slate-500 font-medium text-xs uppercase tracking-wide hover:text-white transition-all"
                     >
                       Otkaži
                     </button>
                     <button 
                       type="submit"
-                      className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-lg font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20 active:scale-95"
+                      className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-lg font-semibold text-xs uppercase tracking-wide transition-all shadow-lg shadow-blue-600/20 active:scale-95"
                     >
                       Dodaj Igrača
                     </button>
@@ -2142,8 +2142,8 @@ const CompetitionDetails = () => {
                 <form onSubmit={handleQuickBulkAdd} className="space-y-5">
                   <div className="space-y-2">
                       <div className="flex justify-between items-center ml-1">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Lista igrača</label>
-                                               <span className="text-[9px] text-blue-500 font-bold uppercase">Format: Ime, Klub;</span>
+                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Lista igrača</label>
+                                               <span className="text-[10px] text-blue-500 font-medium uppercase">Format: Ime, Klub;</span>
                       </div>
                       <textarea 
                       required
@@ -2158,14 +2158,14 @@ const CompetitionDetails = () => {
                     <button 
                       type="button"
                       onClick={() => setShowAddPlayer(false)}
-                      className="flex-1 py-4 text-slate-500 font-bold text-xs uppercase tracking-widest hover:text-white transition-all"
+                      className="flex-1 py-4 text-slate-500 font-medium text-xs uppercase tracking-wide hover:text-white transition-all"
                     >
                       Otkaži
                     </button>
                     <button 
                       type="submit"
                       disabled={generating}
-                      className={`flex-1 ${generating ? 'bg-slate-800' : 'bg-white text-slate-900 hover:bg-blue-500 hover:text-white'} py-4 rounded-lg font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95`}
+                      className={`flex-1 ${generating ? 'bg-slate-800' : 'bg-white text-slate-900 hover:bg-blue-500 hover:text-white'} py-4 rounded-lg font-semibold text-xs uppercase tracking-wide transition-all shadow-xl active:scale-95`}
                     >
                       {generating ? 'Procesiranje...' : 'Uvezi Listu'}
                     </button>

@@ -160,7 +160,7 @@ const MatchesTab = ({
             <div className={`mb-8 p-6 rounded-[32px] border transition-all backdrop-blur-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 ${
               isGroupsCompleted 
               ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20 shadow-lg shadow-emerald-500/5' 
-              : 'bg-amber-400 border-amber-500 shadow-xl shadow-amber-500/20'
+              : 'bg-amber-400 border-amber-500 text-black shadow-xl shadow-amber-500/20'
             }`}>
               <div className="flex items-center gap-5">
                 <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-inner ${
@@ -547,7 +547,7 @@ const MatchesTab = ({
 
                                             {/* Action Menu (Floating Overlay) */}
                                             <div className="absolute inset-0 bg-blue-600/20 items-center justify-center hidden group-hover:flex z-10">
-                                                <button className="text-white text-[10px] font-black uppercase tracking-widest px-4 py-2 border-2 border-white/20 rounded-full hover:bg-white hover:text-blue-600 transition-all">
+                                                <button className="text-white text-xs font-medium uppercase tracking-wide px-4 py-2.5 bg-blue-600 border-2 border-white/20 rounded-full hover:bg-blue-700 transition-all shadow-lg">
                                                     Unos rezultata
                                                 </button>
                                             </div>
