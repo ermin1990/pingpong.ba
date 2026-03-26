@@ -4,7 +4,8 @@ import { db } from '../firebase/config';
 import { collection, query, where, getDocs, onSnapshot, doc, getDoc } from 'firebase/firestore';
 import PublicGroupStandings from '../components/public/PublicGroupStandings';
 import PublicGroupMatches from '../components/public/PublicGroupMatches';
-import { Trophy, Clock, Zap, Users, LayoutGrid, AlertTriangle, ChevronRight, ChevronDown, CheckCircle, ArrowUp, ArrowDown, Share2, Code, Search, ShieldCheck, Calendar, MapPin, Phone, Mail, MapPinned, Award, DollarSign, ClockIcon, Timer, ZoomIn, ZoomOut, Maximize, X } from 'lucide-react';
+import { calculateStandings, calculateSeasonStandings } from '../utils/standings';
+import { Trophy, Clock, Zap, Users, LayoutGrid, AlertTriangle, ChevronRight, ChevronDown, CheckCircle, ArrowUp, ArrowDown, Share2, Code, Search, ShieldCheck, Calendar, MapPin, Phone, Mail, MapPinned, Award, DollarSign, ClockIcon, Timer, ZoomIn, ZoomOut, Maximize, X, List } from 'lucide-react';
 
 // Helper za generisanje URL slug-a iz imena kategorije
 const generateSlug = (name) => {
@@ -12,14 +13,14 @@ const generateSlug = (name) => {
   return name
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // Ukloni dijakritike
+    .replace(/[\u0300-\u036f]/g, '')
     .replace(/đ/g, 'd')
     .replace(/ž/g, 'z')
     .replace(/š/g, 's')
     .replace(/č/g, 'c')
     .replace(/ć/g, 'c')
-    .replace(/[^a-z0-9]+/g, '-') // Zamijeni sve non-alphanumeric sa -
-    .replace(/^-+|-+$/g, ''); // Ukloni vodeće/prateće crtice
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 };
 
 // Helper za formatiranje datuma u dd.mm.yyyy. format
@@ -70,9 +71,9 @@ const Countdown = ({ targetDate }) => {
         { label: 'MIN', val: timeLeft.minutes },
         { label: 'SEC', val: timeLeft.seconds }
       ].map((item, idx) => (
-        <div key={idx} className="flex flex-col items-center bg-white/10 dark:bg-white/5 border border-white/20 px-2 py-1.5 rounded-lg min-w-[45px] animate-in fade-in zoom-in duration-300">
-          <span className="text-lg font-black leading-none tabular-nums text-white">{item.val}</span>
-          <span className="text-[7px] font-black uppercase tracking-tighter text-white/70 mt-1">{item.label}</span>
+        <div key={idx} className="flex flex-col items-center bg-white/10 dark:bg-white/5 border border-white/20 px-2.5 py-2 rounded-lg min-w-[48px] animate-in fade-in zoom-in duration-300">
+          <span className="text-lg font-medium leading-none tabular-nums text-white">{item.val}</span>
+          <span className="text-[10px] font-medium uppercase tracking-wider text-white/70 mt-1">{item.label}</span>
         </div>
       ))}
     </div>
@@ -97,26 +98,25 @@ const KnockoutMatchCard = ({ match, isFinal = false, onMatchClick, isSelected })
         className={`block bg-white dark:bg-slate-800/40 backdrop-blur-md rounded-xl border ${isSelected ? 'border-emerald-500 ring-4 ring-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.4)]' : 'border-slate-200 dark:border-slate-700/50 shadow-sm'} dark:shadow-xl transition-all duration-300 hover:scale-[1.02] knockout-match relative pt-[3px] my-[3px] cursor-pointer overflow-hidden group`}
       >
         {isLive && (
-          <div className="absolute -top-1 -right-1 z-20">
-            <div className="bg-blue-600 text-[6px] font-black uppercase px-1.5 py-0.5 rounded shadow-lg border border-blue-400 text-white">
-              UŽIVO
-            </div>
+          <div className="absolute top-0 right-0 z-20">
+             <div className="bg-red-600 text-white text-[10px] font-medium px-2.5 py-1 rounded-bl-lg shadow-lg flex items-center gap-1.5 animate-pulse">
+                <div className="w-1.5 h-1.5 rounded-full bg-white"></div>
+                LIVE
+             </div>
           </div>
         )}
         
-        {/* Main Content Area */}
         <div className={`px-3 md:px-4 py-2 transition-all duration-300 ${isSelected ? 'blur-md opacity-20 scale-95' : ''}`}>
             <div className="flex items-center justify-between mb-1.5">
               <div className="flex items-center gap-2 flex-1 min-w-0 mr-2">
-                  <div className={`player-name font-semibold text-[13px] ${p1Win ? 'text-emerald-600 dark:text-green-500 font-bold' : 'text-slate-500 dark:text-gray-300'}`}>
+                  <div className={`player-name font-medium text-sm ${p1Win ? 'text-emerald-600 dark:text-green-500 font-semibold' : 'text-slate-600 dark:text-gray-300'}`}>
                     {match.player1?.name || "TBD"}
                   </div>
               </div>
-              
               <div className="flex items-center gap-3">
                   <div className="flex-shrink-0">
-                      <div className={`w-7 h-7 rounded flex items-center justify-center border border-slate-100 dark:border-white/5 badge-box ${p1Win ? 'bg-emerald-50 dark:bg-green-900/80' : 'bg-slate-50 dark:bg-gray-800'}`}>
-                          <div className={`text-sm font-bold badge-number ${p1Win ? 'text-emerald-700 dark:text-white' : 'text-slate-900 dark:text-white'}`}>
+                      <div className={`w-8 h-8 rounded flex items-center justify-center border border-slate-100 dark:border-white/5 badge-box ${p1Win ? 'bg-emerald-50 dark:bg-green-900/80' : 'bg-slate-50 dark:bg-gray-800'}`}>
+                          <div className={`text-sm font-semibold badge-number ${p1Win ? 'text-emerald-700 dark:text-white' : 'text-slate-900 dark:text-white'}`}>
                             {match.player1Score || 0}
                           </div>
                       </div>
@@ -126,15 +126,14 @@ const KnockoutMatchCard = ({ match, isFinal = false, onMatchClick, isSelected })
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 flex-1 min-w-0 mr-2">
-                  <div className={`player-name font-semibold text-[13px] ${p2Win ? 'text-emerald-600 dark:text-green-500 font-bold' : 'text-slate-500 dark:text-gray-300'}`}>
+                  <div className={`player-name font-medium text-sm ${p2Win ? 'text-emerald-600 dark:text-green-500 font-semibold' : 'text-slate-600 dark:text-gray-300'}`}>
                     {match.player2?.name || "TBD"}
                   </div>
               </div>
-
               <div className="flex items-center gap-3">
                   <div className="flex-shrink-0">
-                      <div className={`w-7 h-7 rounded flex items-center justify-center border border-slate-100 dark:border-white/5 badge-box ${p2Win ? 'bg-emerald-50 dark:bg-green-900/80' : 'bg-slate-50 dark:bg-gray-800'}`}>
-                          <div className={`text-sm font-bold badge-number ${p2Win ? 'text-emerald-700 dark:text-white' : 'text-slate-900 dark:text-white'}`}>
+                      <div className={`w-8 h-8 rounded flex items-center justify-center border border-slate-100 dark:border-white/5 badge-box ${p2Win ? 'bg-emerald-50 dark:bg-green-900/80' : 'bg-slate-50 dark:bg-gray-800'}`}>
+                          <div className={`text-sm font-semibold badge-number ${p2Win ? 'text-emerald-700 dark:text-white' : 'text-slate-900 dark:text-white'}`}>
                             {match.player2Score || 0}
                           </div>
                       </div>
@@ -143,21 +142,20 @@ const KnockoutMatchCard = ({ match, isFinal = false, onMatchClick, isSelected })
             </div>
         </div>
 
-        {/* Overlay Results (Visible when selected) */}
         {isSelected && (
           <div className="absolute inset-0 z-30 flex flex-col justify-center px-4 animate-in zoom-in-95 duration-200">
             {match.sets && match.sets.length > 0 && match.sets.some(s => (s.p1 > 0 || s.p2 > 0)) ? (
               <>
                 <div className="flex items-center justify-center mb-2">
-                   <span className="text-[8px] font-black uppercase tracking-[0.2em] text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded italic">Rezultati Setova</span>
+                   <span className="text-[10px] font-medium uppercase tracking-wider text-emerald-500 bg-emerald-500/10 px-3 py-1 rounded italic">Rezultati Setova</span>
                 </div>
                 <div className="grid grid-cols-5 gap-1.5">
                   {match.sets.map((set, idx) => (
                     <div key={idx} className="flex flex-col gap-1">
-                       <div className={`h-6 rounded flex items-center justify-center text-[11px] font-black border transition-colors ${set.p1 > set.p2 ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' : 'bg-slate-800 border-slate-700 text-slate-500'}`}>
+                       <div className={`h-7 rounded flex items-center justify-center text-xs font-medium border transition-colors ${set.p1 > set.p2 ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' : 'bg-slate-800 border-slate-700 text-slate-500'}`}>
                          {set.p1}
                        </div>
-                       <div className={`h-6 rounded flex items-center justify-center text-[11px] font-black border transition-colors ${set.p2 > set.p1 ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' : 'bg-slate-800 border-slate-700 text-slate-500'}`}>
+                       <div className={`h-7 rounded flex items-center justify-center text-xs font-medium border transition-colors ${set.p2 > set.p1 ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400' : 'bg-slate-800 border-slate-700 text-slate-500'}`}>
                          {set.p2}
                        </div>
                     </div>
@@ -166,7 +164,7 @@ const KnockoutMatchCard = ({ match, isFinal = false, onMatchClick, isSelected })
               </>
             ) : (
               <div className="flex items-center justify-center">
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 italic bg-slate-100 dark:bg-slate-800/80 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                <span className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400 italic bg-slate-100 dark:bg-slate-800/80 px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
                   Nisu unešeni poeni
                 </span>
               </div>
@@ -181,31 +179,21 @@ const KnockoutMatchCard = ({ match, isFinal = false, onMatchClick, isSelected })
 const PublicCompetitionNew = () => {
   const { slug, categorySlug } = useParams();
   const navigate = useNavigate();
+  const queryParams = new URLSearchParams(window.location.search);
+  const isEmbed = queryParams.get('embed') === 'true';
+
+  // ─── ALL STATE (must come before any early returns) ───────────────────────
   const [competition, setCompetition] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [categories, setCategories] = useState([]);
   const [showEmbedCode, setShowEmbedCode] = useState(false);
   const [showRulesModal, setShowRulesModal] = useState(false);
-  const [activeTab, setActiveTab] = useState('groups'); // Tab state je lokalan, ne ide u URL
-  const [selectedMatchModal, setSelectedMatchModal] = useState(null);
-  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-  
-  // Provjeri da li je embed mod (može ostati kao search param za embed)
-  const searchParams = new URLSearchParams(window.location.search);
-  const isEmbed = searchParams.get('embed') === 'true';
-  
-  // Nadji aktivnu kategoriju na osnovu categorySlug iz URL-a
-  const activeCategory = useMemo(() => {
-    if (categories.length === 0 || !categorySlug) return null;
-    
-    // Pronađi kategoriju čiji slug odgovara URL-u
-    const cat = categories.find(c => generateSlug(c.name) === categorySlug);
-    return cat || null;
-  }, [categories, categorySlug]);
-
-  const selectedCategoryId = activeCategory?.id;
-
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false); // ← FIX: was missing
+  const [activeTab, setActiveTab] = useState('groups');
+  const [showFinalRanking, setShowFinalRanking] = useState(false);
+  const [seasonSubCompetitions, setSeasonSubCompetitions] = useState([]);
+  const [seasonAllMatches, setSeasonAllMatches] = useState([]);
   const [allMatches, setAllMatches] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [manualOrders, setManualOrders] = useState({});
@@ -213,11 +201,126 @@ const PublicCompetitionNew = () => {
   const [allPlayers, setAllPlayers] = useState([]);
   const [knockoutZoom, setKnockoutZoom] = useState(1);
   const [knockoutDetailMatch, setKnockoutDetailMatch] = useState(null);
+  const [selectedMatchModal, setSelectedMatchModal] = useState(null);
 
-  const isSlotReserved = (match, slot) => {
-    if (!match?.slots) return false;
-    return match.slots[slot]?.isReserved || false;
-  };
+  // ─── ALL MEMOS (must come before any early returns) ───────────────────────
+  const activeCategory = useMemo(() => {
+    if (!categorySlug || categories.length === 0) return null;
+    return categories.find(c => generateSlug(c.name || '') === categorySlug);
+  }, [categorySlug, categories]);
+
+  const selectedCategoryId = activeCategory?.id;
+
+  const seasonStandings = useMemo(() => {
+    if ((competition?.id && !competition?.isSeason && competition?.type !== 'league_season') || !activeCategory) return [];
+    
+    const tourneyRankings = seasonSubCompetitions
+      .filter(s => s.status === 'completed')
+      .map(s => s.finalRanking || []);
+
+    return calculateSeasonStandings(tourneyRankings, seasonAllMatches, competition?.pointsSystem);
+  }, [competition, seasonSubCompetitions, seasonAllMatches, activeCategory]);
+
+  const matches = useMemo(() => {
+    if (!selectedCategoryId) return [];
+    return allMatches.filter(m => m.categoryId === selectedCategoryId);
+  }, [allMatches, selectedCategoryId]);
+
+  const groups = useMemo(() => {
+    if (!activeCategory || !activeCategory.groupConfig) return [];
+    const config = activeCategory.groupConfig;
+    const gArray = [];
+    Object.keys(config).sort((a, b) => Number(a) - Number(b)).forEach(key => {
+      gArray.push(config[key].map(id => {
+        let name = playerNames[id];
+        
+        if (!name) {
+          const matchWithPlayer = allMatches.find(m => 
+            m.player1?.id === id || m.player2?.id === id
+          );
+          if (matchWithPlayer) {
+            if (matchWithPlayer.player1?.id === id) {
+              name = matchWithPlayer.player1?.name;
+            } else if (matchWithPlayer.player2?.id === id) {
+              name = matchWithPlayer.player2?.name;
+            }
+          }
+        }
+        
+        return { 
+          id, 
+          name: name || "TBD" 
+        };
+      })
+      .filter(p => p.id && p.id !== 'placeholder' && p.id !== 'null'));
+    });
+    return gArray.filter(g => g.length > 0);
+  }, [activeCategory, playerNames, allMatches]);
+
+  const knockoutRounds = useMemo(() => {
+    const ko = matches.filter(m => m.isKnockout);
+    const rounds = {};
+    ko.forEach(m => {
+      const rName = m.roundName || `Runda ${m.round}`;
+      if (!rounds[rName]) rounds[rName] = [];
+      rounds[rName].push(m);
+    });
+
+    const sortedNames = Object.keys(rounds).sort((a, b) => {
+      const getRoundWeight = (name) => {
+        const rNum = rounds[name][0]?.round || 0;
+        const n = name.toLowerCase();
+        if ((n === 'finale' || n === 'final') || (n.includes('finale') && !n.includes('polu') && !n.includes('1/'))) return 2000;
+        if (n.includes('polufinale')) return 1000;
+        if (n.includes('1/4')) return 500;
+        if (n.includes('1/8')) return 250;
+        if (n.includes('1/16')) return 125;
+        if (n.includes('1/32')) return 60;
+        return rNum;
+      };
+      return getRoundWeight(a) - getRoundWeight(b);
+    });
+
+    return sortedNames.map(name => ({ 
+      name, 
+      matches: rounds[name].sort((a, b) => {
+        if (a.bracketSide !== b.bracketSide) {
+           return a.bracketSide === 'lijevi' ? -1 : 1;
+        }
+        return (a.bracketIndex || 0) - (b.bracketIndex || 0);
+      })
+    }));
+  }, [matches]);
+
+  // ─── FIX: tabs useMemo moved BEFORE early returns ─────────────────────────
+  const tabs = useMemo(() => {
+    const baseTabs = [
+      { id: 'groups', label: activeCategory?.format === 'round_robin' ? 'Tabela' : 'Grupe', icon: LayoutGrid },
+      { id: 'knockout', label: 'Žrijeb', icon: Trophy },
+      { id: 'players', label: 'Igrači', icon: Users },
+    ];
+
+    if (showFinalRanking) {
+      baseTabs.unshift({ id: 'final', label: 'Konačni Plasman', icon: Award });
+    }
+
+    if (competition?.seasonalTag || competition?.isSeason) {
+      baseTabs.push({ id: 'season_standings', label: 'Sezona', icon: List });
+    }
+
+    return baseTabs;
+  }, [activeCategory, competition, showFinalRanking]);
+
+  // ─── ALL EFFECTS (must come before any early returns) ─────────────────────
+  useEffect(() => {
+    if (activeCategory?.finalRanking && Object.keys(activeCategory.finalRanking).length > 0) {
+      setShowFinalRanking(true);
+      setActiveTab('final');
+    } else {
+      setShowFinalRanking(false);
+      setActiveTab('groups');
+    }
+  }, [activeCategory?.id]);
 
   useEffect(() => {
     let unsubscribeCats = null;
@@ -226,21 +329,28 @@ const PublicCompetitionNew = () => {
       try {
         let compDoc = null;
         
-        // 1. Probaj po slug-u
         const q = query(collection(db, "competitions"), where("slug", "==", slug));
         const snap = await getDocs(q);
         
         if (!snap.empty) {
           compDoc = snap.docs[0];
         } else {
-          // 2. Probaj po ID-u
           try {
             const dSnap = await getDoc(doc(db, "competitions", slug));
-            if (dSnap.exists()) {
-              compDoc = dSnap;
-            }
-          } catch (e) {
-            // Not a valid ID
+            if (dSnap.exists()) compDoc = dSnap;
+          } catch (e) {}
+        }
+
+        if (!compDoc) {
+          const qRose = query(collection(db, "amater_leagues"), where("slug", "==", slug));
+          const snapRose = await getDocs(qRose);
+          if (!snapRose.empty) {
+            compDoc = snapRose.docs[0];
+          } else {
+            try {
+              const dSnapRose = await getDoc(doc(db, "amater_leagues", slug));
+              if (dSnapRose.exists()) compDoc = dSnapRose;
+            } catch (e) {}
           }
         }
         
@@ -248,7 +358,6 @@ const PublicCompetitionNew = () => {
           const compData = { id: compDoc.id, ...compDoc.data() };
           setCompetition(compData);
 
-          // Fetch full player data for this organization
           if (compData.ownerUid) {
             const playersRef = collection(db, "players");
             const pQ = query(playersRef, where("ownerUid", "==", compData.ownerUid));
@@ -263,16 +372,15 @@ const PublicCompetitionNew = () => {
             });
           }
           
-          // Fetch categories
-          const catQ = query(collection(db, "competitions", compDoc.id, "categories"));
+          const collectionPath = (compDoc.ref.path.includes('amater_leagues')) ? "amater_leagues" : "competitions";
+          const catQ = query(collection(db, collectionPath, compDoc.id, "categories"));
           unsubscribeCats = onSnapshot(catQ, (catSnap) => {
             const cats = catSnap.docs.map(d => ({ id: d.id, ...d.data() }))
               .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
             setCategories(cats);
 
-            // Fetch manual orders for all categories
             cats.forEach(async (cat) => {
-              const ordersQ = query(collection(db, "competitions", compDoc.id, "categories", cat.id, "manualOrders"));
+              const ordersQ = query(collection(db, collectionPath, compDoc.id, "categories", cat.id, "manualOrders"));
               const ordersSnap = await getDocs(ordersQ);
               const orders = {};
               ordersSnap.docs.forEach(d => {
@@ -299,8 +407,9 @@ const PublicCompetitionNew = () => {
 
   useEffect(() => {
     if (competition) {
+      const matchCollection = competition.type === 'amater_league' || competition.seasonalTag ? "amater_league_matches" : "matches";
       const q = query(
-        collection(db, "matches"), 
+        collection(db, matchCollection), 
         where("competitionId", "==", competition.id)
       );
       
@@ -308,7 +417,6 @@ const PublicCompetitionNew = () => {
         const matchesList = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setAllMatches(matchesList);
         
-        // Ako nema playerNames iz ownerUid, izvuci imena iz match-eva
         if (Object.keys(playerNames).length === 0 && matchesList.length > 0) {
           const namesFromMatches = {};
           matchesList.forEach(match => {
@@ -326,73 +434,52 @@ const PublicCompetitionNew = () => {
     }
   }, [competition, playerNames]);
 
-  const matches = useMemo(() => {
-    if (!selectedCategoryId) return [];
-    return allMatches.filter(m => m.categoryId === selectedCategoryId);
-  }, [allMatches, selectedCategoryId]);
+  useEffect(() => {
+    if (competition?.isSeason || competition?.type === 'league_season' || competition?.type === 'amater_league') {
+      const q = query(
+        collection(db, competition?.type === 'amater_league' ? "amater_league_tournaments" : "competitions"),
+        where(competition?.type === 'amater_league' ? "seasonalTag" : "parentLeagueId", "==", competition?.type === 'amater_league' ? competition.slug : competition.id)
+      );
+      
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const subs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setSeasonSubCompetitions(subs);
+        
+        const subIds = subs.map(s => s.id);
+        if (subIds.length > 0) {
+          const matchColl = (competition?.type === 'amater_league') ? "amater_league_matches" : "matches";
+          
+          const matchesQ = query(
+            collection(db, matchColl),
+            where("competitionId", "in", subIds.slice(0, 10))
+          );
+          onSnapshot(matchesQ, (mSnapshot) => {
+            setSeasonAllMatches(mSnapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+          });
+        }
+      });
+      return () => unsubscribe();
+    }
+  }, [competition?.id]);
 
-  const handleCategorySelect = (catId) => {
-    const cat = categories.find(c => c.id === catId);
-    const catSlug = generateSlug(cat?.name || '');
-    
-    // Navigiraj na novi URL sa category slug-om, zadrži embed parametar ako postoji
-    const embedParam = isEmbed ? '?embed=true' : '';
-    navigate(`/p/${slug}/${catSlug}${embedParam}`);
-    
-    setSearchTerm('');
-    
-    // Scroll to category nav instead of top
-    setTimeout(() => {
-      const categoryNav = document.getElementById('category-nav');
-      if (categoryNav) {
-        const navTop = categoryNav.getBoundingClientRect().top + window.scrollY;
-        window.scrollTo({ top: navTop - 20, behavior: 'smooth' });
-      }
-    }, 100);
-  };
-
-  // Postavi default tab kada se promijeni kategorija
   useEffect(() => {
     if (activeCategory) {
-      const hasGroups = activeCategory.groupConfig && Object.keys(activeCategory.groupConfig).length > 0;
+      if (activeCategory.finalRanking && Object.keys(activeCategory.finalRanking).length > 0) {
+        setActiveTab('final');
+        return;
+      }
+      const hasGroups = activeCategory.groupConfig && Object.entries(activeCategory.groupConfig).some(([_, ids]) => ids.length > 0);
       setActiveTab(hasGroups ? 'groups' : 'knockout');
     }
-  }, [activeCategory]);
-  
-  const groups = useMemo(() => {
-    if (!activeCategory || !activeCategory.groupConfig) return [];
-    const config = activeCategory.groupConfig;
-    const gArray = [];
-    Object.keys(config).sort((a, b) => Number(a) - Number(b)).forEach(key => {
-      gArray.push(config[key].map(id => {
-        // Pokušaj dobiti ime iz playerNames
-        let name = playerNames[id];
-        
-        // Ako nema, probaj iz matches
-        if (!name) {
-          const matchWithPlayer = allMatches.find(m => 
-            m.player1?.id === id || m.player2?.id === id
-          );
-          if (matchWithPlayer) {
-            if (matchWithPlayer.player1?.id === id) {
-              name = matchWithPlayer.player1?.name;
-            } else if (matchWithPlayer.player2?.id === id) {
-              name = matchWithPlayer.player2?.name;
-            }
-          }
-        }
-        
-        return { 
-          id, 
-          name: name || "TBD" 
-        };
-      })
-      .filter(p => p.id && p.id !== 'placeholder' && p.id !== 'null'));
-    });
-    return gArray.filter(g => g.length > 0);
-  }, [activeCategory, playerNames, allMatches]);
+  }, [activeCategory?.id]);
 
-  const calculateStandings = (groupIdx) => {
+  // ─── HELPERS (defined after hooks, before early returns) ──────────────────
+  const isSlotReserved = (match, slot) => {
+    if (!match?.slots) return false;
+    return match.slots[slot]?.isReserved || false;
+  };
+
+  const calculateStandingsForGroup = (groupIdx) => {
     const groupMatches = matches.filter(m => m.groupId === groupIdx && m.status === 'completed');
     const groupPlayers = groups[groupIdx] || [];
     
@@ -458,41 +545,22 @@ const PublicCompetitionNew = () => {
     });
   };
 
-  const knockoutRounds = useMemo(() => {
-    const ko = matches.filter(m => m.isKnockout);
-    const rounds = {};
-    ko.forEach(m => {
-      const rName = m.roundName || `Runda ${m.round}`;
-      if (!rounds[rName]) rounds[rName] = [];
-      rounds[rName].push(m);
-    });
+  const handleCategorySelect = (catId) => {
+    const cat = categories.find(c => c.id === catId);
+    const catSlug = generateSlug(cat?.name || '');
+    const embedParam = isEmbed ? '?embed=true' : '';
+    navigate(`/p/${slug}/${catSlug}${embedParam}`);
+    setSearchTerm('');
+    setTimeout(() => {
+      const categoryNav = document.getElementById('category-nav');
+      if (categoryNav) {
+        const navTop = categoryNav.getBoundingClientRect().top + window.scrollY;
+        window.scrollTo({ top: navTop - 20, behavior: 'smooth' });
+      }
+    }, 100);
+  };
 
-    const sortedNames = Object.keys(rounds).sort((a, b) => {
-      const getRoundWeight = (name) => {
-        const rNum = rounds[name][0]?.round || 0;
-        const n = name.toLowerCase();
-        if ((n === 'finale' || n === 'final') || (n.includes('finale') && !n.includes('polu') && !n.includes('1/'))) return 2000;
-        if (n.includes('polufinale')) return 1000;
-        if (n.includes('1/4')) return 500;
-        if (n.includes('1/8')) return 250;
-        if (n.includes('1/16')) return 125;
-        if (n.includes('1/32')) return 60;
-        return rNum;
-      };
-      return getRoundWeight(a) - getRoundWeight(b);
-    });
-
-    return sortedNames.map(name => ({ 
-      name, 
-      matches: rounds[name].sort((a, b) => {
-        if (a.bracketSide !== b.bracketSide) {
-           return a.bracketSide === 'lijevi' ? -1 : 1;
-        }
-        return (a.bracketIndex || 0) - (b.bracketIndex || 0);
-      })
-    }));
-  }, [matches]);
-
+  // ─── EARLY RETURNS (after ALL hooks) ──────────────────────────────────────
   if (loading) return (
     <div className="min-h-screen bg-white dark:bg-[#070b14] flex items-center justify-center">
       <div className="text-blue-500 animate-pulse font-black uppercase tracking-widest text-xl italic flex items-center gap-3">
@@ -523,16 +591,11 @@ const PublicCompetitionNew = () => {
     </div>
   );
 
-  // Placeholder za eventualne buduce globalne UI elemente
-  const GlobalUIElements = () => {
-    return null;
-  };
-
+  // ─── MAIN RENDER ──────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-[#070b14] dark text-slate-900 dark:text-white overflow-x-hidden">
       {/* Hero Section / Header */}
       <header className="relative border-b border-slate-800/50 bg-slate-950 overflow-hidden">
-        {/* Decorative background elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-1/2 -right-1/4 w-96 h-96 bg-blue-500/5 dark:bg-blue-500/10 rounded-full blur-3xl"></div>
           <div className="absolute -bottom-1/2 -left-1/4 w-96 h-96 bg-emerald-500/5 dark:bg-emerald-500/10 rounded-full blur-3xl"></div>
@@ -540,32 +603,28 @@ const PublicCompetitionNew = () => {
 
         <div className="container mx-auto px-4 md:px-6 py-8 md:py-20 relative z-10">
           <div className="max-w-7xl mx-auto">
-            {/* Tournament Badge & Meta */}
             <div className="flex items-center justify-between gap-4 mb-6 md:mb-8">
               <div className="flex items-center gap-2 md:gap-3">
                 <div className="p-2 md:p-3 bg-gradient-to-br from-blue-600 to-blue-500 rounded-xl md:rounded-2xl text-white shadow-xl shadow-blue-600/30 backdrop-blur-sm">
                   <Trophy size={20} className="md:w-6 md:h-6" />
                 </div>
                 <div>
-                  <p className="text-[7px] md:text-[9px] text-slate-400 font-black uppercase tracking-[0.2em] md:tracking-[0.3em] leading-none mb-1">Službena Stranica</p>
-                  <p className="text-[10px] md:text-xs text-blue-600 dark:text-blue-400 font-black uppercase tracking-wider">Stonoteniski Turnir</p>
+                  <p className="text-[10px] md:text-xs text-slate-400 font-medium uppercase tracking-wide leading-none mb-1.5 md:mb-2">Službena Stranica</p>
+                  <p className="text-xs md:text-sm text-blue-600 dark:text-blue-400 font-semibold uppercase tracking-wide">Stonoteniski Turnir</p>
                 </div>
               </div>
 
-              {/* Social Share */}
-              <button className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-400 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-all shadow-sm">
+              <button className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg md:rounded-xl text-[10px] md:text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-all shadow-sm">
                 <Share2 size={12} className="md:w-3.5 md:h-3.5" /> Podijeli
               </button>
             </div>
 
             <div className="grid lg:grid-cols-[1fr,380px] gap-8 md:gap-12 items-start">
-              {/* Left: Title & Core Info */}
               <div className="space-y-4 md:space-y-6">
-                <h1 className="text-2xl md:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-[1] md:leading-[0.95] drop-shadow-sm">
+                <h1 className="text-3xl md:text-5xl lg:text-6xl font-semibold text-slate-900 dark:text-white uppercase tracking-tight leading-[1.1] md:leading-[0.95] drop-shadow-sm">
                   {competition?.name}
                 </h1>
                 
-                {/* Key Info Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 pt-2 md:pt-4">
                   {competition?.location && (
                     <div className="group bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-800/50 hover:border-emerald-500/50 p-4 md:p-5 rounded-xl md:rounded-2xl transition-all shadow-lg hover:shadow-xl">
@@ -574,8 +633,8 @@ const PublicCompetitionNew = () => {
                           <MapPin size={18} className="md:w-5 md:h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[7px] md:text-[8px] text-slate-400 font-black uppercase tracking-[0.15em] leading-none mb-1 md:mb-1.5">Lokacija Turnira</p>
-                          <p className="text-[13px] md:text-sm font-black text-slate-900 dark:text-white leading-tight">{competition.location}</p>
+                          <p className="text-[10px] md:text-xs text-slate-400 font-medium uppercase tracking-wide leading-none mb-1.5 md:mb-2">Lokacija Turnira</p>
+                          <p className="text-sm md:text-base font-medium text-slate-900 dark:text-white leading-tight">{competition.location}</p>
                         </div>
                       </div>
                     </div>
@@ -588,8 +647,8 @@ const PublicCompetitionNew = () => {
                           <Calendar size={18} className="md:w-5 md:h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[7px] md:text-[8px] text-slate-400 font-black uppercase tracking-[0.15em] leading-none mb-1 md:mb-1.5">Vrijeme Održavanja</p>
-                          <p className="text-[13px] md:text-sm font-black text-slate-900 dark:text-white leading-tight">
+                          <p className="text-[10px] md:text-xs text-slate-400 font-medium uppercase tracking-wide leading-none mb-1.5 md:mb-2">Vrijeme Održavanja</p>
+                          <p className="text-sm md:text-base font-medium text-slate-900 dark:text-white leading-tight">
                             {formatDate(competition.startDate)}
                             {competition.endDate && competition.endDate !== competition.startDate && ` - ${formatDate(competition.endDate)}`}
                           </p>
@@ -600,13 +659,13 @@ const PublicCompetitionNew = () => {
 
                   {competition.organizer && (
                     <div className="group bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border border-slate-200/50 dark:border-slate-800/50 hover:border-amber-500/50 p-3 md:p-5 rounded-xl md:rounded-2xl transition-all shadow-lg hover:shadow-xl">
-                      <div className="flex items-start gap-3">
+                      <div className="flex items-start gap-3 mb-3">
                         <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center text-white shadow-lg shadow-amber-500/30 group-hover:scale-110 transition-transform">
                           <Users size={18} className="md:w-5 md:h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[7px] md:text-[8px] text-slate-400 font-black uppercase tracking-[0.15em] leading-none mb-1 md:mb-1.5">Organizator</p>
-                          <p className="text-[13px] md:text-sm font-black text-slate-900 dark:text-white leading-tight truncate">{competition.organizer}</p>
+                          <p className="text-[10px] md:text-xs text-slate-400 font-medium uppercase tracking-wide leading-none mb-1.5 md:mb-2">Organizator</p>
+                          <p className="text-sm md:text-base font-medium text-slate-900 dark:text-white leading-tight truncate">{competition.organizer}</p>
                         </div>
                       </div>
                     </div>
@@ -619,8 +678,8 @@ const PublicCompetitionNew = () => {
                           <DollarSign size={18} className="md:w-5 md:h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[7px] md:text-[8px] text-emerald-600 dark:text-emerald-400 font-black uppercase tracking-[0.15em] leading-none mb-1 md:mb-1.5">Kotizacija</p>
-                          <p className="text-[13px] md:text-sm font-black text-emerald-700 dark:text-emerald-300 leading-tight">{competition.entryFee}</p>
+                          <p className="text-[10px] md:text-xs text-emerald-600 dark:text-emerald-400 font-medium uppercase tracking-wide leading-none mb-1.5 md:mb-2">Kotizacija</p>
+                          <p className="text-sm md:text-base font-semibold text-emerald-700 dark:text-emerald-300 leading-tight">{competition.entryFee}</p>
                         </div>
                       </div>
                     </div>
@@ -628,15 +687,12 @@ const PublicCompetitionNew = () => {
                 </div>
               </div>
 
-              {/* Right: Action Panel */}
               <div className="w-full lg:w-[380px] space-y-4 md:space-y-6">
-                
-                {/* Countdown Timer */}
                 {competition?.startDate && new Date(competition.startDate) > new Date() && (
-                  <div className="bg-slate-900 dark:bg-slate-950 border border-slate-800/50 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-2xl">
-                    <div className="flex items-center gap-2 mb-3 md:mb-4">
+                  <div className="bg-slate-900 dark:bg-slate-950 border border-slate-800/50 rounded-2xl md:rounded-3xl p-5 md:p-6 shadow-2xl">
+                    <div className="flex items-center gap-2 mb-4">
                       <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
-                      <p className="text-[8px] md:text-[10px] text-white font-black uppercase tracking-[0.2em]">
+                      <p className="text-[10px] md:text-xs text-white font-medium uppercase tracking-wide">
                         Turnir Počinje Za
                       </p>
                     </div>
@@ -644,7 +700,6 @@ const PublicCompetitionNew = () => {
                   </div>
                 )}
 
-                {/* CTA Card */}
                 {competition?.registration?.show !== false && (
                   <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 dark:bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl pointer-events-none"></div>
@@ -653,25 +708,25 @@ const PublicCompetitionNew = () => {
                       <>
                         <div className="flex items-center gap-2 mb-4 relative z-10">
                           <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
-                          <p className="text-[8px] md:text-[9px] text-slate-500 dark:text-slate-400 font-black uppercase tracking-[0.2em]">Prijave Su Otvorene</p>
+                          <p className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wide">Prijave Su Otvorene</p>
                         </div>
                         <button 
                           onClick={() => competition.registration.link && window.open(competition.registration.link, '_blank')}
-                          className="w-full bg-slate-900 dark:bg-white hover:bg-black dark:hover:bg-slate-100 text-white dark:text-black px-6 py-4 md:px-8 md:py-5 rounded-xl font-black uppercase text-xs md:text-sm tracking-widest transition-all transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 shadow-xl mb-3 relative z-10"
+                          className="w-full bg-slate-900 dark:bg-white hover:bg-black dark:hover:bg-slate-100 text-white dark:text-black px-6 py-4 md:px-8 md:py-5 rounded-xl font-semibold uppercase text-xs md:text-sm tracking-wide transition-all transform hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2 shadow-xl mb-3 relative z-10"
                         >
-                          <span>Prijavi Se.</span>
+                          <span>Prijavi Se</span>
                           <ChevronRight size={16} />
                         </button>
                         {competition.registration.deadline && (
-                          <p className="text-[9px] md:text-[10px] text-slate-400 dark:text-slate-500 font-bold text-center relative z-10">
+                          <p className="text-[10px] md:text-xs text-slate-400 dark:text-slate-500 font-medium text-center relative z-10">
                             Rok: {formatDate(competition.registration.deadline)}
                           </p>
                         )}
                       </>
                     ) : (
                       <div className="text-center py-4 relative z-10">
-                        <p className="text-slate-900 dark:text-white font-black uppercase text-xs md:text-sm mb-2">Prijave Zatvorene</p>
-                        <p className="text-[9px] md:text-[10px] text-slate-500 dark:text-slate-400 font-medium tracking-wide">Kontaktirajte organizatora za više informacija</p>
+                        <p className="text-slate-900 dark:text-white font-semibold uppercase text-sm mb-2">Prijave Zatvorene</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 font-normal tracking-normal">Kontaktirajte organizatora za više informacija</p>
                       </div>
                     )}
                   </div>
@@ -682,13 +737,13 @@ const PublicCompetitionNew = () => {
         </div>
       </header>
 
-      {/* Sticky Category Nav - UVIJEK PRIKAZUJ */}
+      {/* Sticky Category Nav */}
       <div id="category-nav" className="sticky top-0 z-[100] bg-slate-950/95 backdrop-blur-lg border-b border-slate-800 shadow-sm overflow-visible">
         <div className="container mx-auto px-4 overflow-visible">
           <div className="flex items-center h-14 gap-2 relative py-2">
             <Link 
                 to={`/p/${slug}`}
-                className={`px-4 py-2 rounded-lg text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${!categorySlug ? 'bg-blue-600 text-black shadow' : 'text-slate-500 hover:text-slate-300'}`}
+                className={`px-4 py-2.5 rounded-lg text-xs font-medium uppercase tracking-wide transition-all whitespace-nowrap ${!categorySlug ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200'}`}
             >
                 Pregled
             </Link>
@@ -697,25 +752,23 @@ const PublicCompetitionNew = () => {
               <>
                 <div className="h-4 w-px bg-slate-800 mx-1 shrink-0" />
                 
-                {/* Dropdown za kategorije */}
                 <div className="relative z-50">
                   <button 
-                    onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
-                    className={`px-4 py-2 rounded-lg text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 whitespace-nowrap ${
+                    onClick={() => setShowCategoryDropdown(prev => !prev)}
+                    className={`px-4 py-2.5 rounded-lg text-xs font-medium uppercase tracking-wide transition-all flex items-center gap-2 whitespace-nowrap ${
                       categorySlug 
-                        ? 'bg-blue-600 text-black shadow' 
-                        : 'text-slate-500 hover:text-slate-300'
+                        ? 'bg-blue-600 text-white shadow-lg' 
+                        : 'text-slate-400 hover:text-slate-200'
                     }`}
                   >
                     {categorySlug ? categories.find(c => generateSlug(c.name) === categorySlug)?.name || 'Kategorije' : 'Kategorije'}
                     <ChevronDown size={12} className={`transition-transform ${showCategoryDropdown ? 'rotate-180' : ''}`} />
                   </button>
                   
-                  {/* Dropdown meni */}
                   {showCategoryDropdown && (
                     <div className="absolute left-0 top-full mt-1 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl z-50 animate-in fade-in slide-in-from-top-2">
                       {categories.length === 0 ? (
-                        <div className="px-4 py-3 text-[10px] text-slate-500 font-bold uppercase tracking-widest text-center">
+                        <div className="px-4 py-3 text-xs text-slate-500 font-medium uppercase tracking-wide text-center">
                           Nema kategorija
                         </div>
                       ) : (
@@ -728,7 +781,7 @@ const PublicCompetitionNew = () => {
                                 key={cat.id}
                                 to={`/p/${slug}/${catSlug}${isEmbed ? '?embed=true' : ''}`}
                                 onClick={() => setShowCategoryDropdown(false)}
-                                className={`w-full px-4 py-3 text-left text-[10px] font-bold uppercase tracking-widest transition-all block ${
+                                className={`w-full px-4 py-3 text-left text-xs font-medium uppercase tracking-wide transition-all block ${
                                   isActive 
                                     ? 'bg-blue-500/10 text-blue-400' 
                                     : 'text-slate-300 hover:bg-slate-800'
@@ -751,9 +804,7 @@ const PublicCompetitionNew = () => {
 
       <main className="container mx-auto px-6 py-16 max-w-7xl">
         {!categorySlug ? (
-          /* PREGLED / PROPOZICIJE */
           <div className="max-w-6xl mx-auto space-y-16">
-            {/* Opšte informacije i Kontakt - Combined Section */}
             {(competition?.organizer || competition?.director || competition?.referee || competition?.contact?.address || competition?.contact?.phone || competition?.contact?.email) && (
               <section className="space-y-8">
                 <div className="text-center space-y-2 mb-10">
@@ -763,7 +814,6 @@ const PublicCompetitionNew = () => {
                   <p className="text-sm text-slate-500 font-medium">Osnovni podaci o organizaciji turnira</p>
                 </div>
 
-                {/* Grid Layout - Key People */}
                 {(competition?.organizer || competition?.director || competition?.referee) && (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {competition.organizer && (
@@ -802,7 +852,6 @@ const PublicCompetitionNew = () => {
                   </div>
                 )}
 
-                {/* Contact Information Section */}
                 {(competition?.contact?.address || competition?.contact?.phone || competition?.contact?.email) && (
                   <div className="bg-gradient-to-br from-slate-50 to-blue-50/30 dark:from-slate-900/50 dark:to-blue-900/10 border-2 border-slate-200 dark:border-slate-800 rounded-3xl p-8 md:p-10 shadow-xl">
                     <div className="flex items-center gap-3 mb-8">
@@ -816,9 +865,8 @@ const PublicCompetitionNew = () => {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Address - Full Width on Desktop if alone, or left column */}
                       {competition.contact.address && (
-                        <div className={`${!competition.contact.phone && !competition.contact.email ? 'md:col-span-2' : 'md:col-span-2'} bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm`}>
+                        <div className="md:col-span-2 bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
                           <div className="flex items-start gap-4">
                             <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
                               <MapPinned size={22} />
@@ -831,7 +879,6 @@ const PublicCompetitionNew = () => {
                         </div>
                       )}
 
-                      {/* Phone */}
                       {competition.contact.phone && (
                         <a 
                           href={`tel:${competition.contact.phone}`} 
@@ -849,7 +896,6 @@ const PublicCompetitionNew = () => {
                         </a>
                       )}
 
-                      {/* Email */}
                       {competition.contact.email && (
                         <a 
                           href={`mailto:${competition.contact.email}`} 
@@ -872,7 +918,6 @@ const PublicCompetitionNew = () => {
               </section>
             )}
 
-            {/* Kategorije */}
             {categories.length > 0 ? (
               <section className="space-y-8">
                 <div className="text-center space-y-2">
@@ -924,7 +969,6 @@ const PublicCompetitionNew = () => {
               </section>
             )}
 
-            {/* Opis */}
             {competition?.description && (
               <section className="space-y-6">
                 <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tighter text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-4">
@@ -936,7 +980,6 @@ const PublicCompetitionNew = () => {
               </section>
             )}
 
-            {/* Available Categories for Registration */}
             {competition?.availableCategories && competition.availableCategories.length > 0 && (
               <section className="space-y-6">
                 <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tighter text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-4">
@@ -961,7 +1004,6 @@ const PublicCompetitionNew = () => {
               </section>
             )}
 
-            {/* Pravila */}
             {competition?.rules && (
               <section className="space-y-6">
                 <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tighter text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-4">
@@ -969,9 +1011,18 @@ const PublicCompetitionNew = () => {
                 </h2>
                 <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-8 rounded-xl">
                   <div className="text-sm leading-relaxed text-slate-700 dark:text-slate-300 whitespace-pre-wrap max-h-[400px] overflow-y-auto">
-                    {competition.rules}
+                    {typeof competition.rules === 'string' ? competition.rules : (
+                      <div className="space-y-4">
+                        {Object.entries(competition.rules).map(([key, value]) => (
+                          <div key={key}>
+                            <p className="font-bold uppercase text-[10px] text-slate-400 mb-1">{key}</p>
+                            <p className="text-slate-900 dark:text-white">{value}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  {competition.rules.length > 600 && (
+                  {typeof competition.rules === 'string' && competition.rules.length > 600 && (
                     <button 
                       onClick={() => setShowRulesModal(true)}
                       className="mt-4 text-blue-600 dark:text-blue-400 font-bold uppercase text-[10px] tracking-widest hover:underline"
@@ -983,7 +1034,6 @@ const PublicCompetitionNew = () => {
               </section>
             )}
 
-            {/* Dodatne info (kotizacija, nagrade, raspored) */}
             {(competition?.entryFee || competition?.prizes || competition?.schedule) && (
               <section className="space-y-6">
                 <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tighter text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-4">
@@ -1005,10 +1055,49 @@ const PublicCompetitionNew = () => {
                         <Award size={20} className="text-amber-500" />
                         <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Nagrade</p>
                       </div>
-                      <p className="text-sm font-bold text-slate-900 dark:text-white">{competition.prizes}</p>
+                      <div className="text-sm font-bold text-slate-900 dark:text-white">
+                        {typeof competition.prizes === 'string' ? competition.prizes : (
+                           <div className="space-y-2">
+                              {Object.entries(competition.prizes).map(([key, value]) => (
+                                <div key={key} className="flex justify-between items-center gap-4 border-b border-slate-200/50 dark:border-slate-800/50 pb-2 last:border-0 last:pb-0">
+                                  <span className="text-[10px] uppercase text-slate-400">{key === 'others' ? 'Ostalo' : `${key}. Mjesto`}</span>
+                                  <span className="text-right">{value}</span>
+                                </div>
+                              ))}
+                           </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
+                {competition.charity && (
+                  <div className="bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800/50 p-8 rounded-2xl">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
+                        <Zap size={20} />
+                      </div>
+                      <div>
+                        <p className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest leading-none mb-1">Humanitarna Akcija</p>
+                        <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tighter">Donacije za Dvoranu</h3>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="space-y-4">
+                        <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400 italic">
+                          "{competition.charity.purpose}"
+                        </p>
+                        <div className="flex items-center gap-3 text-emerald-600 dark:text-emerald-400">
+                          <ShieldCheck size={18} />
+                          <span className="text-xs font-bold uppercase tracking-wider">{competition.charity.transparency}</span>
+                        </div>
+                      </div>
+                      <div className="bg-white dark:bg-slate-900 rounded-xl p-5 border border-emerald-100 dark:border-emerald-800/50 flex flex-col items-center justify-center text-center">
+                         <p className="text-[10px] font-black text-slate-400 uppercase mb-1">Preporučena Donacija</p>
+                         <p className="text-3xl font-black text-emerald-600 dark:text-emerald-400">{competition.charity.minFee}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 {competition.schedule && (
                   <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-8 rounded-xl">
                     <div className="flex items-center gap-3 mb-4">
@@ -1022,12 +1111,6 @@ const PublicCompetitionNew = () => {
             )}
           </div>
         ) : activeCategory ? (
-          /* 
-             VAŽNO: REZULTATI KATEGORIJE 
-             Ovaj blok (prikaz aktivne kategorije putem slug-a) je ključan za routing.
-             Prije bilo kakvih izmjena, obavezno testirati da li se kategorije otvaraju 
-             ispravno preko URL-a (/p/slug/ime-kategorije).
-          */
           <div className="max-w-6xl mx-auto space-y-12">
             <div className="bg-gradient-to-br from-blue-50 to-slate-50 dark:from-slate-900/50 dark:to-blue-900/10 border-2 border-blue-100 dark:border-blue-900/30 rounded-3xl p-8 md:p-10 shadow-xl">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -1050,7 +1133,7 @@ const PublicCompetitionNew = () => {
                             <span>{competition.location}</span>
                           </div>
                           <div className="w-1 h-1 bg-slate-300 dark:bg-slate-700 rounded-full" />
-                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                          <span className="text-xs font-medium text-slate-500 uppercase tracking-wide">
                             {activeCategory.playerIds?.length || 0} IGRAČA
                           </span>
                         </div>
@@ -1058,32 +1141,23 @@ const PublicCompetitionNew = () => {
                     </div>
                   </div>
 
-                {/* Tab Navigation - Moved inside header */}
                 {(matches.length > 0 || groups.length > 0) ? (
                   <div className="flex bg-white/50 dark:bg-slate-950/40 p-1.5 rounded-2xl w-full md:w-auto border border-blue-200/50 dark:border-blue-950/50 backdrop-blur-md shadow-sm">
-                    <button 
-                      onClick={() => setActiveTab('players')}
-                      className={`flex-1 md:px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === 'players' ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-600/30' : 'text-slate-500 hover:text-slate-900 dark:hover:white hover:bg-white/80 dark:hover:bg-slate-800'}`}
-                    >
-                      Igrači
-                    </button>
-                    <button 
-                      onClick={() => setActiveTab('groups')}
-                      className={`flex-1 md:px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === 'groups' ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-600/30' : 'text-slate-500 hover:text-slate-900 dark:hover:white hover:bg-white/80 dark:hover:bg-slate-800'}`}
-                    >
-                      Grupe
-                    </button>
-                    <button 
-                      onClick={() => setActiveTab('knockout')}
-                      className={`flex-1 md:px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === 'knockout' ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-600/30' : 'text-slate-500 hover:text-slate-900 dark:hover:white hover:bg-white/80 dark:hover:bg-slate-800'}`}
-                    >
-                      Eliminacije
-                    </button>
+                    {tabs.map(tab => (
+                      <button 
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`flex-1 md:px-6 py-3 rounded-xl text-xs font-medium uppercase tracking-wide transition-all whitespace-nowrap flex items-center justify-center gap-2 ${activeTab === tab.id ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-600/30' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-slate-800'}`}
+                      >
+                        <tab.icon size={14} />
+                        {tab.label}
+                      </button>
+                    ))}
                   </div>
                 ) : (
-                  <div className="bg-amber-500/10 border border-amber-500/20 px-6 py-3 rounded-2xl flex items-center gap-3">
+                  <div className="bg-amber-500/10 border border-amber-500/20 px-6 py-3.5 rounded-2xl flex items-center gap-3">
                     <Clock size={16} className="text-amber-500" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-500 italic">
+                    <span className="text-xs font-medium uppercase tracking-wide text-amber-600 dark:text-amber-500 italic">
                       Raspored i rezultati će biti objavljeni uskoro
                     </span>
                   </div>
@@ -1091,12 +1165,58 @@ const PublicCompetitionNew = () => {
               </div>
             </div>
 
-            {/* Tab Content */}
             {(matches.length > 0 || groups.length > 0) ? (
               <>
+                {activeTab === 'final' && activeCategory?.finalRanking && (
+                  <div className="bg-white dark:bg-slate-900/40 backdrop-blur-xl rounded-xl p-8 border border-slate-200 dark:border-slate-800 shadow-xl max-w-4xl mx-auto">
+                    <div className="flex items-center justify-between mb-8">
+                      <div>
+                        <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight italic">Konačni Poredak</h3>
+                        <p className="text-xs text-slate-500 font-medium uppercase tracking-widest mt-1">Službeni rezultati takmičenja</p>
+                      </div>
+                      <Award className="text-blue-500" size={32} />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {Object.entries(activeCategory.finalRanking)
+                        .sort(([posA], [posB]) => parseInt(posA) - parseInt(posB))
+                        .map(([pos, playerId]) => {
+                          const player = allPlayers.find(p => p.id === playerId);
+                          const position = parseInt(pos);
+                          
+                          return (
+                            <div key={pos} className={`p-4 rounded-2xl border flex items-center gap-4 transition-all ${
+                              position === 1 ? 'bg-amber-500/10 border-amber-500/50' : 
+                              position === 2 ? 'bg-slate-100 border-slate-300 dark:bg-slate-800/50 dark:border-slate-700' :
+                              position === 3 ? 'bg-orange-500/10 border-orange-500/50' :
+                              'bg-slate-50/50 border-slate-200 dark:bg-slate-950/30 dark:border-slate-800'
+                            }`}>
+                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black border-2 ${
+                                position === 1 ? 'bg-amber-500 border-amber-300 text-white' :
+                                position === 2 ? 'bg-slate-400 border-slate-300 text-white' :
+                                position === 3 ? 'bg-orange-600 border-orange-400 text-white' :
+                                'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-500'
+                              }`}>
+                                {pos}.
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-sm font-black text-slate-900 dark:text-white uppercase truncate">
+                                  {player?.name || 'Nepoznat Igrač'}
+                                </p>
+                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest truncate">
+                                  {player?.club || 'Individual'}
+                                </p>
+                              </div>
+                            </div>
+                        );
+                        })}
+                    </div>
+                  </div>
+                )}
+
                 {activeTab === 'players' && (
                   <div className="bg-white dark:bg-slate-900/40 backdrop-blur-xl rounded-xl p-8 border border-slate-200 dark:border-slate-800 shadow-xl max-w-4xl mx-auto">
-                    <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tighter mb-6">Spisak Učesnika</h3>
+                    <h3 className="text-xl font-semibold text-slate-900 dark:text-white uppercase tracking-tight mb-6">Spisak Učesnika</h3>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {(() => {
@@ -1111,17 +1231,17 @@ const PublicCompetitionNew = () => {
                           .sort((a,b) => a.name.localeCompare(b.name));
 
                         if (participatingPlayers.length === 0) {
-                          return <div className="col-span-full py-12 text-center text-slate-500 font-bold uppercase text-[10px] tracking-widest">Nema registrovanih igrača</div>;
+                          return <div className="col-span-full py-12 text-center text-slate-500 font-medium uppercase text-xs tracking-wide">Nema registrovanih igrača</div>;
                         }
 
                         return participatingPlayers.map((player, idx) => (
                           <div key={player.id} className="bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 p-4 rounded-xl flex items-center gap-4 group hover:border-blue-500/50 transition-all">
-                            <div className="w-10 h-10 bg-white dark:bg-slate-900 rounded-xl flex items-center justify-center text-xs font-black text-slate-500 border border-slate-200 dark:border-slate-700 group-hover:text-blue-500 transition-colors">
+                            <div className="w-10 h-10 bg-white dark:bg-slate-900 rounded-xl flex items-center justify-center text-sm font-medium text-slate-500 border border-slate-200 dark:border-slate-700 group-hover:text-blue-500 transition-colors">
                               {idx + 1}
                             </div>
                             <div className="min-w-0">
-                              <p className="text-sm font-black text-slate-900 dark:text-white uppercase truncate">{player.name}</p>
-                              <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest truncate">{player.club || 'Individual'}</p>
+                              <p className="text-sm font-medium text-slate-900 dark:text-white uppercase truncate">{player.name}</p>
+                              <p className="text-xs text-slate-500 dark:text-slate-400 font-normal uppercase tracking-wide truncate">{player.club || 'Individual'}</p>
                             </div>
                           </div>
                         ));
@@ -1133,7 +1253,7 @@ const PublicCompetitionNew = () => {
                 {activeTab === 'groups' && (
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
                     {groups.map((group, gIdx) => {
-                      const standings = calculateStandings(gIdx);
+                      const standings = calculateStandingsForGroup(gIdx);
                       const groupMatches = matches
                         .filter(m => {
                           if (m.isKnockout) return false;
@@ -1167,8 +1287,7 @@ const PublicCompetitionNew = () => {
                 {activeTab === 'knockout' && (
                   <div className="space-y-8">
                     <div className="bg-white dark:bg-slate-900/40 backdrop-blur-xl rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden relative">
-                      {/* Zoom Controls */}
-                      <div className="flex items-center justify-center gap-4 mb-8 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-2xl border border-slate-200 dark:border-slate-700/50 w-fit mx-auto sticky top-4 z-50 shadow-lg">
+                      <div className="flex items-center justify-center gap-4 mb-8 bg-slate-50 dark:bg-slate-800/50 p-2.5 rounded-2xl border border-slate-200 dark:border-slate-700/50 w-fit mx-auto sticky top-4 z-50 shadow-lg">
                         <button 
                           onClick={() => setKnockoutZoom(prev => Math.max(0.5, prev - 0.1))}
                           className="p-2 hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-600 group"
@@ -1178,8 +1297,8 @@ const PublicCompetitionNew = () => {
                         </button>
                         
                         <div className="flex flex-col items-center min-w-[80px]">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Zoom</span>
-                          <span className="text-sm font-black text-slate-900 dark:text-white tabular-nums">
+                          <span className="text-xs font-medium uppercase tracking-wide text-slate-400">Zoom</span>
+                          <span className="text-sm font-semibold text-slate-900 dark:text-white tabular-nums">
                             {(knockoutZoom * 100).toFixed(0)}%
                           </span>
                         </div>
@@ -1270,12 +1389,67 @@ const PublicCompetitionNew = () => {
                       })()}
                     </div>
 
-                    {/* Help Hint at the bottom of the bracket container (outside scroll) */}
-                    <div className="pt-2 flex items-center justify-center gap-4">
-                      <div className="flex items-center gap-2 bg-slate-900/40 backdrop-blur-md px-4 py-2 rounded-full border border-slate-800/50 shadow-lg">
+                    <div className="pt-3 flex items-center justify-center gap-4">
+                      <div className="flex items-center gap-2 bg-slate-900/40 backdrop-blur-md px-4 py-2.5 rounded-full border border-slate-800/50 shadow-lg">
                          <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse" />
-                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Savjet: Kliknite na meč za prikaz poena po setovima</span>
+                         <span className="text-xs font-medium text-slate-400 uppercase tracking-wide italic">Savjet: Kliknite na meč za prikaz poena po setovima</span>
                       </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'season_standings' && (
+                  <div className="bg-white dark:bg-slate-900/40 backdrop-blur-xl rounded-xl p-6 border border-slate-200 dark:border-slate-800 shadow-xl">
+                    <div className="flex items-center justify-between mb-8">
+                      <div>
+                        <h4 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight italic">
+                          Tabela Sezone: {activeCategory?.name}
+                        </h4>
+                        <p className="text-xs text-slate-500 font-medium uppercase tracking-widest mt-1">
+                          Zbirni poeni iz svih turnira (5 po pobjedi + bonus za plasman)
+                        </p>
+                      </div>
+                      <Trophy className="text-amber-500" size={32} />
+                    </div>
+
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left">
+                        <thead>
+                          <tr className="border-b border-slate-100 dark:border-slate-800">
+                            <th className="py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest px-4">Poz</th>
+                            <th className="py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest px-4">Igrač</th>
+                            <th className="py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest px-4 text-center">Mečevi</th>
+                            <th className="py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest px-4 text-center">Pobjede</th>
+                            <th className="py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest px-4 text-center">Bonus</th>
+                            <th className="py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest px-4 text-center bg-blue-50/30 dark:bg-blue-900/10">Ukupno</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {seasonStandings.sort((a,b) => b.totalPoints - a.totalPoints).map((player, idx) => (
+                            <tr key={player.id} className="border-b border-slate-50 dark:border-slate-800/50 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
+                              <td className="py-4 px-4">
+                                <span className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-black ${idx < 3 ? 'bg-amber-500/10 dark:bg-amber-900/30 text-amber-700' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
+                                  {idx + 1}
+                                </span>
+                              </td>
+                              <td className="py-4 px-4 font-bold text-slate-700 dark:text-slate-200 uppercase text-xs">{player.name}</td>
+                              <td className="py-4 px-4 text-center text-xs text-slate-500">{player.matchesWon}</td>
+                              <td className="py-4 px-4 text-center text-xs font-bold text-slate-700 dark:text-slate-300">{player.winPoints}</td>
+                              <td className="py-4 px-4 text-center text-xs font-bold text-emerald-600">+{player.bonusPoints}</td>
+                              <td className="py-4 px-4 text-center text-sm font-black text-blue-600 dark:text-blue-400 bg-blue-50/30 dark:bg-blue-900/10 italic">
+                                {player.totalPoints}
+                              </td>
+                            </tr>
+                          ))}
+                          {seasonStandings.length === 0 && (
+                            <tr>
+                              <td colSpan="6" className="py-20 text-center text-slate-400 uppercase text-[10px] font-black tracking-widest italic">
+                                Sezona još nije počela ili nema obrađenih podataka
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
                     </div>
                   </div>
                 )}
@@ -1315,15 +1489,12 @@ const PublicCompetitionNew = () => {
         )}
       </main>
 
-      {/* Global UI */}
-      <GlobalUIElements />
-
       {/* Rules Full Modal */}
       {showRulesModal && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-md" onClick={() => setShowRulesModal(false)}></div>
           <div className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl">
-                       <div className="p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+            <div className="p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
                <h3 className="text-2xl font-black text-slate-900 dark:text-white uppercase italic tracking-tighter flex items-center gap-3">
                   <ShieldCheck className="text-emerald-500" /> Propozicije Turnira
                </h3>
@@ -1333,7 +1504,16 @@ const PublicCompetitionNew = () => {
             </div>
             <div className="p-8 max-h-[70vh] overflow-y-auto">
               <div className="text-slate-600 dark:text-slate-400 text-base leading-relaxed whitespace-pre-wrap">
-                {competition?.rules}
+                {typeof competition?.rules === 'string' ? competition.rules : (
+                  <div className="space-y-6">
+                    {Object.entries(competition?.rules || {}).map(([key, value]) => (
+                      <div key={key} className="border-b border-slate-100 dark:border-slate-800 pb-4 last:border-0">
+                        <p className="font-black uppercase text-[10px] text-blue-500 mb-2 tracking-widest">{key}</p>
+                        <p className="text-slate-900 dark:text-white font-medium">{value}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
             <div className="p-8 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
@@ -1364,7 +1544,6 @@ const PublicCompetitionNew = () => {
             
             <div className="p-8">
                 <div className="space-y-8">
-                    {/* Final Score */}
                     <div className="flex items-center justify-between gap-4">
                         <div className="flex-1 text-center">
                             <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-3 border border-slate-200 dark:border-slate-700">
@@ -1394,7 +1573,6 @@ const PublicCompetitionNew = () => {
                         </div>
                     </div>
 
-                    {/* Sets Table */}
                     <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
                         <div className="grid grid-cols-6 gap-2 text-center">
                             <div className="col-span-1"></div>

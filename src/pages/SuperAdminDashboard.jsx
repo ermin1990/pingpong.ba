@@ -430,7 +430,7 @@ const SuperAdminDashboard = () => {
         <div className="flex gap-1 p-1 bg-slate-100 dark:bg-gray-950 border-2 border-slate-300 dark:border-gray-800 rounded-xl w-fit shadow-xl min-w-min">
           <button 
             onClick={() => setActiveTab('requests')}
-            className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition flex items-center gap-2 whitespace-nowrap ${activeTab === 'requests' ? 'bg-amber-400 text-slate-900 shadow-lg' : 'text-slate-700 dark:text-gray-500 hover:text-slate-900 dark:hover:text-slate-700 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-gray-800'}`}
+            className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition flex items-center gap-2 whitespace-nowrap ${activeTab === 'requests' ? 'bg-amber-400 text-black shadow-lg' : 'text-slate-700 dark:text-gray-500 hover:text-slate-900 dark:hover:text-slate-700 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-gray-800'}`}
           >
             <Clock size={14} /> Zahtjevi ({accessRequests.filter(r => r.status === 'pending').length})
           </button>

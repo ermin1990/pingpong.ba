@@ -98,15 +98,17 @@ const BugReport = () => {
     return (
         <>
             {/* Floating Button */}
-            <button 
-                onClick={() => setIsOpen(true)}
-                className="fixed bottom-6 right-6 z-[9999] bg-slate-900 dark:bg-white text-white dark:text-slate-900 p-4 rounded-full shadow-2xl hover:scale-110 transition-all flex items-center gap-3 group border border-white/10 dark:border-slate-800"
-            >
-                <Bug size={24} className="group-hover:rotate-12 transition-transform" />
-                <span className="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-300 font-black uppercase text-[10px] tracking-widest">
-                    Prijavi Grešku
-                </span>
-            </button>
+            <div className="fixed bottom-6 right-6 z-[9999] group">
+                <button 
+                    onClick={() => setIsOpen(true)}
+                    className="bg-amber-400 hover:bg-amber-500 text-black p-3.5 rounded-2xl shadow-xl shadow-amber-500/20 hover:scale-110 transition-all flex items-center gap-3 border border-amber-500/50"
+                >
+                    <Bug size={20} className="group-hover:rotate-12 transition-transform" />
+                    <span className="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-300 font-black uppercase text-[10px] tracking-widest">
+                        Prijavi Grešku
+                    </span>
+                </button>
+            </div>
 
             {/* Modal */}
             {isOpen && (
@@ -224,7 +226,7 @@ const BugReport = () => {
                                     <button 
                                         type="submit"
                                         disabled={submitting || !message}
-                                        className="w-full bg-slate-900 dark:bg-white hover:bg-black dark:hover:bg-slate-100 text-white dark:text-slate-900 py-5 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 transition-all disabled:opacity-50"
+                                        className="w-full bg-amber-400 hover:bg-amber-500 text-black py-5 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 transition-all disabled:opacity-50 shadow-xl shadow-amber-500/20 active:scale-95"
                                     >
                                         {submitting ? (
                                             <>

@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase/config';
 import { collection, query, where, onSnapshot, addDoc, serverTimestamp, or } from 'firebase/firestore';
-import { Trophy, Plus, Calendar, Target, ChevronRight, ExternalLink, MapPin, X } from 'lucide-react';
+import { Trophy, Plus, Calendar, Target, ChevronRight, ExternalLink, MapPin, X, Trash2 } from 'lucide-react';
 import DashboardLayout from '../layouts/DashboardLayout';
 
 const Competitions = () => {
@@ -47,8 +47,9 @@ const Competitions = () => {
         id: doc.id,
         ...doc.data()
       }));
-      // Filtriraj da ne prikazuje Lige na ovoj stranici
-      list = list.filter(comp => comp.type !== 'League');
+      // NOVO: Filtriraj tako da prikazuje samo nezavisne turnire (koji nemaju parentLeagueId)
+      // I ne prikazujemo 'league_season' jer to ide pod Lige
+      list = list.filter(comp => comp.type !== 'league_season' && !comp.parentLeagueId);
       
       setCompetitions(list);
       setLoading(false);
@@ -124,12 +125,12 @@ const Competitions = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-black text-slate-900 dark:text-white uppercase italic tracking-tighter">Moji Turniri</h1>
-            <p className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-widest">Upravljajte svojim sportskim događajima</p>
+            <h1 className="text-3xl font-semibold text-slate-900 dark:text-white uppercase italic tracking-tight">Moji Turniri</h1>
+            <p className="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wide">Upravljajte svojim sportskim događajima</p>
           </div>
           <button 
             onClick={() => navigate('/admin/competitions/new')}
-            className="w-full md:w-auto bg-amber-400 hover:bg-amber-500 text-black px-6 py-4 rounded-xl font-black uppercase text-xs tracking-widest transition-all shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2"
+            className="w-full md:w-auto bg-amber-400 hover:bg-amber-500 text-black px-6 py-4 rounded-xl font-semibold uppercase text-xs tracking-wide transition-all shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2"
           >
             <Plus size={18} /> Novi Turnir
           </button>
@@ -155,69 +156,59 @@ const Competitions = () => {
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {competitions.map(comp => (
-            <div key={comp.id} className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-lg hover:border-blue-400 dark:hover:border-slate-700 transition-all flex flex-col justify-between shadow-sm dark:shadow-none">
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${
-                    comp.status === 'active' ? 'bg-green-500/10 text-green-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
-                  }`}>
-                    {comp.status === 'draft' ? 'Nije pokrenuto' : 'Aktivno'}
-                  </span>
-                  <Trophy size={16} className="text-slate-300 dark:text-slate-700" />
+              <div 
+                key={comp.id} 
+                className={`p-4 rounded-2xl border transition-all cursor-pointer group flex flex-col shadow-sm hover:shadow-xl transition-all ${
+                  comp.status === 'active' 
+                    ? 'bg-amber-400 border-amber-500 shadow-amber-500/20 z-10' 
+                    : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-blue-400'
+                }`}
+              >
+                <div className="flex justify-between items-start mb-3">
+                  <h3 className={`font-semibold uppercase tracking-tight text-lg ${comp.status === 'active' ? 'text-black' : 'text-slate-900 dark:text-white'}`}>{comp.name}</h3>
+                  <div className={`flex items-center gap-1.5 p-1 rounded-lg border ${comp.status === 'active' ? 'bg-black/10 border-black/10' : 'bg-slate-50 dark:bg-slate-950/50 border-slate-100 dark:border-slate-800'}`}>
+                    {comp.slug && (
+                      <a 
+                        href={`/p/${comp.slug}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className={`p-1.5 rounded transition-all ${comp.status === 'active' ? 'text-black/70 hover:bg-black/10' : 'text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-amber-400 hover:bg-white dark:hover:bg-slate-800'}`}
+                        title="Otvori javni link"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <ExternalLink size={12} />
+                      </a>
+                    )}
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium uppercase tracking-wide ${comp.status === 'active' ? 'bg-black/20 text-black' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'}`}>
+                      {comp.status === 'active' ? 'Aktivan' : 'Draft'}
+                    </span>
+                  </div>
                 </div>
                 
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-500 transition-colors">{comp.name}</h3>
-                <div className="flex flex-col gap-1.5 mb-6">
-                  <div className="text-[10px] text-slate-500 flex items-center gap-2">
-                    <span>{comp.type}</span>
-                    {comp.location && (
-                      <>
-                        <span className="w-1 h-1 bg-slate-200 dark:bg-slate-800 rounded-full"></span>
-                        <span className="flex items-center gap-1"><MapPin size={10} /> {comp.location}</span>
-                      </>
-                    )}
-                  </div>
-                  {(comp.startDate || comp.endDate) && (
-                    <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider flex items-center gap-1.5">
-                      <Calendar size={10} />
-                      {comp.startDate ? new Date(comp.startDate).toLocaleDateString('de-DE') : '...'} 
-                      {comp.endDate && ` - ${new Date(comp.endDate).toLocaleDateString('de-DE')}`}
-                    </div>
-                  )}
-                  {comp.ownerName && (
-                    <div className="text-[10px] text-blue-600 dark:text-blue-400/60 font-medium">
-                      Organizator: {comp.ownerName}
-                    </div>
-                  )}
+                <div className="flex justify-between items-center">
+                  <span className={`text-xs font-medium uppercase tracking-wide ${comp.status === 'active' ? 'text-black/70' : 'text-slate-500'}`}>{comp.type === 'Groups' ? 'Turnir' : 'Takmičenje'}</span>
+                  <span className={`text-xs font-medium uppercase tracking-wide ${comp.status === 'active' ? 'text-black' : 'text-blue-600'}`}>{comp.participantsCount || 0} Igrača</span>
                 </div>
-              </div>
 
-              <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
-                    <Calendar size={14} /> {comp.createdAt?.toDate().toLocaleDateString('de-DE')}
-                  </div>
-                  {comp.slug && (
-                    <a 
-                      href={`/p/${comp.slug}`} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-blue-600 dark:text-blue-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
-                      title="Javni prikaz"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <ExternalLink size={14} />
-                    </a>
-                  )}
+                <div className="mt-4 pt-4 border-t border-black/10 flex justify-between items-center gap-2">
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); /* handleDelete would go here */ }}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-medium uppercase tracking-wide transition-all ${comp.status === 'active' ? 'bg-black/10 text-black hover:bg-black/20' : 'bg-red-500/10 text-red-500 hover:bg-red-500/20'}`}
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                  <Link 
+                    to={`/admin/competitions/${comp.id}`} 
+                    className={`flex-1 rounded-xl px-4 py-2 text-xs font-semibold uppercase tracking-wide transition-all shadow-lg flex items-center justify-center gap-2 ${
+                      comp.status === 'active' 
+                        ? 'bg-slate-900 text-white hover:bg-slate-800' 
+                        : 'bg-amber-400 text-black hover:bg-amber-500 shadow-amber-500/20'
+                    }`}
+                  >
+                    Upravljaj <ChevronRight size={12} />
+                  </Link>
                 </div>
-                <Link 
-                  to={`/admin/competitions/${comp.id}`} 
-                  className="bg-slate-100 dark:bg-slate-800 p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white transition-all"
-                >
-                  <ChevronRight size={18} />
-                </Link>
               </div>
-            </div>
           ))}
         </div>
       )}

@@ -10,9 +10,10 @@ import DashboardLayout from '../layouts/DashboardLayout';
 import { 
   Users, Trophy, List, Settings, Save, Plus, ChevronRight, 
   Trash2, Play, CheckCircle, Info, Edit2, Zap, LayoutGrid, Search, Target,
-  FileText, UserPlus, RefreshCw, X
+  FileText, UserPlus, RefreshCw, X, Calendar
 } from 'lucide-react';
 import { generateBergerMatches } from '../utils/berger';
+import { calculateSeasonStandings } from '../utils/standings';
 
 // Sub-components
 import PlayersTab from '../components/competition/PlayersTab';
@@ -40,6 +41,18 @@ const LeagueDetails = () => {
   const [matchSearchQuery, setMatchSearchQuery] = useState('');
   const [showOnlySelected, setShowOnlySelected] = useState(false);
   const [showAddPlayer, setShowAddPlayer] = useState(false);
+  const [subTournaments, setSubTournaments] = useState([]);
+  const [creatingSub, setCreatingSub] = useState(false);
+  const [seasonCategories, setSeasonCategories] = useState([]);
+  const [selectedSeasonCategoryId, setSelectedSeasonCategoryId] = useState(null);
+  const [seasonMatches, setSeasonMatches] = useState([]);
+
+  const activeCategory = useMemo(() => {
+    return {
+      playerIds: selectedPlayers,
+      status: league?.status || 'draft'
+    };
+  }, [selectedPlayers, league?.status]);
 
   // State za uređivanje igrača
   const [editingPlayer, setEditingPlayer] = useState(null);
@@ -61,6 +74,8 @@ const LeagueDetails = () => {
   const [newPlayerClub, setNewPlayerClub] = useState('');
   const [bulkPlayerText, setBulkPlayerText] = useState('');
 
+  const isLeagueSeason = league?.type === 'league_season' || league?.parentLeagueId;
+
   // Load League Data
   useEffect(() => {
     if (!id || !userData) return;
@@ -80,9 +95,46 @@ const LeagueDetails = () => {
     return () => unsubscribe();
   }, [id, userData]);
 
+  // Load Sub-Tournaments (if it's a league_season or has children)
+  useEffect(() => {
+    if (!id) return;
+    const q = query(
+      collection(db, "competitions"),
+      where("parentLeagueId", "==", id)
+    );
+    const unsubscribe = onSnapshot(q, (snap) => {
+      const subs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setSubTournaments(subs);
+      
+      // Load all matches from sub-tournaments for season standings
+      if (subs.length > 0) {
+        const subIds = subs.map(s => s.id);
+        const matchesQ = query(
+          collection(db, "matches"),
+          where("competitionId", "in", subIds)
+        );
+        onSnapshot(matchesQ, (mSnap) => {
+          setSeasonMatches(mSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+        });
+      }
+    });
+
+    // Load original categories for this season
+    const catsQ = query(collection(db, "competitions", id, "categories"));
+    onSnapshot(catsQ, (snap) => {
+      const cats = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setSeasonCategories(cats);
+      if (cats.length > 0 && !selectedSeasonCategoryId) {
+        setSelectedSeasonCategoryId(cats[0].id);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [id, isLeagueSeason, league?.type]);
+
   // Load All Players for the owner
   useEffect(() => {
-    if (!league || !userData) return;
+    if (!league?.ownerUid || !userData) return;
     const q = query(
       collection(db, "players"), 
       where("ownerUid", "==", league.ownerUid)
@@ -106,6 +158,59 @@ const LeagueDetails = () => {
     });
     return () => unsubscribe();
   }, [id]);
+
+  const handleCreateSubTournament = async () => {
+    if (!id || !league) return;
+    const name = window.prompt("Unesite naziv novog turnira (npr. Mart 2026):");
+    if (!name) return;
+
+    setCreatingSub(true);
+    try {
+      const newTourney = {
+        name: name,
+        parentLeagueId: id,
+        type: 'Groups',
+        status: 'draft',
+        ownerUid: league.ownerUid,
+        ownerName: league.ownerName || userData?.displayName || userData?.email || 'Admin',
+        ownerEmail: league.ownerEmail || userData?.email || '',
+        createdAt: serverTimestamp(),
+        isPublic: true,
+        isSeason: false,
+        startDate: new Date().toISOString().split('T')[0],
+        defaultSettings: {
+          setsToWin: league.settings?.setsToWin || 2,
+          winPoints: league.settings?.pointsWin || 2,
+          lossPoints: league.settings?.pointsLoss || 0,
+          advancingPlayers: 2
+        }
+      };
+      const docRef = await addDoc(collection(db, "competitions"), newTourney);
+
+      for (const category of seasonCategories) {
+        await addDoc(collection(db, "competitions", docRef.id, "categories"), {
+          name: category.name,
+          format: category.format || 'groups_knockout',
+          originalCategoryId: category.id,
+          createdAt: serverTimestamp(),
+          playerIds: [],
+          seededPlayerIds: [],
+          status: 'draft',
+          advancingPlayers: 2,
+          setsToWin: league.settings?.setsToWin || 2,
+          winPoints: league.settings?.pointsWin || 2,
+          lossPoints: league.settings?.pointsLoss || 0
+        });
+      }
+
+      navigate(`/admin/seasons/${id}/tournaments/${docRef.id}`);
+    } catch (err) {
+      console.error(err);
+      alert("Greška pri kreiranju turnira.");
+    } finally {
+      setCreatingSub(false);
+    }
+  };
 
   const togglePlayerSelection = async (playerId) => {
     if (league?.status !== 'draft') return;
@@ -274,17 +379,22 @@ const LeagueDetails = () => {
   const standings = useMemo(() => {
     if (!league || !matches) return [];
 
-    const stats = (league.participants || []).map(player => ({
-      ...player,
-      played: 0,
-      won: 0,
-      lost: 0,
-      draws: 0,
-      setsWon: 0,
-      setsLost: 0,
-      points: 0,
-      pointDiff: 0
-    }));
+    const stats = (selectedPlayers || []).map(playerId => {
+      const p = allPlayers.find(p => p.id === playerId);
+      return {
+        id: playerId,
+        name: p?.name || 'Nepoznat',
+        club: p?.club || '',
+        played: 0,
+        won: 0,
+        lost: 0,
+        draws: 0,
+        setsWon: 0,
+        setsLost: 0,
+        points: 0,
+        pointDiff: 0
+      };
+    });
 
     const winPts = league.settings?.pointsWin ?? 2;
     const drawPts = league.settings?.pointsDraw ?? 1;
@@ -330,7 +440,92 @@ const LeagueDetails = () => {
       const bDiff = b.setsWon - b.setsLost;
       return bDiff - aDiff;
     });
-  }, [league, matches]);
+  }, [league, matches, selectedPlayers, allPlayers]);
+
+  const seasonStandings = useMemo(() => {
+    if (!isLeagueSeason || !selectedSeasonCategoryId) return [];
+    
+    // 1. Get rankings from all sub-tournaments for the selected season category
+    const rankings = subTournaments
+      .filter(s => s.status === 'completed')
+      .map(s => {
+        // We would ideally look for the category in the sub-tournament that points to this season category
+        return s.finalRankings?.[selectedSeasonCategoryId] || [];
+      });
+
+    // 2. Filter matches for this category across all tournaments
+    // In our system, sub-tournament categories typically have originalCategoryId
+    const categoryMatches = seasonMatches.filter(m => m.originalCategoryId === selectedSeasonCategoryId);
+
+    return calculateSeasonStandings(rankings, categoryMatches, league?.pointsSystem);
+  }, [isLeagueSeason, selectedSeasonCategoryId, subTournaments, seasonMatches, league?.pointsSystem]);
+
+  const handleGenerateLeague = async () => {
+    if (selectedPlayers.length < 2) {
+      alert("Dodajte barem 2 igrača.");
+      return;
+    }
+
+    setGenerating(true);
+    try {
+      const batch = writeBatch(db);
+      
+      // Berger algoritam za generisanje mečeva
+      const players = selectedPlayers.map(id => {
+        const p = allPlayers.find(ap => ap.id === id);
+        return { id: p.id, name: p.name };
+      });
+      
+      const rounds = generateBergerMatches(players);
+
+      // Obriši stare mečeve
+      const oldMatchesQ = query(collection(db, "matches"), where("competitionId", "==", id));
+      const oldSnap = await getDocs(oldMatchesQ);
+      oldSnap.docs.forEach(doc => batch.delete(doc.ref));
+
+      rounds.forEach(round => {
+        round.matches.forEach(match => {
+          const mRef = doc(collection(db, "matches"));
+          batch.set(mRef, {
+            ...match,
+            competitionId: id,
+            status: 'pending',
+            player1Score: 0,
+            player2Score: 0,
+            setsToWin: league.settings?.setsToWin || 2,
+            ownerUid: league.ownerUid,
+            createdAt: serverTimestamp()
+          });
+        });
+      });
+
+      batch.update(doc(db, "competitions", id), { status: 'active' });
+      await batch.commit();
+      setActiveTab('matches');
+    } catch (err) {
+      console.error(err);
+      alert("Greška pri generisanju lige.");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const handleCreateSeasonCategory = async () => {
+    const name = window.prompt("Unesite naziv kategorije za sezonu (npr. Veterani 40+):");
+    if (!name) return;
+
+    try {
+      await addDoc(collection(db, "competitions", id, "categories"), {
+        name,
+        createdAt: serverTimestamp(),
+        format: 'groups_knockout'
+      });
+      alert("Kategorija dodata sezone!");
+    } catch (err) {
+      console.error(err);
+      alert("Greška pri dodavanju kategorije.");
+    }
+  };
 
   const saveMatchResult = async (matchData) => {
     try {
@@ -345,79 +540,6 @@ const LeagueDetails = () => {
     } catch (err) {
       console.error(err);
       alert("Greška pri spašavanju rezultata.");
-    }
-  };
-
-  const handleGenerateLeague = async () => {
-    if (selectedPlayers.length < 2) {
-      alert("Dodajte barem 2 igrača.");
-      return;
-    }
-
-    if (matches.length > 0 && !window.confirm("Ovo će obrisati sve postojeće mečeve i generisati nove. Da li ste sigurni?")) {
-      return;
-    }
-
-    setGenerating(true);
-    try {
-      const batch = writeBatch(db);
-      
-      // 1. Delete old matches
-      const oldMatchesSnap = await getDocs(query(collection(db, "matches"), where("competitionId", "==", id)));
-      oldMatchesSnap.docs.forEach(d => batch.delete(d.ref));
-
-      // 2. Map current selected player objects
-      const participants = allPlayers.filter(p => selectedPlayers.includes(p.id));
-
-      // 3. Generate Berger
-      let bergerRounds = generateBergerMatches(participants);
-
-      // Handle Double Robin
-      if (league.settings?.format === 'double') {
-        const secondLeg = bergerRounds.map(round => ({
-          roundNumber: round.roundNumber + bergerRounds.length,
-          matches: round.matches.map(m => ({
-            ...m,
-            player1: m.player2,
-            player2: m.player1,
-            round: round.roundNumber + bergerRounds.length
-          }))
-        }));
-        bergerRounds = [...bergerRounds, ...secondLeg];
-      }
-
-      bergerRounds.forEach(round => {
-        round.matches.forEach((m, idx) => {
-          const matchRef = doc(collection(db, "matches"));
-          batch.set(matchRef, {
-            competitionId: id,
-            categoryId: 'league_default',
-            round: round.roundNumber,
-            matchOrder: idx,
-            player1: m.player1,
-            player2: m.player2,
-            status: 'pending',
-            player1Score: 0,
-            player2Score: 0,
-            createdAt: serverTimestamp(),
-            groupId: 0
-          });
-        });
-      });
-
-      batch.update(doc(db, "competitions", id), { 
-        status: 'active',
-        participants: participants.map(p => ({ id: p.id, name: p.name })),
-        lastGenerated: serverTimestamp() 
-      });
-
-      await batch.commit();
-      setActiveTab('matches');
-    } catch (err) {
-      console.error(err);
-      alert("Greška!");
-    } finally {
-      setGenerating(false);
     }
   };
 
@@ -520,6 +642,7 @@ const LeagueDetails = () => {
             { id: 'players', label: 'Igrači', icon: Users },
             { id: 'matches', label: 'Rezultati', icon: List },
             { id: 'standings', label: 'Tabela', icon: LayoutGrid },
+            { id: 'tournaments', label: 'Turniri Sezone', icon: Trophy, forceShow: true },
             { id: 'settings', label: 'Postavke', icon: Settings },
           ].map(tab => (
             <button
@@ -638,14 +761,138 @@ const LeagueDetails = () => {
             <div className="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden shadow-xl">
                <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
                   <h3 className="text-xl font-black text-white flex items-center gap-3">
-                    <Trophy className="text-amber-500" /> Tabela Lige
+                    <Trophy className="text-amber-500" /> {isLeagueSeason ? 'Tabela Sezone' : 'Tabela Lige'}
                   </h3>
+                  {isLeagueSeason && (
+                    <div className="flex gap-2">
+                       {seasonCategories.map(cat => (
+                         <button 
+                           key={cat.id}
+                           onClick={() => setSelectedSeasonCategoryId(cat.id)}
+                           className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${selectedSeasonCategoryId === cat.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
+                         >
+                           {cat.name}
+                         </button>
+                       ))}
+                       <button 
+                         onClick={handleCreateSeasonCategory}
+                         className="w-10 h-10 bg-slate-800 hover:bg-emerald-500 text-slate-500 hover:text-white rounded-xl flex items-center justify-center transition-all"
+                       >
+                         <Plus size={16} />
+                       </button>
+                    </div>
+                  )}
                </div>
                <div className="p-0">
-                  <PublicGroupStandings 
-                    standings={standings} 
-                  />
+                  {isLeagueSeason ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left">
+                        <thead>
+                          <tr className="border-b border-slate-800">
+                             <th className="py-4 px-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Poz</th>
+                             <th className="py-4 px-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Igrač</th>
+                             <th className="py-4 px-6 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">Mečevi</th>
+                             <th className="py-4 px-6 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">Pobjede</th>
+                             <th className="py-4 px-6 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">Bonus</th>
+                             <th className="py-4 px-6 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center bg-blue-500/5">Ukupno</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(seasonStandings || []).map((player, idx) => (
+                            <tr key={player.id} className="border-b border-slate-800/50 hover:bg-slate-800/20 transition-all">
+                              <td className="py-4 px-6">
+                                <span className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-black ${idx < 3 ? 'bg-amber-100/10 text-amber-500 border border-amber-500/20' : 'bg-slate-800 text-slate-500'}`}>
+                                  {idx + 1}
+                                </span>
+                              </td>
+                              <td className="py-4 px-6">
+                                <p className="text-xs font-bold text-white uppercase">{player.name}</p>
+                                <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-0.5">{player.club || 'Individual'}</p>
+                              </td>
+                              <td className="py-4 px-6 text-center text-xs text-slate-400">{player.matchesWon}</td>
+                              <td className="py-4 px-6 text-center text-xs font-bold text-white">{player.winPoints}</td>
+                              <td className="py-4 px-6 text-center text-xs font-bold text-emerald-500">+{player.bonusPoints}</td>
+                              <td className="py-4 px-6 text-center text-sm font-black text-blue-500 bg-blue-500/5 italic">{player.totalPoints}</td>
+                            </tr>
+                          ))}
+                          {(seasonStandings || []).length === 0 && (
+                            <tr>
+                              <td colSpan="6" className="py-20 text-center text-slate-600 uppercase text-[10px] font-black tracking-widest italic">
+                                Nema podataka za ovu kategoriju sezone
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <PublicGroupStandings standings={standings} />
+                  )}
                </div>
+            </div>
+          )}
+
+          {activeTab === 'tournaments' && (
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-2xl font-black text-white uppercase italic tracking-tighter flex items-center gap-3">
+                    <Zap className="text-yellow-400 fill-yellow-400 w-8 h-8" />
+                    Turniri Sezone
+                  </h3>
+                  <p className="text-slate-500 text-[10px] mt-1 uppercase tracking-widest font-black italic">Pojedinačni događaji koji se boduju za ovu sezonu</p>
+                </div>
+                <button 
+                  onClick={handleCreateSubTournament}
+                  disabled={creatingSub}
+                  className="flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest transition-all shadow-xl shadow-blue-900/40 hover:scale-[1.02] active:scale-95 disabled:opacity-50"
+                >
+                  <Plus size={20} className="stroke-[3]" /> {creatingSub ? 'Kreiranje...' : 'Novi Turnir'}
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {subTournaments.map(sub => (
+                  <div key={sub.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-blue-500/50 transition-all group overflow-hidden relative">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/5 rounded-full -mr-16 -mt-16 blur-3xl group-hover:bg-blue-600/10 transition-all" />
+                    
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center border border-blue-500/20 group-hover:scale-110 transition-transform">
+                        <Trophy className="text-blue-500" size={20} />
+                      </div>
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${sub.status === 'completed' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-blue-500/10 text-blue-500 border-blue-500/20'}`}>
+                        {sub.status === 'completed' ? 'Završeno' : 'U toku'}
+                      </span>
+                    </div>
+
+                    <h4 className="text-xl font-black text-white uppercase italic truncate mb-1 group-hover:text-blue-400 transition-colors">{sub.name}</h4>
+                    <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-8 flex items-center gap-2">
+                       <Calendar size={12} className="text-slate-700" /> {sub.startDate || 'Datum nije postavljen'}
+                    </p>
+                    
+                    <button 
+                      onClick={() => navigate(`/admin/seasons/${id}/tournaments/${sub.id}`)}
+                      className="w-full py-4 bg-slate-800 hover:bg-blue-600 text-slate-300 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-3 group-hover:shadow-lg group-hover:shadow-blue-600/20"
+                    >
+                      Upravljaj Turnirom <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                    </button>
+                  </div>
+                ))}
+
+                {subTournaments.length === 0 && (
+                  <div className="col-span-full py-24 text-center border-2 border-dashed border-slate-800 rounded-[32px] bg-slate-900/50">
+                    <Trophy size={48} className="text-slate-800 mx-auto mb-6 opacity-50" />
+                    <h4 className="text-white font-black uppercase italic tracking-widest mb-2">Nema kreiranih turnira</h4>
+                    <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em] mb-8">Kliknite na dugme iznad da dodate prvi turnir sezone</p>
+                    <button 
+                      onClick={handleCreateSubTournament}
+                      className="inline-flex items-center gap-2 text-blue-500 hover:text-blue-400 font-black uppercase text-xs tracking-widest transition-colors"
+                    >
+                      Kreiraj prvi turnir <Plus size={16} />
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
@@ -716,6 +963,60 @@ const LeagueDetails = () => {
                            </button>
                         </div>
                     </div>
+
+                    {isLeagueSeason && (
+                      <div className="pt-6 border-t border-slate-800">
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Bodovni sistem sezone (Bonus poeni)</label>
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-[10px] text-slate-500 uppercase tracking-widest mb-2 font-bold px-1">Pobjeda u grupi (Pts)</label>
+                              <input 
+                                type="number" 
+                                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white text-sm"
+                                value={league.pointsSystem?.winInGroup || 5}
+                                onChange={(e) => updateDoc(doc(db, "competitions", id), { "pointsSystem.winInGroup": Number(e.target.value) })}
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] text-slate-500 uppercase tracking-widest mb-2 font-bold px-1">Pobjeda u knockoutu (Pts)</label>
+                              <input 
+                                type="number" 
+                                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white text-sm"
+                                value={league.pointsSystem?.winAfterGroup || 5}
+                                onChange={(e) => updateDoc(doc(db, "competitions", id), { "pointsSystem.winAfterGroup": Number(e.target.value) })}
+                              />
+                            </div>
+                          </div>
+                          
+                          <div className="bg-slate-950 border border-slate-800 rounded-xl p-6 space-y-4 mt-4">
+                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 italic">Bonus poeni za konačni plasman na turniru:</p>
+                            <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+                              {[1, 2, 3, 4, 5, 6, 7, 8].map(pos => (
+                                <div key={pos}>
+                                  <label className="block text-[9px] text-slate-600 uppercase tracking-tighter mb-1 text-center font-bold">{pos}. mjesto</label>
+                                  <input 
+                                    type="number"
+                                    className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-2 text-white text-xs text-center focus:border-blue-500 transition-colors"
+                                    value={league.pointsSystem?.bonusPoints?.[pos] || 0}
+                                    onChange={(e) => updateDoc(doc(db, "competitions", id), { [`pointsSystem.bonusPoints.${pos}`]: Number(e.target.value) })}
+                                  />
+                                </div>
+                              ))}
+                              <div>
+                                <label className="block text-[9px] text-slate-600 uppercase tracking-tighter mb-1 text-center font-bold">9-16. mj</label>
+                                <input 
+                                  type="number"
+                                  className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-2 text-white text-xs text-center focus:border-blue-500 transition-colors"
+                                  value={league.pointsSystem?.bonusPoints?.["9-16"] || 0}
+                                  onChange={(e) => updateDoc(doc(db, "competitions", id), { "pointsSystem.bonusPoints.9-16": Number(e.target.value) })}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     <div className="pt-6 border-t border-slate-800">
                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Javna Vidljivost & Link</label>

@@ -6,7 +6,7 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { 
   Trophy, ArrowLeft, Calendar, MapPin, Settings2, 
   Info, Shield, Phone, Mail, Link as LinkIcon, 
-  Clock, CheckCircle, Save, Globe, Lock, ExternalLink, Award, X 
+  Clock, CheckCircle, Save, Globe, Lock, ExternalLink, Award, X, Zap 
 } from 'lucide-react';
 import DashboardLayout from '../layouts/DashboardLayout';
 
@@ -130,7 +130,20 @@ const CreateCompetition = () => {
           lossPoints: Number(lossPoints),
           advancingPlayers: Number(advancingPlayers)
         },
-        availableCategories: availableCategories
+        availableCategories: availableCategories,
+        isSeason: type === 'League_Season',
+        pointsSystem: type === 'League_Season' ? {
+          winInGroup: Number(winPoints),
+          winAfterGroup: Number(winPoints),
+          bonusPoints: {
+            "1": 50, "2": 40, "3": 35, "4": 30, "5": 25, "6": 20, "7": 15, "8": 10, "9-16": 5
+          }
+        } : null,
+        charity: type === 'League_Season' ? {
+          minFee: "10 KM",
+          purpose: "Sanacija krova dvorane i ugradnja solarnih panela",
+          transparency: "Javna objava prihoda na FB stranici"
+        } : null
       });
       navigate(`/admin/competitions/${docRef.id}`);
     } catch (err) {
@@ -253,17 +266,66 @@ const CreateCompetition = () => {
 
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tip Takmičenja</label>
-                  <select 
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-bold outline-none cursor-pointer appearance-none"
-                    value={type}
-                    onChange={(e) => setType(e.target.value)}
-                  >
-                    <option value="Groups">Grupna Faza + Knockout</option>
-                    <option value="Knockout">Samo Knockout (Eliminacije)</option>
-                  </select>
-                </div>
+                    <select 
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-bold outline-none cursor-pointer appearance-none"
+                      value={type}
+                      onChange={(e) => setType(e.target.value)}
+                    >
+                      <option value="Groups">Grupna Faza + Knockout</option>
+                      <option value="Knockout">Samo Knockout (Eliminacije)</option>
+                      <option value="League_Season">Ligaški Sistem (Grupna + Razigravanje za svako mjesto)</option>
+                    </select>
+                  </div>
 
-                <div className="space-y-2">
+                  {type === 'League_Season' && (
+                    <div className="md:col-span-2 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-2xl p-6 mt-4 animate-in fade-in slide-in-from-top-2">
+                       <div className="flex items-center gap-3 mb-4">
+                          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-600/20">
+                             <Zap size={20} />
+                          </div>
+                          <div>
+                             <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">Konfiguracija Lige</h4>
+                             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Specifična pravila za ligaški sistem takmičenja</p>
+                          </div>
+                       </div>
+                       
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                           <div className="space-y-2">
+                              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Bodovi za Pobjedu</label>
+                              <input 
+                                type="number" 
+                                className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-slate-900 dark:text-white font-bold outline-none"
+                                value={winPoints}
+                                onChange={(e) => setWinPoints(e.target.value)}
+                              />
+                           </div>
+                           <div className="space-y-2">
+                              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Dodatni Bodovi za Top 16</label>
+                              <div className="flex items-center gap-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1">
+                                 <CheckCircle size={14} className="text-emerald-500" />
+                                 <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Omogućeno (50, 40, 35...)</span>
+                              </div>
+                           </div>
+                           <div className="space-y-2">
+                              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Napredni Format Meča</label>
+                              <div className="p-3 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl">
+                                  <p className="text-[10px] text-slate-500 font-medium leading-relaxed">
+                                     • Grupe: Best of 3<br/>
+                                     • ¼ Finale i dalje: Best of 5<br/>
+                                     • Razigravanje za svako mjesto
+                                  </p>
+                              </div>
+                           </div>
+                           <div className="space-y-2">
+                              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Humanitarni Karakter</label>
+                              <div className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 rounded-xl px-3 py-3">
+                                 <Shield size={16} className="text-emerald-500" />
+                                 <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Automatski uključuje donacije</span>
+                              </div>
+                           </div>
+                       </div>
+                    </div>
+                  )}                <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Lokacija / Dvorana</label>
                   <div className="relative">
                     <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />

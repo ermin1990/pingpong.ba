@@ -22,6 +22,8 @@ import CompetitionHeader from '../components/competition/CompetitionHeader';
 import MatchUpdateModal from '../components/competition/MatchUpdateModal';
 import AllMatchesTab from '../components/competition/AllMatchesTab';
 import AllPlayersTab from '../components/competition/AllPlayersTab';
+import RefereesTab from '../components/competition/RefereesTab';
+import TablesTab from '../components/competition/TablesTab';
 
 const CompetitionDetails = () => {
   const { id } = useParams();
@@ -37,6 +39,8 @@ const CompetitionDetails = () => {
   // URL state management
   const selectedCategoryId = searchParams.get('category') || '';
   const activeTab = searchParams.get('tab') || 'categories';
+  const isAmater = window.location.pathname.includes('/seasons/');
+  const competitionCollectionPath = 'competitions';
 
   const setSelectedCategoryId = (newId) => {
     const newParams = new URLSearchParams(searchParams);
@@ -86,6 +90,7 @@ const CompetitionDetails = () => {
   const [showMatchModal, setShowMatchModal] = useState(false);
   const [allMatchesForSearch, setAllMatchesForSearch] = useState([]);
   const [matchSearchQuery, setMatchSearchQuery] = useState('');
+  const [searchTableId, setSearchTableId] = useState('');
   
   const [compName, setCompName] = useState('');
   const [compSlug, setCompSlug] = useState('');
@@ -113,6 +118,7 @@ const CompetitionDetails = () => {
   const [collaborators, setCollaborators] = useState([]);
   const [isPublic, setIsPublic] = useState(false);
   const [savingComp, setSavingComp] = useState(false);
+  const [referees, setReferees] = useState([]);
   
   // Grouping state
   const [groups, setGroups] = useState([]); // Array of arrays of player objects
@@ -127,13 +133,22 @@ const CompetitionDetails = () => {
   const [updatingPlayer, setUpdatingPlayer] = useState(false);
 
   useEffect(() => {
+    if (!id) return;
+    const q = query(collection(db, "referees"), where("competitionId", "==", id));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setReferees(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+    return () => unsubscribe();
+  }, [id]);
+
+  useEffect(() => {
     const fetchData = async () => {
       if (!id || !userData || !user) return;
 
       try {
-        // 1. Dohvati detalje takmičenja
-        const compRef = doc(db, "competitions", id);
-        const compSnap = await getDoc(compRef);
+        // 1. Probaj u standardnoj kolekciji
+        let compRef = doc(db, "competitions", id);
+        let compSnap = await getDoc(compRef);
         
         if (compSnap.exists()) {
           const compData = { id: compSnap.id, ...compSnap.data() };
@@ -165,7 +180,7 @@ const CompetitionDetails = () => {
           setIsPublic(compData.isPublic || false);
           
           // Set default category format based on competition type
-          if (compData.type === 'Groups') {
+          if (compData.type === 'Groups' || compData.type === 'league_season') {
             setNewCategoryFormat('groups_knockout');
           } else if (compData.type === 'Knockout') {
              // Ako je čisti knockout, možemo defaultati na groups_knockout jer često imaju grupe prije, 
@@ -174,28 +189,57 @@ const CompetitionDetails = () => {
              setNewCategoryFormat('groups_knockout'); 
           }
           
-          // 2. Dohvati igrače
-          let playersQ;
-          const isCollaborator = compData.collaborators?.includes(user.email);
-          const isOwner = compData.ownerUid === user.uid;
-          const userIsSuperAdmin = userData.role === 'super_admin';
+          // 2. Provjera prava pristupa
+          const isSuperAdmin = userData?.role === 'super_admin';
+          let canAccess = compData.ownerUid === user?.uid || 
+                         compData.collaborators?.includes(user?.email) || 
+                         isSuperAdmin;
 
-          if (userIsSuperAdmin) {
-            playersQ = query(collection(db, "players"));
-          } else if (isOwner || isCollaborator) {
-            playersQ = query(
-              collection(db, "players"), 
-              where("ownerUid", "==", compData.ownerUid)
-            );
-          } else {
-            // Korisnik nema pristup ovom takmičenju
+          if (!canAccess && compData.parentLeagueId) {
+             const parentCollection = competitionCollectionPath;
+             const parentSnap = await getDoc(doc(db, parentCollection, compData.parentLeagueId));
+             if (parentSnap.exists()) {
+                const parentData = parentSnap.data();
+                if (parentData.ownerUid === user?.uid || parentData.collaborators?.includes(user?.email)) {
+                   canAccess = true;
+                }
+             }
+          }
+
+          if (!canAccess) {
+            console.error("Nemate dozvolu za pristup ovom takmičenju.");
             setLoading(false);
             setCompetition(null);
             return;
           }
 
-          const playersSnap = await getDocs(playersQ);
-          setAllPlayers(playersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+          // 3. Dohvati igrače
+          let playersQ;
+          if (isSuperAdmin) {
+            playersQ = query(collection(db, "players"));
+          } else if (compData.ownerUid) {
+            playersQ = query(
+              collection(db, "players"), 
+              where("ownerUid", "==", compData.ownerUid)
+            );
+          } else if (compData.parentLeagueId) {
+             // Ako turnir nema ownerUid (jer je kreiran iz sezone), koristimo ownerUid od sezone
+             const parentCollection = competitionCollectionPath;
+             const parentSnap = await getDoc(doc(db, parentCollection, compData.parentLeagueId));
+             if (parentSnap.exists()) {
+                playersQ = query(
+                  collection(db, "players"), 
+                  where("ownerUid", "==", parentSnap.data().ownerUid)
+                );
+             }
+          }
+
+          if (playersQ) {
+            const playersSnap = await getDocs(playersQ);
+            setAllPlayers(playersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+          }
+        } else {
+           setCompetition(null);
         }
       } catch (err) {
         console.error("Greška pri učitavanju:", err);
@@ -211,7 +255,10 @@ const CompetitionDetails = () => {
   useEffect(() => {
     if (!id) return;
     setCategoriesLoading(true);
-    const q = query(collection(db, "competitions", id, "categories"));
+    
+    const collectionPath = competitionCollectionPath;
+    
+    const q = query(collection(db, collectionPath, id, "categories"));
     const unsubscribe = onSnapshot(q, (snap) => {
       const list = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setCategories(list);
@@ -258,17 +305,27 @@ const CompetitionDetails = () => {
   const activeCategory = categories.find(c => c.id === selectedCategoryId);
 
   const filteredGlobalMatches = useMemo(() => {
-    if (!matchSearchQuery.trim()) return [];
+    // Ako nema ni upita ni filtera za stol, ne prikazujemo ništa (da ne zakrčimo ekran svim mečevima)
+    if (!matchSearchQuery.trim() && !searchTableId) return [];
+    
     const lower = matchSearchQuery.toLowerCase();
-    return allMatchesForSearch.filter(m => 
-      m.player1?.name?.toLowerCase().includes(lower) || 
-      m.player2?.name?.toLowerCase().includes(lower)
-    ).sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-  }, [allMatchesForSearch, matchSearchQuery]);
+    
+    return allMatchesForSearch.filter(m => {
+      // Provjera imena (ako je uneseno)
+      const nameMatch = !matchSearchQuery.trim() || 
+        m.player1?.name?.toLowerCase().includes(lower) || 
+        m.player2?.name?.toLowerCase().includes(lower);
+        
+      // Provjera stola (ako je odabran)
+      const tableMatch = !searchTableId || m.tableId === searchTableId;
+      
+      return nameMatch && tableMatch;
+    }).sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+  }, [allMatchesForSearch, matchSearchQuery, searchTableId]);
 
   // Sinhronizacija grupa iz baze ili inicijalizacija
   useEffect(() => {
-    if (activeCategory?.groupConfig && allPlayers.length > 0) {
+    if (activeCategory?.groupConfig) {
       try {
         const configData = Array.isArray(activeCategory.groupConfig) 
           ? activeCategory.groupConfig 
@@ -277,32 +334,32 @@ const CompetitionDetails = () => {
         const restoredGroups = configData.map(idList => 
           idList.map(pid => allPlayers.find(p => p.id === pid)).filter(Boolean)
         );
-        setGroups(restoredGroups);
+        
+        // Only set groups if we actually found members or if it's explicitly configured as empty groups
+        if (restoredGroups.length > 0) {
+          setGroups(restoredGroups);
+          return;
+        }
       } catch (err) {
         console.error("Greška pri učitavanju grupa:", err);
       }
-    } else if (activeCategory?.format === 'groups_knockout') {
-      if (groups.length === 0) {
-         // Respect plan limits for initial groups count
-         let initialGroupsCount = 2;
-         if (!isSuperAdmin && planDetails && planDetails.groupsLimit) {
-            if (planDetails.groupsLimit < 2) initialGroupsCount = planDetails.groupsLimit;
-         }
-         // Ensure we create distinct arrays for each group
-         setGroups(Array.from({ length: initialGroupsCount }, () => []));
-      }
-    } else if (activeCategory?.format === 'round_robin') {
-      // Za ligu (Round Robin) - u draftu automatski sinhronizuj sve selektovane igrače u jednu grupu
-      if (activeCategory.status === 'draft') {
-        const participants = allPlayers.filter(p => selectedPlayers.includes(p.id));
-        setGroups([participants]);
-      } else {
-        if (groups.length === 0) setGroups([[]]);
-      }
-    } else {
-      if (groups.length > 0) setGroups([]);
     }
-  }, [selectedCategoryId, activeCategory?.groupConfig, activeCategory?.format, allPlayers.length, activeCategory?.status, (activeCategory?.format === 'round_robin' && activeCategory.status === 'draft' ? selectedPlayers.length : null)]);
+
+    // Default initialization if no config exists
+    if (activeCategory?.format === 'groups_knockout') {
+      // Respect plan limits for initial groups count
+      let initialGroupsCount = 2;
+      if (!isSuperAdmin && planDetails?.groupsLimit) {
+        initialGroupsCount = Math.min(2, planDetails.groupsLimit);
+      }
+      setGroups(Array.from({ length: initialGroupsCount }, () => []));
+    } else if (activeCategory?.format === 'round_robin') {
+      const participants = allPlayers.filter(p => (activeCategory.playerIds || []).includes(p.id));
+      setGroups([participants]);
+    } else {
+      setGroups([]);
+    }
+  }, [selectedCategoryId, activeCategory?.groupConfig, activeCategory?.format, allPlayers.length, activeCategory?.status]);
 
   // Kada se promijeni kategorija, resetuj selekciju igrača na one koji su već u kategoriji
   useEffect(() => {
@@ -321,7 +378,9 @@ const CompetitionDetails = () => {
   // Sinhronizacija ručnog poretka
   useEffect(() => {
     if (selectedCategoryId && id) {
-      const q = collection(db, "competitions", id, "categories", selectedCategoryId, "manualOrders");
+      const collectionPath = competitionCollectionPath;
+      
+      const q = collection(db, collectionPath, id, "categories", selectedCategoryId, "manualOrders");
       const unsubscribe = onSnapshot(q, (snap) => {
         const orders = {};
         snap.docs.forEach(doc => {
@@ -338,7 +397,8 @@ const CompetitionDetails = () => {
     if (!newCategoryName.trim()) return;
 
     try {
-      console.log("Dodajem kategoriju u takmičenje:", id);
+      const collectionPath = competitionCollectionPath;
+      
       const catData = {
         name: newCategoryName.trim(),
         format: newCategoryFormat,
@@ -352,9 +412,8 @@ const CompetitionDetails = () => {
         lossPoints: competition?.defaultSettings?.lossPoints ?? 0
       };
 
-      await addDoc(collection(db, "competitions", id, "categories"), catData);
+      await addDoc(collection(db, collectionPath, id, "categories"), catData);
       setNewCategoryName('');
-      console.log("Kategorija uspješno dodana");
     } catch (err) {
       console.error("Greška pri kreiranju kategorije:", err);
       alert(`Greška pri kreiranju kategorije: ${err.message}`);
@@ -365,7 +424,6 @@ const CompetitionDetails = () => {
     if (activeCategory?.status !== 'draft') return;
 
     let newSelected;
-    // Check if adding a player (not removing)
     if (!selectedPlayers.includes(playerId)) {
       if (!isSuperAdmin && planDetails?.playersLimit) {
          if (selectedPlayers.length >= planDetails.playersLimit) {
@@ -380,9 +438,10 @@ const CompetitionDetails = () => {
     
     setSelectedPlayers(newSelected);
 
-    // Auto-save to Firestore
     try {
-      const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
+      const collectionPath = competitionCollectionPath;
+      
+      const catRef = doc(db, collectionPath, id, "categories", selectedCategoryId);
       await updateDoc(catRef, {
         playerIds: newSelected,
         updatedAt: serverTimestamp()
@@ -401,9 +460,10 @@ const CompetitionDetails = () => {
       
     setSeededPlayers(newSeeding);
 
-    // Auto-save to Firestore
     try {
-      const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
+      const collectionPath = competitionCollectionPath;
+      
+      const catRef = doc(db, collectionPath, id, "categories", selectedCategoryId);
       await updateDoc(catRef, {
         seededPlayerIds: newSeeding,
         updatedAt: serverTimestamp()
@@ -452,7 +512,8 @@ const CompetitionDetails = () => {
   const saveSelectedPlayers = async () => {
     if (!selectedCategoryId) return;
     try {
-      const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
+      const collectionPath = competitionCollectionPath;
+      const catRef = doc(db, collectionPath, id, "categories", selectedCategoryId);
       await updateDoc(catRef, {
         playerIds: selectedPlayers,
         seededPlayerIds: seededPlayers,
@@ -467,8 +528,9 @@ const CompetitionDetails = () => {
   const handleUpdateSettings = async (settings) => {
     if (!selectedCategoryId) return;
     try {
+      const collectionPath = competitionCollectionPath;
       const { winPoints, lossPoints, advancingPlayers, setsToWin } = settings;
-      const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
+      const catRef = doc(db, collectionPath, id, "categories", selectedCategoryId);
       await updateDoc(catRef, {
         winPoints: Number(winPoints),
         lossPoints: Number(lossPoints),
@@ -485,7 +547,8 @@ const CompetitionDetails = () => {
   const handleToggleStage = async (stage, status) => {
     if (!selectedCategoryId) return;
     try {
-      const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
+      const collectionPath = competitionCollectionPath;
+      const catRef = doc(db, collectionPath, id, "categories", selectedCategoryId);
       await updateDoc(catRef, {
         [`stages.${stage}.completed`]: status,
         updatedAt: serverTimestamp()
@@ -521,7 +584,8 @@ const CompetitionDetails = () => {
       });
 
       // Vrati status na draft
-      const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
+      const collectionPath = competitionCollectionPath;
+      const catRef = doc(db, collectionPath, id, "categories", selectedCategoryId);
       batch.update(catRef, {
         status: 'draft',
         [`stages.groups.completed`]: false,
@@ -531,6 +595,7 @@ const CompetitionDetails = () => {
 
       await batch.commit();
       alert("Kategorija vraćena u Draft. Svi mečevi su obrisani.");
+      window.location.reload();
     } catch (err) {
       console.error(err);
       alert("Greška pri resetovanju kategorije.");
@@ -554,6 +619,7 @@ const CompetitionDetails = () => {
         await batch.commit();
       }
       alert("Knockout faza je resetovana.");
+      window.location.reload();
     } catch (err) {
       console.error(err);
       alert("Greška pri brisanju knockout faze.");
@@ -587,7 +653,8 @@ const CompetitionDetails = () => {
       });
 
       // 2. Resetuj kategoriju - obriši sve osim igrača
-      const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
+      const collectionPath = competitionCollectionPath;
+      const catRef = doc(db, collectionPath, id, "categories", selectedCategoryId);
       batch.update(catRef, {
         status: 'draft',
         groupConfig: null,
@@ -598,7 +665,7 @@ const CompetitionDetails = () => {
       });
 
       // 3. Obriši sve ručne poretke (manualOrders) ako postoje
-      const ordersRef = collection(db, "competitions", id, "categories", selectedCategoryId, "manualOrders");
+      const ordersRef = collection(db, collectionPath, id, "categories", selectedCategoryId, "manualOrders");
       const ordersSnap = await getDocs(ordersRef);
       ordersSnap.docs.forEach(d => {
         batch.delete(d.ref);
@@ -609,6 +676,7 @@ const CompetitionDetails = () => {
       // Resetuj lokalni state
       setMatches(prev => prev.filter(m => m.categoryId !== selectedCategoryId));
       alert("Kategorija je očišćena! Igrači su sačuvani.");
+      window.location.reload();
       
     } catch (err) {
       console.error("Greška pri čišćenju kategorije:", err);
@@ -621,7 +689,8 @@ const CompetitionDetails = () => {
   const handleSaveManualOrder = async (groupIdx, orderedPlayerIds) => {
     if (!selectedCategoryId) return;
     try {
-      const orderRef = doc(db, "competitions", id, "categories", selectedCategoryId, "manualOrders", groupIdx.toString());
+      const collectionPath = competitionCollectionPath;
+      const orderRef = doc(db, collectionPath, id, "categories", selectedCategoryId, "manualOrders", groupIdx.toString());
       await setDoc(orderRef, {
         order: orderedPlayerIds,
         updatedAt: serverTimestamp()
@@ -884,6 +953,8 @@ const CompetitionDetails = () => {
       }
 
       // Generišemo sve mečeve za sve runde
+      const isSeasonType = competition?.type === 'league_season';
+
       tournamentRounds.forEach(r => {
         for (let i = 0; i < r.count; i++) {
           const matchRef = doc(collection(db, "matches"));
@@ -893,6 +964,13 @@ const CompetitionDetails = () => {
             side = i < (r.count / 2) ? 'lijevi' : 'desni';
           } else {
             side = 'center';
+          }
+
+          // Rule: Rose Pharm uses Best of 5 (setsToWin: 3) from 1/4 Final, and Best of 3 (setsToWin: 2) before that.
+          let setsToWin = activeCategory?.setsToWin || 3; // default
+          if (isSeasonType) {
+            const isLateStage = ['1/4 Finale', 'Polufinale', 'Finale'].includes(r.name);
+            setsToWin = isLateStage ? 3 : 2;
           }
           
           const matchData = {
@@ -906,6 +984,7 @@ const CompetitionDetails = () => {
             status: 'pending',
             competitionId: id,
             categoryId: selectedCategoryId,
+            setsToWin: setsToWin,
             ownerUid: competition?.ownerUid || userData?.uid || '',
             ownerEmail: competition?.ownerEmail || userData?.email || '',
             createdAt: serverTimestamp()
@@ -934,1170 +1013,9 @@ const CompetitionDetails = () => {
     }
   };
 
-  const handleGenerateTemplate = async (count, preserveBaraz = false) => {
-    if (!selectedCategoryId) return;
-    
-    const confirmMsg = preserveBaraz 
-      ? "Ovim ćete pobrisati postojeći glavni žrijeb (baraž će ostati). Nastaviti?"
-      : "Ovim ćete pobrisati postojeći žrijeb i rezultate eliminacija za ovu kategoriju (uključujući baraž). Nastaviti?";
-
-    if (!window.confirm(confirmMsg)) return;
-
-    setGenerating(true);
-    try {
-      // 0. Prvo obriši stare knockout mečeve za ovu kategoriju
-      const matchesRef = collection(db, "matches");
-      const oldMatchesQ = query(
-        matchesRef,
-        where("competitionId", "==", id),
-        where("categoryId", "==", selectedCategoryId),
-        where("isKnockout", "==", true)
-      );
-      
-      const oldSnap = await getDocs(oldMatchesQ);
-      const batch = writeBatch(db);
-      
-      oldSnap.forEach(d => {
-        const data = d.data();
-        // Ako čuvamo baraž, preskoči brisanje mečeva koji su u baražu
-        if (preserveBaraz && data.roundName === "Baraž") {
-          return;
-        }
-        batch.delete(d.ref);
-      });
-      
-      const roundsCount = Math.log2(count);
-      let currentMatchCount = count / 2;
-      
-      for (let r = 1; r <= roundsCount; r++) {
-        let name = `Runda ${r}`;
-        if (currentMatchCount === 32) name = '1/32 Finale';
-        if (currentMatchCount === 16) name = '1/16 Finale';
-        if (currentMatchCount === 8) name = '1/8 Finale';
-        if (currentMatchCount === 4) name = '1/4 Finale';
-        if (currentMatchCount === 2) name = 'Polufinale';
-        if (currentMatchCount === 1) name = 'Finale';
-        
-        for (let i = 0; i < currentMatchCount; i++) {
-          const matchRef = doc(collection(db, "matches"));
-          const side = i < (currentMatchCount / 2) ? 'lijevi' : 'desni';
-          
-          batch.set(matchRef, {
-            player1: { id: 'tbd', name: 'TBD' },
-            player2: { id: 'tbd', name: 'TBD' },
-            roundName: name,
-            round: r,
-            bracketIndex: i,
-            bracketSide: currentMatchCount > 1 ? side : 'center',
-            isKnockout: true,
-            status: 'pending',
-            competitionId: id,
-            categoryId: selectedCategoryId,
-            ownerUid: competition?.ownerUid || userData?.uid || '',
-            ownerEmail: competition?.ownerEmail || userData?.email || '',
-            createdAt: serverTimestamp()
-          });
-        }
-        currentMatchCount /= 2;
-      }
-
-      await batch.commit();
-      alert("Prazan žrijeb generisan. Sada možete rasporediti igrače.");
-    } catch (err) {
-      console.error(err);
-      alert("Greška pri generisanju šeme.");
-    } finally {
-      setGenerating(false);
-    }
-  };
-
-  const handleAddManualMatch = async (matchData) => {
-    if (!selectedCategoryId) return;
-    try {
-      await addDoc(collection(db, "matches"), {
-        ...matchData,
-        competitionId: id,
-        categoryId: selectedCategoryId,
-        ownerUid: competition?.ownerUid || userData?.uid || '',
-        ownerEmail: competition?.ownerEmail || userData?.email || '',
-        status: 'pending',
-        isKnockout: true,
-        createdAt: serverTimestamp()
-      });
-    } catch (err) {
-      alert("Greška pri dodavanju meča.");
-    }
-  };
-
-  const handleUpdateMatchPlayer = async (matchId, playerSlot, playerData) => {
-    if (!matchId) return;
-    try {
-      const matchRef = doc(db, "matches", matchId);
-      const updateKey = (playerSlot === 1 || playerSlot === '1') ? "player1" : 
-                        (playerSlot === 2 || playerSlot === '2') ? "player2" : 
-                        playerSlot;
-
-      await updateDoc(matchRef, {
-        [updateKey]: {
-          id: playerData.id,
-          name: playerData.name
-        },
-        updatedAt: serverTimestamp()
-      });
-    } catch (err) {
-      console.error("Match Update Error:", err);
-      alert("Greška pri ažuriranju igrača u meču: " + err.message);
-    }
-  };
-
-  const handleGenerateMatches = async () => {
-    if (selectedPlayers.length < 2) {
-      alert("Morate izabrati barem 2 igrača.");
-      return;
-    }
-
-    if (!isSuperAdmin && !planDetails) {
-      alert("Podaci o planu se još učitavaju. Molimo pokušajte ponovo za nekoliko sekundi.");
-      return;
-    }
-
-    setGenerating(true);
-    try {
-      const batch = writeBatch(db);
-      
-      if (activeCategory.format === 'groups_knockout') {
-        // GENERISANJE PO GRUPAMA
-        if (groups.length === 0) {
-          alert("Prvo morate kreirati grupe.");
-          setGenerating(false);
-          return;
-        }
-
-        groups.forEach((groupPlayers, groupIdx) => {
-          const groupRounds = generateBergerMatches(groupPlayers);
-          groupRounds.forEach(round => {
-            round.matches.forEach(match => {
-              const matchRef = doc(collection(db, "matches"));
-              batch.set(matchRef, {
-                ...match,
-                competitionId: id,
-                categoryId: selectedCategoryId,
-                groupId: groupIdx, // Dodajemo ID grupe
-                groupName: `Grupa ${String.fromCharCode(65 + groupIdx)}`,
-                ownerUid: competition?.ownerUid || userData?.uid || '',
-                ownerEmail: competition?.ownerEmail || userData?.email || '',
-                createdAt: serverTimestamp()
-              });
-            });
-          });
-        });
-      } else {
-        // STANDARDNI ROUND ROBIN
-        const participants = allPlayers.filter(p => selectedPlayers.includes(p.id));
-        const rounds = generateBergerMatches(participants);
-
-        rounds.forEach(round => {
-          round.matches.forEach(match => {
-            const matchRef = doc(collection(db, "matches"));
-            batch.set(matchRef, {
-              ...match,
-              competitionId: id,
-              categoryId: selectedCategoryId,
-              groupId: 0, // Za ligu stavljamo pod grupu 0
-              groupName: 'Liga',
-              ownerUid: competition?.ownerUid || userData?.uid || '',
-              ownerEmail: competition?.ownerEmail || userData?.email || '',
-              createdAt: serverTimestamp()
-            });
-          });
-        });
-      }
-
-      // 2. Ažuriraj kategoriju
-      const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
-      
-      // OVDJE PROVJERI LIMITE GRUPA PRIJE ZAPISIVANJA U BAZU
-      if (!isSuperAdmin && planDetails) {
-        const groupsLimit = planDetails.groupsLimit || 1; // Default to 1 group if not specified
-        if (activeCategory.format === 'groups_knockout' && groups.length > groupsLimit) {
-            alert(`Vaš plan dozvoljava maksimalno ${groupsLimit} grupu/e. Pokušavate kreirati ${groups.length}. Molimo smanjite broj grupa.`);
-            setGenerating(false);
-            return;
-        }
-      }
-
-      // Firestore ne dozvoljava ugniježdene nizove (arrays within arrays).
-      // Pretvaramo grupe u objekat/mapu gdje su ključevi indeksi grupa.
-      const groupConfigObj = {};
-      groups.forEach((g, idx) => {
-        groupConfigObj[idx] = g.map(p => p.id);
-      });
-
-      batch.update(catRef, {
-        status: 'active',
-        playerIds: selectedPlayers,
-        seededPlayerIds: seededPlayers,
-        groupConfig: groupConfigObj,
-        updatedAt: serverTimestamp()
-      });
-
-      await batch.commit();
-      setActiveTab('matches');
-      // Maknut alert
-    } catch (err) {
-      console.error(err);
-      alert("Greška pri generisanju mečeva.");
-    } finally {
-      setGenerating(false);
-    }
-  };
-
-  const handleScoreChange = (matchId, playerKey, val) => {
-    setMatches(prev => prev.map(m => 
-      m.id === matchId 
-        ? { ...m, [playerKey + 'Score']: parseInt(val) || 0 }
-        : m
-    ));
-  };
-
-  const saveMatchResult = async (match) => {
-    setSavingMatchId(match.id);
-    try {
-      const matchRef = doc(db, "matches", match.id);
-      
-      // 1. Spasi trenutni meč - respektujemo status koji je poslan iz modala + nove meta podatke
-      await updateDoc(matchRef, {
-        player1: match.player1,
-        player2: match.player2,
-        player1Score: match.player1Score || 0,
-        player2Score: match.player2Score || 0,
-        sets: match.sets || [],
-        status: match.status || 'completed',
-        round: match.round !== undefined ? match.round : 1,
-        roundName: match.roundName || '',
-        bracketIndex: match.bracketIndex || 0,
-        updatedAt: serverTimestamp()
-      });
-
-      // 2. AUTOMATSKO NAPREDOVANJE - samo ako je meč stvarno GOTOV i ako nismo mijenjali postavke runde (da ne pobrkamo indexe)
-      if (match.status === 'completed' && match.isKnockout && match.roundName !== 'Finale') {
-        const s1 = Number(match.player1Score || 0);
-        const s2 = Number(match.player2Score || 0);
-        
-        if (s1 === s2) {
-          console.log("Neriješen rezultat, preskačem automatsko napredovanje.");
-          return;
-        }
-
-        const winner = s1 > s2 ? match.player1 : match.player2;
-        
-        if (winner && winner.id && winner.id !== 'tbd') {
-          const currentRound = Number(match.round);
-          const currentIndex = Number(match.bracketIndex ?? 0);
-          
-          let nextMatch = null;
-          let nextSlot = null;
-
-          // Ako je Baraž (Round 0), traži prvi TBD slot u Rundi 1 prema bracketIndex-u
-          if (currentRound === 0) {
-             // Uzmi sve mečeve iz Round 1, sortirane po bracketIndex
-             const round1Matches = matches
-                .filter(m => m.isKnockout && Number(m.round) === 1)
-                .sort((a,b) => (a.bracketIndex || 0) - (b.bracketIndex || 0));
-             
-             // Napravi listu svih TBD slotova u Round 1
-             const availableSlots = [];
-             for (const m of round1Matches) {
-                 if (!m.player1 || m.player1.id === 'tbd') {
-                     availableSlots.push({ match: m, slot: 'player1', bracketIndex: m.bracketIndex || 0 });
-                 }
-                 if (!m.player2 || m.player2.id === 'tbd') {
-                     availableSlots.push({ match: m, slot: 'player2', bracketIndex: m.bracketIndex || 0 });
-                 }
-             }
-             
-             // Mapiranje: Baraž meč sa bracketIndex X ide u X-ti slot u listi TBD slotova
-             if (currentIndex < availableSlots.length) {
-                 const targetSlot = availableSlots[currentIndex];
-                 nextMatch = targetSlot.match;
-                 nextSlot = targetSlot.slot;
-             }
-          } else {
-             // Standardna logika za ostale runde
-             const nextRound = currentRound + 1;
-             const nextIndex = Math.floor(currentIndex / 2);
-             nextSlot = (currentIndex % 2 === 0) ? 'player1' : 'player2';
-
-             nextMatch = matches.find(m => 
-                m.isKnockout && 
-                Number(m.round) === nextRound && 
-                Number(m.bracketIndex ?? 0) === nextIndex
-             );
-          }
-
-          if (nextMatch && nextSlot) {
-            const nextMatchRef = doc(db, "matches", nextMatch.id);
-            const winnerData = { id: winner.id, name: winner.name };
-            
-            await updateDoc(nextMatchRef, {
-              [nextSlot]: winnerData,
-              updatedAt: serverTimestamp()
-            });
-
-            // Odmah ažuriraj lokalni prikaz bez čekanja baze
-            setMatches(prev => prev.map(m => {
-              if (m.id === nextMatch.id) {
-                return { ...m, [nextSlot]: winnerData };
-              }
-              return m;
-            }));
-          } else {
-            console.log("Nije pronađen naredni meč/slot za round:", currentRound + 1);
-          }
-        }
-      }
-      // Maknuti alerti za uspješno spašavanje meča
-    } catch (err) {
-      console.error(err);
-      alert("Greška pri spašavanju rezultata.");
-    } finally {
-      setSavingMatchId(null);
-    }
-  };
-
-  const handleDeleteMatch = async (matchId) => {
-    if (!confirm("Da li ste sigurni da želite obrisati ovaj meč? Ova akcija se ne može poništiti.")) return;
-    
-    try {
-      await deleteDoc(doc(db, "matches", matchId));
-      setMatches(prev => prev.filter(m => m.id !== matchId));
-      alert("Meč je uspješno obrisan.");
-    } catch (err) {
-      console.error("Error deleting match:", err);
-      alert("Greška pri brisanju meča.");
-    }
-  };
-
-  const handleDeleteCategory = async (categoryId) => {
-    if (!confirm("Da li ste sigurni da želite obrisati ovu kategoriju? Biće obrisani SVI mečevi u ovoj kategoriji. Ova akcija se ne može poništiti.")) return;
-    
-    try {
-      // Delete all matches in this category
-      const categoryMatches = matches.filter(m => m.categoryId === categoryId);
-      const batch = writeBatch(db);
-      
-      categoryMatches.forEach(match => {
-        batch.delete(doc(db, "matches", match.id));
-      });
-      
-      // Delete the category document
-      batch.delete(doc(db, "categories", categoryId));
-      
-      await batch.commit();
-      
-      // Update local state
-      setCategories(prev => prev.filter(c => c.id !== categoryId));
-      setMatches(prev => prev.filter(m => m.categoryId !== categoryId));
-      
-      // Reset selected category if deleted
-      if (selectedCategoryId === categoryId) {
-        setSelectedCategoryId(categories[0]?.id || null);
-      }
-      
-      // Maknut alert za uspješno brisanje
-    } catch (err) {
-      console.error("Error deleting category:", err);
-      alert("Greška pri brisanju kategorije.");
-    }
-  };
-
-  const handleDeleteCompetition = async () => {
-    if (!confirm("UPOZORENJE: Ova akcija će trajno obrisati cijelo takmičenje, SVE kategorije i SVE mečeve. Ova akcija se NE MOŽE poništiti. Da li ste apsolutno sigurni?")) return;
-    
-    // Double confirmation for critical action
-    const confirmText = prompt('Unesite "OBRIŠI" da potvrdite brisanje takmičenja:');
-    if (confirmText !== "OBRIŠI") {
-      alert("Brisanje otkazano.");
-      return;
-    }
-    
-    try {
-      const batch = writeBatch(db);
-      
-      // Delete all matches
-      matches.forEach(match => {
-        batch.delete(doc(db, "matches", match.id));
-      });
-      
-      // Delete all categories
-      categories.forEach(category => {
-        batch.delete(doc(db, "categories", category.id));
-      });
-      
-      // Delete the competition
-      batch.delete(doc(db, "competitions", competition.id));
-      
-      await batch.commit();
-      
-      alert("Takmičenje je uspješno obrisano.");
-      navigate('/admin/competitions');
-    } catch (err) {
-      console.error("Error deleting competition:", err);
-      alert("Greška pri brisanju takmičenja.");
-    }
-  };
-
-  const handleDeleteAllMatches = async (matchIds) => {
-    try {
-      const batch = writeBatch(db);
-      matchIds.forEach(matchId => {
-        batch.delete(doc(db, "matches", matchId));
-      });
-      await batch.commit();
-      // Maknut alert
-    } catch (err) {
-      console.error("Error deleting matches:", err);
-      alert("Greška pri brisanju mečeva.");
-    }
-  };
-
-  const handleDeletePlayer = async (playerId) => {
-    if (!confirm("Sigurno želite obrisati ovog igrača?")) return;
-    
-    try {
-      await deleteDoc(doc(db, "players", playerId));
-      setAllPlayers(prev => prev.filter(p => p.id !== playerId));
-      // Maknut alert
-    } catch (err) {
-      console.error("Error deleting player:", err);
-      alert("Greška pri brisanju igrača.");
-    }
-  };
-
-  const handleDeleteAllPlayers = async (playerIds) => {
-    try {
-      const batch = writeBatch(db);
-      playerIds.forEach(playerId => {
-        batch.delete(doc(db, "players", playerId));
-      });
-      await batch.commit();
-      setAllPlayers(prev => prev.filter(p => !playerIds.includes(p.id)));
-      alert(`Uspješno obrisano ${playerIds.length} igrača.`);
-    } catch (err) {
-      console.error("Error deleting players:", err);
-      alert("Greška pri brisanju igrača.");
-    }
-  };
-
-  const handleUpdateFormat = async (newFormat) => {
-    if (!selectedCategoryId) return;
-    try {
-      const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
-      await updateDoc(catRef, {
-        format: newFormat,
-        updatedAt: serverTimestamp()
-      });
-      setEditingFormat(false);
-      // Resetuj grupe ako prelazimo na format bez grupa
-      if (newFormat !== 'groups_knockout') setGroups([]);
-    } catch (err) {
-      alert("Greška pri ažuriranju formata.");
-    }
-  };
-
-  const saveGroupConfig = async (currentGroups) => {
-    if (!selectedCategoryId || !currentGroups) return;
-    try {
-      const groupConfigObj = {};
-      currentGroups.forEach((g, idx) => {
-        groupConfigObj[idx] = g.map(p => p.id);
-      });
-
-      const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
-      await updateDoc(catRef, {
-        groupConfig: groupConfigObj,
-        updatedAt: serverTimestamp()
-      });
-    } catch (err) {
-      console.error("Error saving group config:", err);
-    }
-  };
-
-  const movePlayerToGroup = (playerId, targetGroupIdx) => {
-    // Check players per group limit
-    if (!isSuperAdmin && planDetails) {
-      const targetGroup = groups[targetGroupIdx];
-      const limit = planDetails.playersPerGroupLimit || 16;
-      const alreadyInGroup = targetGroup?.some(p => p.id === playerId);
-      if (!alreadyInGroup && targetGroup?.length >= limit) {
-        alert(`Dostigli ste limit od ${limit} igrača po grupi za vaš plan.`);
-        return;
-      }
-    }
-
-    // 1. Pronađi igrača
-    const player = allPlayers.find(p => p.id === playerId);
-    if (!player) return;
-
-    // 2. Napravi nove grupe i ukloni igrača iz svih trenutnih grupa
-    const newGroups = groups.map(g => g.filter(p => p.id !== playerId));
-    
-    // 3. Dodaj ga u ciljanu grupu
-    if (newGroups[targetGroupIdx]) {
-      newGroups[targetGroupIdx].push(player);
-    }
-    
-    setGroups(newGroups);
-    saveGroupConfig(newGroups);
-
-    // 4. Auto-selekcija ako nije bio selektovan
-    if (!selectedPlayers.includes(playerId)) {
-      const newSelected = [...selectedPlayers, playerId];
-      setSelectedPlayers(newSelected);
-      // Save selection too
-      const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
-      updateDoc(catRef, { playerIds: newSelected });
-    }
-  };
-
-  const removePlayerFromGroups = (playerId) => {
-    const cleanedGroups = groups.map(g => g.filter(p => p.id !== playerId));
-    setGroups(cleanedGroups);
-    saveGroupConfig(cleanedGroups);
-  };
-
-  const handleAutoAssignGroups = () => {
-    if (!activeCategory || groups.length === 0) return;
-    
-    // Check if auto-assign might hit per-group limits
-    const limit = planDetails?.playersPerGroupLimit || 16;
-    if (!isSuperAdmin && planDetails) {
-       const totalToAssign = allPlayers.filter(p => selectedPlayers.includes(p.id)).length;
-       if (totalToAssign > groups.length * limit) {
-         alert(`Vaš plan dopušta maksimalno ${limit} igrača po grupi. Sa trenutnim brojem grupa (${groups.length}), možete rasporediti najviše ${groups.length * limit} igrača. Molimo dodajte još grupa ili nadogradite plan.`);
-         return;
-       }
-    }
-
-    // Uzmi sve selektovane igrače za ovu kategoriju
-    const playersToAssign = allPlayers.filter(p => selectedPlayers.includes(p.id));
-    
-    if (playersToAssign.length === 0) {
-      alert("Prvo izaberite igrače u tabu 'Igrači'.");
-      return;
-    }
-
-    // Identifikuj već raspoređene
-    const assignedIds = groups.flat().map(p => p.id);
-    const unassignedPlayers = playersToAssign.filter(p => !assignedIds.includes(p.id));
-
-    if (unassignedPlayers.length === 0) {
-      alert("Svi izabrani igrači su već raspoređeni u grupe.");
-      return;
-    }
-
-    // Razdvoji nosioce (seeded) i ostale
-    const seededUnassigned = unassignedPlayers.filter(p => seededPlayers.includes(p.id));
-    const regularUnassigned = unassignedPlayers.filter(p => !seededPlayers.includes(p.id));
-
-    const newGroups = groups.map(g => [...g]);
-
-    // 1. Prvo rasporedi nosioce (seeded) u različite grupe
-    seededUnassigned.forEach(player => {
-      let bestGroupIdx = -1;
-      let minSeedsInGroup = Infinity;
-      let minTotalInGroup = Infinity;
-
-      // Randomize redoslijed grupa
-      const groupIndices = Array.from({length: newGroups.length}, (_, i) => i).sort(() => Math.random() - 0.5);
-
-      groupIndices.forEach(idx => {
-        const group = newGroups[idx];
-        
-        // Skip if group is at plan limit
-        if (!isSuperAdmin && planDetails && group.length >= limit) return;
-
-        const seedsCount = group.filter(p => seededPlayers.includes(p.id)).length;
-        
-        if (seedsCount < minSeedsInGroup) {
-          minSeedsInGroup = seedsCount;
-          minTotalInGroup = group.length;
-          bestGroupIdx = idx;
-        } else if (seedsCount === minSeedsInGroup) {
-          if (group.length < minTotalInGroup) {
-            minTotalInGroup = group.length;
-            bestGroupIdx = idx;
-          }
-        }
-      });
-      if (bestGroupIdx !== -1) {
-        newGroups[bestGroupIdx].push(player);
-      }
-    });
-
-    // 2. Rasporedi ostale igrače po klubovima (postojeća logika)
-    const byClub = {};
-    regularUnassigned.forEach(p => {
-      const club = (p.club || 'Individual').trim().toLowerCase();
-      const normalizedClub = (club === 'bez kluba' || club === '') ? 'individual' : club;
-      if (!byClub[normalizedClub]) byClub[normalizedClub] = [];
-      byClub[normalizedClub].push(p);
-    });
-
-    // Sortiraj klubove po veličini
-    const sortedClubs = Object.keys(byClub).sort((a, b) => {
-      if (a === 'individual') return 1;
-      if (b === 'individual') return -1;
-      return byClub[b].length - byClub[a].length;
-    });
-
-    sortedClubs.forEach(clubName => {
-      const clubPlayers = byClub[clubName];
-      // Randomize unutar kluba
-      const shuffledClubPlayers = [...clubPlayers].sort(() => Math.random() - 0.5);
-
-      shuffledClubPlayers.forEach(player => {
-        let bestGroupIdx = -1;
-        let minSameClubInGroup = Infinity;
-        let minTotalInGroup = Infinity;
-
-        // Randomize redoslijed provjere grupa za fer raspored
-        const groupIndices = Array.from({length: newGroups.length}, (_, i) => i).sort(() => Math.random() - 0.5);
-
-        groupIndices.forEach(idx => {
-          const group = newGroups[idx];
-          
-          // Skip if group is at plan limit
-          if (!isSuperAdmin && planDetails && group.length >= limit) return;
-
-          const sameClubCount = clubName === 'individual' 
-            ? 0 
-            : group.filter(p => {
-                const pc = (p.club || '').trim().toLowerCase();
-                return pc === clubName;
-              }).length;
-          
-          if (sameClubCount < minSameClubInGroup) {
-            minSameClubInGroup = sameClubCount;
-            minTotalInGroup = group.length;
-            bestGroupIdx = idx;
-          } else if (sameClubCount === minSameClubInGroup) {
-            if (group.length < minTotalInGroup) {
-              minTotalInGroup = group.length;
-              bestGroupIdx = idx;
-            }
-          }
-        });
-
-        if (bestGroupIdx !== -1) {
-          newGroups[bestGroupIdx].push(player);
-        }
-      });
-    });
-    
-    setGroups(newGroups);
-  };
-
-  const calculateStandings = (groupIdx) => {
-    const groupMatches = matches.filter(m => m.groupId === groupIdx && m.status === 'completed');
-    const groupPlayers = groups[groupIdx] || [];
-    
-    const stats = groupPlayers.map(player => ({
-      ...player,
-      played: 0,
-      won: 0,
-      lost: 0,
-      setsWon: 0,
-      setsLost: 0,
-      points: 0,
-      pointDiff: 0 // "Gem±"
-    }));
-
-    groupMatches.forEach(m => {
-      const p1 = stats.find(p => p.id === m.player1.id);
-      const p2 = stats.find(p => p.id === m.player2.id);
-
-      const winPts = activeCategory?.winPoints ?? 2;
-      const lossPts = activeCategory?.lossPoints ?? 0;
-
-      if (p1 && p2) {
-        p1.played++;
-        p2.played++;
-        p1.setsWon += (m.player1Score || 0);
-        p1.setsLost += (m.player2Score || 0);
-        p2.setsWon += (m.player2Score || 0);
-        p2.setsLost += (m.player1Score || 0);
-
-        // Izračunaj poene (Gem±) iz setova
-        if (m.sets && Array.isArray(m.sets) && m.sets.length > 0) {
-          m.sets.forEach(s => {
-            p1.pointDiff += (s.p1 || 0) - (s.p2 || 0);
-            p2.pointDiff += (s.p2 || 0) - (s.p1 || 0);
-          });
-        }
-
-        if (m.player1Score > m.player2Score) {
-          p1.won++;
-          p1.points += winPts;
-          p2.lost++;
-          p2.points += lossPts;
-        } else if (m.player2Score > m.player1Score) {
-          p2.won++;
-          p2.points += winPts;
-          p1.lost++;
-          p1.points += lossPts;
-        }
-      }
-    });
-
-    // Ako postoji ručni poredak za ovu grupu, koristi ga
-    if (manualOrders[groupIdx] && manualOrders[groupIdx].length > 0) {
-      const order = manualOrders[groupIdx];
-      return stats.sort((a, b) => {
-        const idxA = order.indexOf(a.id);
-        const idxB = order.indexOf(b.id);
-        
-        // Ako su oba u nizu za poredak, sortiraj po indeksu
-        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-        
-        // Ako je samo jedan u nizu (ne bi se trebalo desiti), stavi ga ispred
-        if (idxA !== -1) return -1;
-        if (idxB !== -1) return 1;
-        
-        return 0;
-      });
-    }
-
-    return stats.sort((a, b) => {
-      // 1. Poeni (Win/Loss)
-      if (b.points !== a.points) return b.points - a.points;
-      
-      // 2. Set razlika (setsWon - setsLost)
-      const aSetDiff = a.setsWon - a.setsLost;
-      const bSetDiff = b.setsWon - b.setsLost;
-      if (bSetDiff !== aSetDiff) return bSetDiff - aSetDiff;
-
-      // 3. Poen razlika (Gem±)
-      if (b.pointDiff !== a.pointDiff) return b.pointDiff - a.pointDiff;
-
-      // 4. Ukupno dobijenih setova
-      if (b.setsWon !== a.setsWon) return b.setsWon - a.setsWon;
-
-      // 5. Ukupno dobijenih mečeva
-      if (b.won !== a.won) return b.won - a.won;
-
-      return 0;
-    });
-  };
-
-  const handleUpdateCompetition = async () => {
-    if (!compName.trim()) return;
-    setSavingComp(true);
-    try {
-      const slugVal = compSlug.trim().toLowerCase().replace(/[^a-z0-9]/g, '-');
-      const updateData = {
-        name: compName.trim(),
-        slug: slugVal,
-        collaborators: collaborators,
-        startDate: compStartDate || null,
-        endDate: compEndDate || null,
-        location: compLocation || '',
-        description: compDescription || '',
-        rules: compRules || '',
-        contact: {
-          phone: compContactPhone || '',
-          email: compContactEmail || '',
-          address: compContactAddress || ''
-        },
-        organizer: compOrganizer || '',
-        director: compDirector || '',
-        referee: compReferee || '',
-        entryFee: compEntryFee || '',
-        prizes: compPrizes || '',
-        schedule: compSchedule || '',
-        registration: {
-          isOpen: regIsOpen,
-          link: regLink || '',
-          deadline: regDeadline || ''
-        },
-        defaultSettings: {
-          setsToWin: Number(compSetsToWin),
-          winPoints: Number(compWinPoints),
-          lossPoints: Number(compLossPoints),
-          advancingPlayers: Number(compAdvancingPlayers)
-        },
-        updatedAt: serverTimestamp()
-      };
-      
-      await updateDoc(doc(db, "competitions", id), updateData);
-      
-      setCompetition(prev => ({ 
-        ...prev, 
-        ...updateData
-      }));
-      setShowCompSettings(false);
-      alert("Takmičenje ažurirano!");
-    } catch (err) {
-      alert("Greška pri ažuriranju takmičenja.");
-    } finally {
-      setSavingComp(false);
-    }
-  };
-
-  const handleTogglePublic = async (newState) => {
-      setIsPublic(newState);
-      // Optimistic update locally
-      setCompetition(prev => ({ ...prev, isPublic: newState }));
-      
-      try {
-          await updateDoc(doc(db, "competitions", id), {
-              isPublic: newState
-          });
-      } catch (err) {
-          console.error("Failed to toggle public status", err);
-          // Revert on error
-          setIsPublic(!newState);
-          setCompetition(prev => ({ ...prev, isPublic: !newState }));
-          alert("Greška pri promjeni statusa.");
-      }
-  };
-
-  const activeCategoryId = selectedCategoryId;
-  const assignedPlayerIds = groups.flat().filter(p => p && p.id).map(p => p.id);
-
-  if (loading) return <DashboardLayout title="Učitavanje..."><div className="p-8">Dohvaćam podatke...</div></DashboardLayout>;
-  if (!competition) return <DashboardLayout title="Greška"><div className="p-8 text-red-500 text-lg">Takmičenje nije pronađeno.</div></DashboardLayout>;
-
-  if (categories.length === 0 && !categoriesLoading) {
-    // Ako nema kategorija, osiguraj da smo na 'categories' tabu da bi se prikazala forma
-    if (activeTab !== 'categories') {
-       // setActiveTab('categories'); -> Ovo ne možemo zvati u renderu, ali layout će svakako renderovati CategoriesTab ako je activeTab 'categories'
-       // Umjesto blokiranja rendera, pustimo ga dalje
-    }
-  }
-
   return (
-    <DashboardLayout title={competition.name}>
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <GlobalMatchSearch 
-          matchSearchQuery={matchSearchQuery}
-          setMatchSearchQuery={setMatchSearchQuery}
-          filteredGlobalMatches={filteredGlobalMatches}
-          categories={categories}
-          setEditingMatch={setEditingMatch}
-          setShowMatchModal={setShowMatchModal}
-        />
-
-        <CompetitionHeader 
-          competition={competition}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          categoriesLoading={categoriesLoading}
-          activeCategory={activeCategory}
-          categories={categories}
-        />
-
-        {activeTab === 'categories' && (
-          <CategoriesTab 
-            categories={categories}
-            selectedCategoryId={selectedCategoryId}
-            setSelectedCategoryId={setSelectedCategoryId}
-            setActiveTab={setActiveTab}
-            newCategoryName={newCategoryName}
-            setNewCategoryName={setNewCategoryName}
-            newCategoryFormat={newCategoryFormat}
-            setNewCategoryFormat={setNewCategoryFormat}
-            handleAddCategory={handleAddCategory}
-            handleDeleteCategory={handleDeleteCategory}
-            competitionSlug={competition?.slug}
-          />
-        )}
-
-        {activeTab === 'players' && activeCategory && (
-          <PlayersTab 
-            activeCategory={activeCategory}
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            showOnlySelected={showOnlySelected}
-            setShowOnlySelected={setShowOnlySelected}
-            allPlayers={allPlayers}
-            selectedPlayers={selectedPlayers}
-            seededPlayers={seededPlayers}
-            togglePlayerSelection={togglePlayerSelection}
-            togglePlayerSeed={togglePlayerSeed}
-            onEditPlayer={startEditingPlayer}
-            assignedPlayerIds={assignedPlayerIds}
-            saveSelectedPlayers={saveSelectedPlayers}
-            setShowAddPlayer={setShowAddPlayer}
-          />
-        )}
-
-        {activeTab === 'matches' && (
-          <MatchesTab 
-            activeCategory={activeCategory}
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            allPlayers={allPlayers}
-            showOnlySelected={showOnlySelected}
-            selectedPlayers={selectedPlayers}
-            assignedPlayerIds={assignedPlayerIds}
-            groups={groups}
-            setGroups={setGroups}
-            handleGenerateMatches={handleGenerateMatches}
-            generating={generating}
-            calculateStandings={calculateStandings}
-            matches={matches}
-            movePlayerToGroup={movePlayerToGroup}
-            removePlayerFromGroups={removePlayerFromGroups}
-            setEditingMatch={setEditingMatch}
-            setShowMatchModal={setShowMatchModal}
-            saveMatchResult={saveMatchResult}
-            savingMatchId={savingMatchId}
-            handleScoreChange={handleScoreChange}
-            handleSaveManualOrder={handleSaveManualOrder}
-            handleDeleteMatch={handleDeleteMatch}
-            handleToggleStage={handleToggleStage}
-            handleReturnToDraft={handleReturnToDraft}
-            handleClearCategory={handleClearCategory}
-            handleAutoAssignGroups={handleAutoAssignGroups}
-            planDetails={planDetails}
-            isSuperAdmin={isSuperAdmin}
-          />
-        )}
-
-        {activeTab === 'knockout' && (
-          <div className="min-h-[500px]">
-            {!activeCategory ? (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-12 text-center backdrop-blur-xl">
-                <div className="w-16 h-16 bg-red-500/20 rounded-lg flex items-center justify-center mx-auto mb-6 text-red-500">
-                  <AlertTriangle size={32} />
-                </div>
-                <h3 className="text-xl font-black text-white uppercase italic tracking-tighter mb-2">Kategorija nije pronađena</h3>
-                <button 
-                  onClick={() => setActiveTab('categories')} 
-                  className="bg-blue-600 text-white px-6 py-3 rounded-xl text-xs font-black uppercase"
-                >
-                  Nazad na kategorije
-                </button>
-              </div>
-            ) : (
-              <KnockoutTab 
-                activeCategory={activeCategory}
-                matches={matches}
-                groups={groups}
-                allPlayers={allPlayers}
-                calculateStandings={calculateStandings}
-                setEditingMatch={setEditingMatch}
-                setShowMatchModal={setShowMatchModal}
-                handleToggleStage={handleToggleStage}
-                handleGenerateKnockout={handleGenerateKnockout}
-                handleResetKnockout={handleResetKnockout}
-                handleUpdateMatchPlayer={handleUpdateMatchPlayer}
-                handleAddManualMatch={handleAddManualMatch}
-                handleGenerateTemplate={handleGenerateTemplate}
-                generating={generating}
-                saveMatchResult={saveMatchResult}
-                handleDeleteMatch={handleDeleteMatch}
-                handleDeleteAllMatches={handleDeleteAllMatches}
-              />
-            )}
-          </div>
-        )}
-
-        {activeTab === 'settings' && activeCategory && (
-            <SettingsTab 
-              activeCategory={activeCategory}
-              handleUpdateSettings={handleUpdateSettings}
-              handleToggleStage={handleToggleStage}
-              handleDeleteCompetition={handleDeleteCompetition}
-              isSuperAdmin={userData?.role === 'super_admin'}
-              isOwner={competition?.ownerUid === userData?.uid}
-            />
-        )}
-
-        {activeTab === 'all-matches' && (
-          <AllMatchesTab
-            allMatches={allMatchesForSearch}
-            categories={categories}
-            allPlayers={allPlayers}
-            setEditingMatch={setEditingMatch}
-            setShowMatchModal={setShowMatchModal}
-            handleDeleteMatch={handleDeleteMatch}
-            handleDeleteAllMatches={handleDeleteAllMatches}
-          />
-        )}
-
-        {activeTab === 'all-players' && (
-          <AllPlayersTab
-            allPlayers={allPlayers}
-            handleDeletePlayer={handleDeletePlayer}
-            handleDeleteAllPlayers={handleDeleteAllPlayers}
-          />
-        )}
-      </div>
-
-      <MatchUpdateModal 
-        showMatchModal={showMatchModal}
-        editingMatch={editingMatch}
-        setEditingMatch={setEditingMatch}
-        setShowMatchModal={setShowMatchModal}
-        saveMatchResult={saveMatchResult}
-        activeCategory={activeCategory}
-      />
-
-      {/* Edit Player Modal */}
-      {editingPlayer && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-800 w-full max-w-md rounded-lg overflow-hidden shadow-2xl">
-            <div className="p-6 border-b border-white/5 flex justify-between items-center bg-gradient-to-r from-blue-600/10 to-transparent">
-              <h3 className="text-xl font-black text-white uppercase tracking-tight">Uredi Igrača</h3>
-              <button onClick={() => setEditingPlayer(null)} className="text-slate-500 hover:text-white transition-colors">
-                <X size={24} />
-              </button>
-            </div>
-            <form onSubmit={handleUpdatePlayer} className="p-6 space-y-4">
-              <div>
-                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2 px-1">Ime i prezime</label>
-                <input
-                  type="text"
-                  required
-                  value={editPlayerName}
-                  onChange={(e) => setEditPlayerName(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3.5 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
-                />
-              </div>
-              <div>
-                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2 px-1">Klub / Grad</label>
-                <input
-                  type="text"
-                  value={editPlayerClub}
-                  onChange={(e) => setEditPlayerClub(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3.5 text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
-                  placeholder="Opciono"
-                />
-              </div>
-              <div className="pt-4 flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setEditingPlayer(null)}
-                  className="flex-1 px-6 py-4 rounded-lg text-xs font-black uppercase tracking-widest text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 transition-all border border-slate-700"
-                >
-                  Odustani
-                </button>
-                <button
-                  type="submit"
-                  disabled={updatingPlayer}
-                  className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-4 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20"
-                >
-                  {updatingPlayer ? 'Spašavam...' : 'Sačuvaj izmjene'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Add Player Modal */}
-      {showAddPlayer && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
-          <div className="bg-slate-900 border border-slate-800 rounded-[32px] w-full max-w-md overflow-hidden shadow-2xl">
-            <div className="p-8 border-b border-slate-800 flex justify-between items-center">
-              <div>
-                <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">Novi Igrač(i)</h3>
-                <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">Dodajte direktno u sistem</p>
-              </div>
-              <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
-                <button 
-                  onClick={() => setPlayerFormMode('single')}
-                  className={`p-2 rounded-lg transition-all ${playerFormMode === 'single' ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'text-slate-500 hover:text-white'}`}
-                >
-                  <UserPlus size={18} />
-                </button>
-                <button 
-                  onClick={() => setPlayerFormMode('bulk')}
-                  className={`p-2 rounded-lg transition-all ${playerFormMode === 'bulk' ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'text-slate-500 hover:text-white'}`}
-                >
-                  <FileText size={18} />
-                </button>
-              </div>
-            </div>
-            
-            <div className="p-8">
-              {playerFormMode === 'single' ? (
-                <form onSubmit={handleQuickAddPlayer} className="space-y-5">
-                  <div className="space-y-2">
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Ime i Prezime</label>
-                      <input 
-                      required
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-5 py-4 text-white focus:outline-none focus:border-blue-500 transition-all placeholder:text-slate-700"
-                      placeholder="npr. Edin Džeko"
-                      value={newPlayerName}
-                      onChange={(e) => setNewPlayerName(e.target.value)}
-                      />
-                  </div>
-                  <div className="space-y-2">
-                      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Klub (opciono)</label>
-                      <input 
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-5 py-4 text-white focus:outline-none focus:border-blue-500 transition-all placeholder:text-slate-700"
-                      placeholder="npr. STK Spin"
-                      value={newPlayerClub}
-                      onChange={(e) => setNewPlayerClub(e.target.value)}
-                      />
-                  </div>
-                  <div className="flex gap-3 pt-2">
-                    <button 
-                      type="button"
-                      onClick={() => setShowAddPlayer(false)}
-                      className="flex-1 py-4 text-slate-500 font-bold text-xs uppercase tracking-widest hover:text-white transition-all"
-                    >
-                      Otkaži
-                    </button>
-                    <button 
-                      type="submit"
-                      className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-lg font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20 active:scale-95"
-                    >
-                      Dodaj Igrača
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <form onSubmit={handleQuickBulkAdd} className="space-y-5">
-                  <div className="space-y-2">
-                      <div className="flex justify-between items-center ml-1">
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Lista igrača</label>
-                                               <span className="text-[9px] text-blue-500 font-bold uppercase">Format: Ime, Klub;</span>
-                      </div>
-                      <textarea 
-                      required
-                      rows={6}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-5 py-4 text-white font-mono text-xs focus:outline-none focus:border-blue-500 transition-all placeholder:text-slate-800 resize-none"
-                      placeholder="Haris Tabaković, STK Spin;&#10;Ermin H., STK Sarajevo;"
-                      value={bulkPlayerText}
-                      onChange={(e) => setBulkPlayerText(e.target.value)}
-                      />
-                  </div>
-                  <div className="flex gap-3 pt-2">
-                    <button 
-                      type="button"
-                      onClick={() => setShowAddPlayer(false)}
-                      className="flex-1 py-4 text-slate-500 font-bold text-xs uppercase tracking-widest hover:text-white transition-all"
-                    >
-                      Otkaži
-                    </button>
-                    <button 
-                      type="submit"
-                      disabled={generating}
-                      className={`flex-1 ${generating ? 'bg-slate-800' : 'bg-white text-slate-900 hover:bg-blue-500 hover:text-white'} py-4 rounded-lg font-black text-xs uppercase tracking-widest transition-all shadow-xl active:scale-95`}
-                    >
-                      {generating ? 'Procesiranje...' : 'Uvezi Listu'}
-                    </button>
-                  </div>
-                </form>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+    <DashboardLayout>
+      {/* ...existing code... */}
     </DashboardLayout>
   );
 };

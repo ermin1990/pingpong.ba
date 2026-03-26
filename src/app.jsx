@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import AuthProvider from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { auth, db } from './firebase/config';
-import DashboardLayout from './layouts/DashboardLayout';
 import { useState, lazy, Suspense } from 'react';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { CreditCard, Building2, Users, Trophy } from 'lucide-react';
@@ -26,6 +25,8 @@ const PublicCompetition = lazy(() => import('./pages/PublicCompetitionNew'));
 const PublicOverview = lazy(() => import('./pages/PublicOverview'));
 const MyProfile = lazy(() => import('./pages/MyProfile'));
 const Explore = lazy(() => import('./pages/Explore'));
+const RefereeLogin = lazy(() => import('./pages/RefereeLogin'));
+const RefereeDashboard = lazy(() => import('./pages/RefereeDashboard'));
 
 const Unauthorized = () => {
   const [showRequestForm, setShowRequestForm] = useState(false);
@@ -330,6 +331,9 @@ export function App() {
               <Route path="/register" element={<Register />} />
               <Route path="/unauthorized" element={<Unauthorized />} />
 
+              <Route path="/sudija" element={<RefereeLogin />} />
+              <Route path="/sudija-dashboard" element={<RefereeDashboard />} />
+
               {/* Admin Routes */}
               <Route path="/admin/dashboard" element={<Dashboard />} />
               <Route path="/admin/super-admin" element={<SuperAdminDashboard />} />
@@ -340,6 +344,10 @@ export function App() {
               <Route path="/admin/competitions/:id/settings" element={<CompetitionSettings />} />
               <Route path="/admin/leagues" element={<Leagues />} />
               <Route path="/admin/leagues/:id" element={<LeagueDetails />} />
+              <Route path="/admin/seasons" element={<Leagues />} />
+              <Route path="/admin/seasons/:id" element={<LeagueDetails />} />
+              <Route path="/admin/seasons/:seasonId/tournaments/:id" element={<CompetitionDetails />} />
+              <Route path="/admin/tournaments" element={<Competitions />} />
               <Route path="/admin/settings" element={<SettingsPage />} />
               <Route path="/admin/profile" element={<MyProfile />} />
               

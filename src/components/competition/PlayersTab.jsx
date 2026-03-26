@@ -28,68 +28,65 @@ const PlayersTab = ({
     });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Enhanced Header with Stats */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg p-5">
-        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-600/20 rounded-lg flex items-center justify-center text-blue-600 dark:text-blue-400">
-              <Users size={24} />
+      <div className="bg-blue-600/5 dark:bg-blue-500/5 border border-blue-500/20 rounded-2xl p-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+              <Users size={20} />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Roster: {activeCategory?.name}</h2>
-              <div className="flex items-center gap-3 mt-1">
-                <span className="text-xs text-slate-600 dark:text-slate-400">
-                  {selectedPlayers.length} izabrano • {seededPlayers.length} nosilaca
+              <h2 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-tighter shrink-0">{activeCategory?.name}</h2>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black uppercase text-blue-600 dark:text-blue-400 tracking-widest leading-none">
+                  {selectedPlayers.length} / {allPlayers.length} Igrača
                 </span>
               </div>
             </div>
           </div>
           
-          <div className="flex flex-wrap gap-2 w-full xl:w-auto">
+          <div className="flex gap-2 w-full sm:w-auto">
             <button 
               onClick={() => setShowAddPlayer(true)}
-              className="flex-1 xl:flex-none bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white px-4 py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700"
+              className="flex-1 sm:flex-none bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-slate-200 dark:border-slate-800"
             >
-              <Plus size={16} /> Dodaj Igrača
+              Dodaj
             </button>
             <button 
               onClick={saveSelectedPlayers}
-              className="flex-1 xl:flex-none bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-md"
+              className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-500/20"
             >
-              <Target size={16} /> Sačuvaj Roster
+              Sačuvaj
             </button>
           </div>
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         {/* Search and Filter Bar */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-4">
-          <p className="text-xs text-slate-600 dark:text-slate-400 mb-3 font-medium">
-            Pretraži i filtriraj igrače:
-          </p>
-          <div className="flex flex-col md:flex-row gap-3">
+        <div className="bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl p-2 sm:p-3">
+          <div className="flex flex-col md:flex-row gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
               <input 
                 type="text" 
-                placeholder="Traži po imenu ili klubu..." 
-                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-600 rounded-lg pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all" 
+                placeholder="Traži igrača..." 
+                className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-9 pr-4 py-2 text-xs font-black uppercase tracking-tight text-slate-900 dark:text-white focus:border-blue-500 outline-none transition-all" 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <div className="flex bg-slate-100 dark:bg-slate-950 p-1 rounded-lg border border-slate-200 dark:border-slate-700 min-w-[260px]">
+            <div className="flex bg-slate-200 dark:bg-slate-950 p-1 rounded-xl gap-1">
               <button 
                 onClick={() => setShowOnlySelected(false)}
-                className={`flex-1 py-2 rounded-md text-xs font-bold transition-all ${!showOnlySelected ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-300'}`}
+                className={`flex-1 py-1.5 px-4 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${!showOnlySelected ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
               >
                 Svi ({allPlayers.length})
               </button>
               <button 
                 onClick={() => setShowOnlySelected(true)}
-                className={`flex-1 py-2 rounded-md text-xs font-bold transition-all ${showOnlySelected ? 'bg-blue-600 dark:bg-blue-500 text-white shadow-sm' : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-300'}`}
+                className={`flex-1 py-1.5 px-4 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${showOnlySelected ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-700'}`}
               >
                 Učesnici ({selectedPlayers.length})
               </button>

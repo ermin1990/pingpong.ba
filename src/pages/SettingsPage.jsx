@@ -70,24 +70,24 @@ const SettingsPage = () => {
               <User size={24} />
             </div>
             <div>
-              <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">Profil Korisnika</h3>
-              <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Upravljajte vašim ličnim podacima</p>
+              <h3 className="text-xl font-semibold text-white uppercase italic tracking-tight">Profil Korisnika</h3>
+              <p className="text-slate-500 text-xs font-medium uppercase tracking-wide">Upravljajte vašim ličnim podacima</p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Email Adresa</label>
+              <label className="text-xs font-medium text-slate-500 uppercase tracking-wide px-1">Email Adresa</label>
               <input 
                 type="email" 
                 disabled 
-                className="w-full bg-slate-950/50 border border-slate-800 rounded-lg p-4 text-slate-400 font-bold outline-none cursor-not-allowed"
+                className="w-full bg-slate-950/50 border border-slate-800 rounded-lg p-4 text-slate-400 font-medium outline-none cursor-not-allowed"
                 value={user?.email || ''}
               />
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Uloga</label>
-              <div className="w-full bg-slate-950/50 border border-slate-800 rounded-lg p-4 text-blue-400 font-black uppercase text-xs">
+              <label className="text-xs font-medium text-slate-500 uppercase tracking-wide px-1">Uloga</label>
+              <div className="w-full bg-slate-950/50 border border-slate-800 rounded-lg p-4 text-blue-400 font-semibold uppercase text-xs">
                 {userData?.role || 'Administrator'}
               </div>
             </div>
@@ -129,8 +129,8 @@ const SettingsPage = () => {
               <CreditCard size={24} />
             </div>
             <div>
-              <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">Pretplata i Plan</h3>
-              <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Vaš trenutni paket usluga</p>
+              <h3 className="text-xl font-semibold text-white uppercase italic tracking-tight">Pretplata i Plan</h3>
+              <p className="text-slate-500 text-xs font-medium uppercase tracking-wide">Vaš trenutni paket usluga</p>
             </div>
           </div>
 
@@ -138,11 +138,11 @@ const SettingsPage = () => {
             <div className="relative z-10">
               <div className="flex items-center gap-2 mb-4">
                 <span className="text-amber-500">⭐⭐⭐</span>
-                <span className="text-[10px] text-amber-500 font-black uppercase tracking-widest">PRO PLAN</span>
+                <span className="text-xs text-amber-500 font-semibold uppercase tracking-wide">PRO PLAN</span>
               </div>
-              <h4 className="text-3xl font-black text-white uppercase italic mb-2">Premium Tournament</h4>
+              <h4 className="text-3xl font-semibold text-white uppercase italic mb-2">Premium Tournament</h4>
               <p className="text-slate-400 text-sm font-medium mb-6">Uživajte u svim naprednim statistikama i neograničenom broju mečeva.</p>
-              <button className="bg-white text-slate-950 px-6 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-blue-500 hover:text-white transition-all">Nadogradi Plan</button>
+              <button className="bg-white text-slate-950 px-6 py-3 rounded-xl font-semibold uppercase text-xs tracking-wide hover:bg-blue-500 hover:text-white transition-all">Nadogradi Plan</button>
             </div>
             <div className="absolute top-0 right-0 p-8 opacity-5">
               <Trophy size={160} />

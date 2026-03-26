@@ -116,10 +116,10 @@ const Explore = () => {
 
                 {/* Title and Sport */}
                 <div className="mb-4">
-                    <p className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">
+                    <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wide mb-1">
                         {comp.sport || 'Stonoteniski'}
                     </p>
-                    <h3 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-tight leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    <h3 className="text-base font-semibold text-slate-900 dark:text-white uppercase tracking-tight leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                         {comp.name}
                     </h3>
                 </div>
@@ -129,13 +129,13 @@ const Explore = () => {
                     {comp.location && (
                         <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
                             <MapPin size={12} className="shrink-0" />
-                            <span className="text-[10px] font-bold truncate">{comp.location}</span>
+                            <span className="text-xs font-medium truncate">{comp.location}</span>
                         </div>
                     )}
                     {comp.startDate && (
                         <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
                             <Calendar size={12} className="shrink-0" />
-                            <span className="text-[10px] font-bold">
+                            <span className="text-xs font-medium">
                                 {formatDate(comp.startDate)}
                             </span>
                         </div>
@@ -145,7 +145,7 @@ const Explore = () => {
 
             {/* Bottom Bar */}
             <div className="px-4 py-3 bg-slate-50/50 dark:bg-white/5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest group-hover:text-blue-600 transition-colors">
+                <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wide group-hover:text-blue-600 transition-colors">
                     Otvori Rezultate
                 </span>
                 <ChevronRight size={14} className="text-slate-300 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" />
@@ -162,11 +162,11 @@ const Explore = () => {
                         <div className="bg-gradient-to-br from-blue-600 to-blue-700 p-2 rounded-xl shadow-lg shadow-blue-600/30">
                             <Trophy size={22} className="text-white" />
                         </div>
-                        <span className="text-xl font-black tracking-tighter text-slate-900 dark:text-white">PINGPONG.BA</span>
+                        <span className="text-xl font-semibold tracking-tight text-slate-900 dark:text-white">PINGPONG.BA</span>
                     </Link>
                     <Link 
                         to="/login" 
-                        className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white transition-colors"
+                        className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white transition-colors"
                     >
                         Organizatorski Panel
                     </Link>
@@ -176,10 +176,10 @@ const Explore = () => {
             <div className="max-w-7xl mx-auto px-6 py-12">
                 {/* Hero Header - Minimalist */}
                 <div className="mb-12 text-left">
-                    <h1 className="text-3xl md:text-5xl font-black mb-4 tracking-tighter uppercase italic text-slate-900 dark:text-white">
+                    <h1 className="text-3xl md:text-5xl font-semibold mb-4 tracking-tight uppercase italic text-slate-900 dark:text-white">
                         Sva Takmičenja
                     </h1>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium max-w-2xl">
+                    <p className="text-sm text-slate-500 dark:text-slate-400 font-normal max-w-2xl">
                         Pregledajte aktivna, nadolazeća i završena takmičenja na platformi.
                     </p>
                 </div>
@@ -190,7 +190,7 @@ const Explore = () => {
                     <input 
                         type="text" 
                         placeholder="Brza pretraga turnira..."
-                        className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl py-3 pl-12 pr-4 text-xs font-bold outline-none focus:border-blue-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600 shadow-sm"
+                        className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl py-3 pl-12 pr-4 text-sm font-normal outline-none focus:border-blue-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600 shadow-sm"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -210,7 +210,7 @@ const Explore = () => {
                                 <div className="flex items-center gap-3 mb-6">
                                     <div className="flex items-center gap-2 bg-emerald-500 text-white px-3 py-1.5 rounded-lg shadow-lg shadow-emerald-500/20">
                                         <Activity size={14} className="animate-pulse" />
-                                        <span className="text-[10px] font-black uppercase tracking-widest">Uživo</span>
+                                        <span className="text-xs font-medium uppercase tracking-wide">Uživo</span>
                                     </div>
                                     <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
                                 </div>
@@ -221,7 +221,7 @@ const Explore = () => {
                                             key={comp.id} 
                                             comp={comp}
                                             badge={
-                                                <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest border border-emerald-100 dark:border-emerald-500/20">
+                                                <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 px-2 py-1 rounded text-[10px] font-medium uppercase tracking-wide border border-emerald-100 dark:border-emerald-500/20">
                                                     <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
                                                     <span>LIVE</span>
                                                 </div>
@@ -238,7 +238,7 @@ const Explore = () => {
                                 <div className="flex items-center gap-3 mb-6">
                                     <div className="flex items-center gap-2 bg-amber-400 text-black px-3 py-1.5 rounded-lg shadow-lg shadow-amber-400/20">
                                         <Clock size={14} />
-                                        <span className="text-[10px] font-black uppercase tracking-widest">Nadolazeći</span>
+                                        <span className="text-xs font-medium uppercase tracking-wide">Nadolazeći</span>
                                     </div>
                                     <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
                                 </div>
@@ -249,7 +249,7 @@ const Explore = () => {
                                             key={comp.id} 
                                             comp={comp}
                                             badge={
-                                                <div className="flex items-center gap-1.5 bg-amber-50 text-amber-700 dark:bg-amber-400 dark:text-black px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest border border-amber-100 dark:border-amber-400/20">
+                                                <div className="flex items-center gap-1.5 bg-amber-50 text-amber-700 dark:bg-amber-400 dark:text-black px-2 py-1 rounded text-[10px] font-medium uppercase tracking-wide border border-amber-100 dark:border-amber-400/20">
                                                     USKORO
                                                 </div>
                                             }
@@ -265,7 +265,7 @@ const Explore = () => {
                                 <div className="flex items-center gap-3 mb-6">
                                     <div className="flex items-center gap-2 bg-slate-500 text-white px-3 py-1.5 rounded-lg shadow-lg shadow-slate-500/20">
                                         <CheckCircle size={14} />
-                                        <span className="text-[10px] font-black uppercase tracking-widest">Završeni</span>
+                                        <span className="text-xs font-medium uppercase tracking-wide">Završeni</span>
                                     </div>
                                     <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
                                 </div>
@@ -276,7 +276,7 @@ const Explore = () => {
                                             key={comp.id} 
                                             comp={comp}
                                             badge={
-                                                <div className="flex items-center gap-1.5 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest border border-slate-200 dark:border-slate-700">
+                                                <div className="flex items-center gap-1.5 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 px-2 py-1 rounded text-[10px] font-medium uppercase tracking-wide border border-slate-200 dark:border-slate-700">
                                                     ZAVRŠENO
                                                 </div>
                                             }
@@ -290,10 +290,10 @@ const Explore = () => {
                         {filteredLive.length === 0 && filteredUpcoming.length === 0 && filteredFinished.length === 0 && (
                             <div className="text-center py-24 bg-white dark:bg-slate-900/30 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl">
                                 <Trophy className="w-16 h-16 text-slate-300 dark:text-slate-700 mx-auto mb-6" />
-                                <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-3 uppercase tracking-tight">
+                                <h3 className="text-2xl font-semibold text-slate-900 dark:text-white mb-3 uppercase tracking-tight">
                                     {searchTerm ? 'Nema rezultata' : 'Nema javnih takmičenja'}
                                 </h3>
-                                <p className="text-slate-500 dark:text-slate-400 font-medium text-sm max-w-md mx-auto leading-relaxed">
+                                <p className="text-slate-500 dark:text-slate-400 font-normal text-sm max-w-md mx-auto leading-relaxed">
                                     {searchTerm 
                                         ? 'Pokušajte promijeniti pretragu ili filtere.' 
                                         : 'Trenutno nema dostupnih takmičenja. Budite prvi koji će kreirati turnir!'}

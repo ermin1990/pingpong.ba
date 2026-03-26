@@ -16,7 +16,7 @@
     <meta name="keywords" content="tournament management, table tennis, ping pong, sports, competition, berger system, knockout, live scoring" />
     
     <!-- Apple Mobile Web App -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Ping Pong BiH" />
     
@@ -44,8 +44,18 @@
         /* Defaults handle via Tailwind classes on body or root layout */
         min-height: 100vh;
         margin: 0;
-        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", "SF Pro Display", Roboto, "Helvetica Neue", Arial, sans-serif;
+        font-weight: 400;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
       }
+      
+      /* Override heavy font weights globally for minimalist look */
+      .font-black { font-weight: 600 !important; }
+      .font-extrabold { font-weight: 600 !important; }
+      .font-bold { font-weight: 500 !important; }
+      .font-semibold { font-weight: 500 !important; }
+      
       .custom-scrollbar::-webkit-scrollbar {
         width: 6px;
         height: 6px;

@@ -22,9 +22,49 @@ service cloud.firestore {
           || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.subscriptionExpiry > request.time
         );
 
+      // Updates are allowed for owners and super_admins, but deletes are restricted
+      // in production to super_admin only (prevents accidental removals by owners).
+      allow update: if request.auth != null && (
+        resource.data.ownerUid == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin'
+      );
+      // Disallow client-side deletes for regular users. Only super_admins may delete via the client.
+      // NOTE: Admin SDK (server) bypasses security rules and can still delete documents when needed.
+      allow delete: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin';
+    }
+
+    // Amater Leagues collection (isolated collection)
+    match /amater_leagues/{leagueId} {
+      allow read: if true;
+      allow create: if request.auth != null && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['org_admin', 'super_admin']);
+      allow update: if request.auth != null && (
+        resource.data.ownerUid == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin'
+      );
+      allow delete: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin';
+
+      match /categories/{catId} {
+        allow read: if true;
+        allow write: if request.auth != null && (
+          get(/databases/$(database)/documents/amater_leagues/$(leagueId)).data.ownerUid == request.auth.uid 
+          || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin'
+        );
+      }
+    }
+
+    // Amater League Tournaments (the monthly events)
+    match /amater_league_tournaments/{tourneyId} {
+      allow read: if true;
+      allow create: if request.auth != null && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['org_admin', 'super_admin']);
       allow update, delete: if request.auth != null && (
         resource.data.ownerUid == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin'
       );
+
+      match /categories/{catId} {
+        allow read: if true;
+        allow write: if request.auth != null && (
+          get(/databases/$(database)/documents/amater_league_tournaments/$(tourneyId)).data.ownerUid == request.auth.uid 
+          || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin'
+        );
+      }
     }
 
     // Players: similar ownership rules
@@ -36,12 +76,56 @@ service cloud.firestore {
       );
     }
 
-    // Matches: writable by owners or admins
+    // Matches: writable by owners or admins OR assigned referees
     match /matches/{matchId} {
       allow read: if true;
-      allow create, update, delete: if request.auth != null && (
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['org_admin', 'super_admin'] 
-        || resource.data.ownerUid == request.auth.uid
+      
+      // Helper function to check ownership of parent competition
+      function isCompetitionOwner(compId) {
+        let isStd = exists(/databases/$(database)/documents/competitions/$(compId)) && 
+                    get(/databases/$(database)/documents/competitions/$(compId)).data.ownerUid == request.auth.uid;
+        let isAmater = exists(/databases/$(database)/documents/amater_league_tournaments/$(compId)) && 
+                       get(/databases/$(database)/documents/amater_league_tournaments/$(compId)).data.ownerUid == request.auth.uid;
+        return isStd || isAmater;
+      }
+
+      // Create: allow if user is admin OR if the user is owner of the parent competition
+      allow create: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['org_admin', 'super_admin']
+        || (
+          request.resource.data.competitionId is string && 
+          isCompetitionOwner(request.resource.data.competitionId)
+        )
+      );
+
+      // Delete: allow if admin OR the competition owner
+      allow delete: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['org_admin', 'super_admin']
+        || (resource.data.competitionId is string && isCompetitionOwner(resource.data.competitionId))
+      );
+
+      // Update: allow admin, competition owner or an assigned referee
+      allow update: if request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['org_admin', 'super_admin']
+        || (resource.data.competitionId is string && isCompetitionOwner(resource.data.competitionId))
+        || (
+             exists(/databases/$(database)/documents/referees/$(request.auth.uid))
+             && get(/databases/$(database)/documents/referees/$(request.auth.uid)).data.competitionId == resource.data.competitionId
+           )
+      );
+    }
+
+    // Referees collection: Public read for code check (security by obscurity of code), update only by claiming or admin
+    match /referees/{refereeId} {
+      allow read: if true; 
+      allow create: if request.auth != null && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['org_admin', 'super_admin']);
+      allow update: if request.auth != null && (
+        // Admin can update
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['org_admin', 'super_admin']
+        // OR the user is claiming the code (currentUid is null)
+        || (resource.data.currentUid == null)
+        // OR the user OWNS this referee profile
+        || (resource.data.currentUid == request.auth.uid)
       );
     }
 

@@ -1,8 +1,8 @@
 // scripts/seed-demo.js
-import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc, serverTimestamp } from "firebase/firestore";
+import admin from "firebase-admin";
 import * as dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -11,81 +11,125 @@ const __dirname = path.dirname(__filename);
 // Load .env
 dotenv.config({ path: path.join(__dirname, '../.env') });
 
-const firebaseConfig = {
-  apiKey: process.env.VITE_FIREBASE_API_KEY,
-  authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.VITE_FIREBASE_APP_ID,
-  measurementId: process.env.VITE_FIREBASE_MEASUREMENT_ID
-};
+const serviceAccountPath = path.join(__dirname, '../serviceAccountKey.json');
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+if (!fs.existsSync(serviceAccountPath)) {
+  console.error("❌ Greška: serviceAccountKey.json nije pronađen u rootu projekta!");
+  console.log("Molimo preuzmite service account ključ sa Firebase konzole i spremite ga kao serviceAccountKey.json");
+  process.exit(1);
+}
 
-const demoTournament = {
-  name: "Balkan Cup 2026 - International Table Tennis Open",
-  date: "2026-05-15",
-  endDate: "2026-05-17",
-  location: "Sportska dvorana 'Novo Sarajevo' (Grbavica)",
-  description: "Najveći međunarodni stonoteniski turnir u regiji koji okuplja preko 300 takmičara iz cijelog Balkana i šire. Očekuju vas vrhunski mečevi, odlična atmosfera i bogat nagradni fond.",
-  status: "active",
-  type: "tournament",
-  image: "https://images.unsplash.com/photo-1534158914592-062992fbe900?auto=format&fit=crop&q=80&w=1200",
-  
-  // Professional Fields
-  organizer: "Stonoteniski klub 'SPIN' Sarajevo",
-  director: "Mirza Ibrahimović",
-  referee: "Adnan Hodžić (ITTF International Umpire)",
-  entryFee: "30 KM (15 EUR) pojedinačno, 50 KM parovi",
-  prizes: "Ukupni nagradni fond: 5.000 KM. Pobjednik dobija 1.500 KM + Pehar. Ostali nagrađeni opremom brenda Butterfly.",
-  schedule: "PETAK (15.05.2026):\n- 18:00 - Registracija i akreditacije\n- 19:00 - Tehnički sastanak\n\nSUBOTA (16.05.2026):\n- 08:30 - Otvaranje dvorane\n- 09:30 - Svečano otvaranje\n- 10:00 - Grupna faza (Seniori i U21)\n- 14:00 - Pauza\n- 15:30 - Nastavak takmičenja po grupama\n\nNEDJELJA (17.05.2026):\n- 09:00 - Glavni žrijeb (Knockout faza)\n- 11:30 - Polufinala i Finala\n- 13:00 - Dodjela nagrada",
-  rules: "1. Turnir se igra po važećim ITTF pravilima.\n2. Kategorije: Seniori (M/Ž), U21, Veterani 40-50, 50-60, 60+.\n3. Sve partije se igraju u 3 dobijena seta (best of 5).\n4. Obavezna je sportska dvoranska oprema.\n5. Loptice: Butterfly R40+ ***.\n6. Žalbe se podnose vrhovnom sudiji uz taksu od 50 KM.",
-  
-  contact: {
-    phone: "+387 61 123 456",
-    email: "info@spin-sarajevo.ba",
-    address: "Zvornička 15, 71000 Sarajevo, Bosna i Hercegovina"
-  },
-  
-  availableCategories: [
-    "Muški Singl",
-    "Ženski Singl",
-    "Muški Dubl",
-    "Ženski Dubl",
-    "Mješoviti Dubl",
-    "U21 Muški",
-    "U21 Ženski",
-    "U18 Muški",
-    "U18 Ženski",
-    "Veterani 40+",
-    "Veterani 50+",
-    "Veterani 60+"
-  ],
-  
-  registration: {
-    isOpen: true,
-    link: "https://forms.google.com/balkan-cup-2026",
-    deadline: "2026-05-10"
-  },
-  
-  isPublic: true,
-  
-  createdAt: serverTimestamp(),
-  updatedAt: serverTimestamp(),
-  categoryIds: [] // Will be populated manually or through UI
-};
+const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+
+const db = admin.firestore();
+
+async function seedRosePharmLeague() {
+  const rosePharmLeagueId = "rose-pharm-kreka-liga-s1";
+  const rosePharmLeague = {
+    name: "ROSE PHARM – KREKA LIGA (Sezona 1)",
+    slug: "rose-pharm-kreka-liga-s1",
+    organizer: "Stonoteniski klub 'KREKA' Tuzla",
+    sponsor: "ROSE PHARM apoteke",
+    location: "Stonoteniska dvorana „KREKA“ Tuzla",
+    startDate: "2026-03-22",
+    startTime: "17:00",
+    status: "active",
+    type: "League",
+    ownerUid: "DAt7L6Qo9GZsh1Y6gN2V5LszshY2", // Tvoj UID iz Firebase-a
+    isSeason: true, 
+    subCompetitions: [], 
+    description: "Prva liga za veterane, rekreativce i ljubitelje stonog tenisa u Tuzli.",
+    
+    // Points System (based on image text)
+    pointsSystem: {
+      winInGroup: 5,
+      winAfterGroup: 5,
+      bonusPoints: {
+        "1": 50,
+        "2": 40,
+        "3": 35,
+        "4": 30,
+        "5": 25,
+        "6": 20,
+        "7": 15,
+        "8": 10,
+        "9-16": 5
+      }
+    },
+
+    prizes: {
+      "1": "150 KM + Pehar + Medalja + Diploma",
+      "2": "100 KM + Medalja + Diploma",
+      "3": "50 KM + Medalja + Diploma",
+      others: "Zahvalnice za sve učesnike"
+    },
+
+    rules: {
+      groupSize: "4-6 igrača",
+      matchFormat: "Best of 3 (do 2 dobijena seta) u grupama i ranoj fazi",
+      knockoutFormat: "Best of 5 (do 3 dobijena seta) od 1/4 finala pa nadalje",
+      advancement: "2 ili 3 najbolja iz grupe u glavni žrijeb, ostali u utješni/razigravanje",
+      eligibility: "Svi registrovani i neregistrovani (osim Premijer lige BiH)",
+      rankingImpact: "Rezultati utiču na žrijeb za naredne turnire"
+    },
+
+    charity: {
+      minFee: "10 KM",
+      purpose: "Sanacija krova dvorane i ugradnja solarnih panela",
+      transparency: "Javna objava prihoda na FB stranici"
+    },
+
+    registration: {
+      preliminaryDeadline: "2026-03-21 18:00",
+      finalDeadline: "2026-03-22 09:00",
+      contact: "Viber grupa, FB stranica, 061/178-606"
+    },
+
+    isPublic: true,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    updatedAt: admin.firestore.FieldValue.serverTimestamp()
+  };
+
+  try {
+    console.log("🚀 Unosim Rose Pharm - Kreka Ligu sa ADMIN ovlastima...");
+    // Use doc().set() to specify a fixed ID for easier testing if needed, or add() 
+    const docRef = await db.collection("competitions").add(rosePharmLeague);
+    console.log("✅ Liga uspješno kreirana ID: ", docRef.id);
+    
+    // Create first monthly tournament
+    const tournament1 = {
+      name: "ROSE PHARM – KREKA LIGA: Turnir 1",
+      parentLeagueId: docRef.id,
+      date: "2026-03-22",
+      status: "active",
+      type: "Groups", // Monthly event is played in groups
+      isPublic: true,
+      createdAt: admin.firestore.FieldValue.serverTimestamp()
+    };
+    const t1Ref = await db.collection("competitions").add(tournament1);
+    console.log("✅ Prvi turnir kreiran ID: ", t1Ref.id);
+    
+    // Update league with subcompetition
+    await docRef.update({
+      subCompetitions: [t1Ref.id]
+    });
+  } catch (e) {
+    console.error("❌ Greška pri unosu lige: ", e);
+  }
+}
 
 async function seed() {
   try {
-    console.log("🚀 Pokrećem unos demo turnira...");
-    const docRef = await addDoc(collection(db, "competitions"), demoTournament);
-    console.log("✅ Demo turnir uspješno kreiran sa ID: ", docRef.id);
-    console.log("🔗 Pristupi mu na: http://localhost:5173/p/" + docRef.id);
+    console.log("🚀 Pokrećem unos podataka...");
+    await seedRosePharmLeague();
+    console.log("✨ Sve završeno.");
     process.exit(0);
   } catch (e) {
-    console.error("❌ Greška pri unosu: ", e);
+    console.error("❌ Fatalna greška: ", e);
     process.exit(1);
   }
 }

@@ -124,3 +124,73 @@ export const updateStatsFromMatch = (stats, match, isPlayer1, winPts = 2, lossPt
 
   return stats;
 };
+
+/**
+ * Calculate the total seasonal points for players in a Series/League Season.
+ * According to the Rose Pharm - Kreka Liga rules:
+ * - 5 points per match win (group or knockout)
+ * - Bonus points for top 16 placement
+ * 
+ * @param {Array} tournamentRankings - List of final standings from each month
+ * @param {Array} allMatches - All matches across all months
+ * @param {Object} pointsConfig - The config from pointsSystem (winInGroup: 5, bonusPoints: {...})
+ * @returns {Array} List of players with their total accumulated points
+ */
+export const calculateSeasonStandings = (tournamentRankings, allMatches, pointsConfig) => {
+  const seasonStats = {};
+
+  // 1. Process match wins (5 points each win)
+  allMatches.forEach(m => {
+    if (m.status !== 'completed') return;
+    const winnerId = m.player1Score > m.player2Score ? m.player1?.id : m.player2Score > m.player1Score ? m.player2?.id : null;
+    if (!winnerId || winnerId === 'tbd') return;
+
+    if (!seasonStats[winnerId]) {
+      const p = m.player1Score > m.player2Score ? m.player1 : m.player2;
+      seasonStats[winnerId] = {
+        id: winnerId,
+        name: p?.name || 'Nepoznat',
+        club: p?.club || '',
+        winPoints: 0,
+        bonusPoints: 0,
+        totalPoints: 0
+      };
+    }
+    
+    // Each win gives points (default 5)
+    seasonStats[winnerId].winPoints += (pointsConfig?.winInGroup || 5);
+  });
+
+  // 2. Process bonus points from final tournament rankings
+  tournamentRankings.forEach(ranking => {
+    // ranking is an array of playerIds in order [1st, 2nd, 3rd, ...]
+    if (!Array.isArray(ranking)) return;
+
+    ranking.forEach((pid, index) => {
+      const pos = index + 1;
+      let bonus = 0;
+
+      if (pointsConfig?.positionPoints) {
+        // Use custom position points if available
+        bonus = pointsConfig.positionPoints[pos] || (pos > 8 ? pointsConfig.positionPoints['others'] : 0) || 0;
+      } else {
+        // Default values as backup
+        const defaultBonus = { "1": 50, "2": 40, "3": 35, "4": 30, "5": 25, "6": 20, "7": 15, "8": 10 };
+        bonus = defaultBonus[pos] || (pos >= 9 && pos <= 16 ? 5 : 0);
+      }
+
+      if (bonus > 0 && pid && pid !== 'tbd') {
+        if (!seasonStats[pid]) {
+          seasonStats[pid] = { id: pid, name: 'Igrač', club: '', winPoints: 0, bonusPoints: 0, totalPoints: 0 };
+        }
+        seasonStats[pid].bonusPoints += bonus;
+      }
+    });
+  });
+
+  // 3. Final calculation and sorting
+  return Object.values(seasonStats).map(p => ({
+    ...p,
+    totalPoints: (p.winPoints || 0) + (p.bonusPoints || 0)
+  })).sort((a, b) => b.totalPoints - a.totalPoints);
+};

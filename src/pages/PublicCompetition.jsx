@@ -24,10 +24,11 @@ const KnockoutMatchCard = ({ match, isFinal = false }) => {
       className={`block bg-white dark:bg-slate-800/40 backdrop-blur-md rounded-xl border border-slate-200 dark:border-slate-700/50 shadow-sm dark:shadow-xl transition-all duration-200 hover:scale-[1.02] knockout-match relative pt-[3px] my-[3px] ${isFinal ? 'ring-2 ring-amber-500/20' : ''}`}
     >
       {isLive && (
-        <div className="absolute -top-1 -right-1 z-20">
-          <div className="bg-blue-600 text-[6px] font-black uppercase px-1.5 py-0.5 rounded shadow-lg border border-blue-400 text-white">
-            UŽIVO
-          </div>
+        <div className="absolute top-0 right-0 z-20">
+           <div className="bg-red-600 text-white text-[8px] font-black px-2 py-0.5 rounded-bl-lg shadow-lg flex items-center gap-1 animate-pulse">
+              <div className="w-1 h-1 rounded-full bg-white"></div>
+              LIVE
+           </div>
         </div>
       )}
       
@@ -35,7 +36,7 @@ const KnockoutMatchCard = ({ match, isFinal = false }) => {
           {/* Home Player */}
           <div className="flex items-center justify-between mb-1.5">
             <div className="flex items-center gap-2 flex-1 min-w-0 mr-2">
-                <div className={`player-name font-semibold truncate text-[13px] ${p1Win ? 'text-emerald-600 dark:text-green-500 font-bold' : 'text-slate-500 dark:text-gray-300'}`}>
+                <div className={`player-name font-black line-clamp-2 leading-tight text-[13px] ${p1Win ? 'text-emerald-600 dark:text-green-500' : 'text-slate-700 dark:text-gray-300'}`}>
                   {match.player1?.name || "TBD"}
                 </div>
             </div>
@@ -65,7 +66,7 @@ const KnockoutMatchCard = ({ match, isFinal = false }) => {
           {/* Away Player */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 flex-1 min-w-0 mr-2">
-                <div className={`player-name font-semibold truncate text-[13px] ${p2Win ? 'text-emerald-600 dark:text-green-500 font-bold' : 'text-slate-500 dark:text-gray-300'}`}>
+                <div className={`player-name font-black line-clamp-2 leading-tight text-[13px] ${p2Win ? 'text-emerald-600 dark:text-green-500' : 'text-slate-700 dark:text-gray-300'}`}>
                   {match.player2?.name || "TBD"}
                 </div>
             </div>
