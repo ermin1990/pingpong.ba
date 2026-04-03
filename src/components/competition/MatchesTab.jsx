@@ -96,7 +96,7 @@ const MatchesTab = ({
 
               <div className="grid grid-cols-1 gap-2 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                 {allPlayers
-                  .filter(p => !showOnlySelected || selectedPlayers.includes(p.id))
+                  .filter(p => activeCategory?.playerIds?.includes(p.id))
                   .filter(p => !assignedPlayerIds.includes(p.id))
                   .filter(p => !searchTerm || p.name.toLowerCase().includes(searchTerm.toLowerCase()))
                   .sort((a, b) => {

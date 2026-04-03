@@ -366,6 +366,7 @@ const CompetitionDetails = () => {
         name: newCategoryName.trim(),
         format: newCategoryFormat,
         status: 'draft',
+        ownerUid: competition?.ownerUid || null,
         createdAt: serverTimestamp(),
         playerIds: [],
         seededPlayerIds: [],
@@ -1329,16 +1330,16 @@ const CompetitionDetails = () => {
     if (!confirm("Da li ste sigurni da želite obrisati ovu kategoriju? Biće obrisani SVI mečevi u ovoj kategoriji. Ova akcija se ne može poništiti.")) return;
     
     try {
-      // Delete all matches in this category
+      // 1. Delete all matches in this category (from the subcollection)
       const categoryMatches = matches.filter(m => m.categoryId === categoryId);
       const batch = writeBatch(db);
       
       categoryMatches.forEach(match => {
-        batch.delete(doc(db, "matches", match.id));
+        batch.delete(doc(db, "competitions", id, "matches", match.id));
       });
       
-      // Delete the category document
-      batch.delete(doc(db, "categories", categoryId));
+      // 2. Delete the category document (from the subcollection)
+      batch.delete(doc(db, "competitions", id, "categories", categoryId));
       
       await batch.commit();
       
@@ -1348,13 +1349,14 @@ const CompetitionDetails = () => {
       
       // Reset selected category if deleted
       if (selectedCategoryId === categoryId) {
-        setSelectedCategoryId(categories[0]?.id || null);
+        const remainingCategories = categories.filter(c => c.id !== categoryId);
+        setSelectedCategoryId(remainingCategories[0]?.id || null);
       }
       
-      // Maknut alert za uspješno brisanje
+      alert("Kategorija je uspješno obrisana.");
     } catch (err) {
       console.error("Error deleting category:", err);
-      alert("Greška pri brisanju kategorije.");
+      alert("Greška pri brisanju kategorije: " + err.message);
     }
   };
 

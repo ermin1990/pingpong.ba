@@ -25,6 +25,15 @@ service cloud.firestore {
       allow update, delete: if request.auth != null && (
         resource.data.ownerUid == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin'
       );
+
+      // Fix for subcollections (categories, matches, etc.)
+      match /{allSubcollections=**} {
+        allow read: if true;
+        allow write: if request.auth != null && (
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin'
+          || get(/databases/$(database)/documents/competitions/$(compId)).data.ownerUid == request.auth.uid
+        );
+      }
     }
 
     // Players: similar ownership rules
@@ -46,7 +55,6 @@ service cloud.firestore {
       allow update: if request.auth != null && (
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['org_admin', 'super_admin'] 
         || resource.data.ownerUid == request.auth.uid
-        // DOZVOLI SUDIJI: Ako sudija pripada istom takmičenju kao meč
         || (
              exists(/databases/$(database)/documents/referees/$(request.auth.uid)) 
              && get(/databases/$(database)/documents/referees/$(request.auth.uid)).data.competitionId == resource.data.competitionId
@@ -54,21 +62,18 @@ service cloud.firestore {
       );
     }
 
-    // Referees collection: Public read for code check (security by obscurity of code), update only by claiming or admin
+    // Referees collection
     match /referees/{refereeId} {
       allow read: if true; 
       allow create: if request.auth != null && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['org_admin', 'super_admin']);
       allow update: if request.auth != null && (
-        // Admin can update
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['org_admin', 'super_admin']
-        // OR the user is claiming the code (currentUid is null)
         || (resource.data.currentUid == null)
-        // OR the user OWNS this referee profile
         || (resource.data.currentUid == request.auth.uid)
       );
     }
 
-    // Access requests and whitelisted_emails: super_admin can manage; authenticated users can create requests
+    // Access requests and whitelisted_emails
     match /access_requests/{reqId} {
       allow create: if request.auth != null;
       allow read: if request.auth != null && (resource.data.userId == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin');
@@ -86,9 +91,3 @@ service cloud.firestore {
     }
   }
 }
-
-// NOTE:
-// - These rules enforce that only users with role 'org_admin' or 'super_admin' can create competitions/players/matches.
-// - Subscription-based quotas (limits on number of competitions/leagues) cannot be reliably enforced in security rules by counting other documents.
-//   To enforce quotas, maintain counters (e.g. in the user's document) that the trusted server or Cloud Function increments/decrements
-//   and check those counters here before allowing writes.
