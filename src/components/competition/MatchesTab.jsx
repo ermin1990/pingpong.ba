@@ -95,44 +95,82 @@ const MatchesTab = ({
               </div>
 
               <div className="grid grid-cols-1 gap-2 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-                {allPlayers
-                  .filter(p => activeCategory?.playerIds?.includes(p.id))
-                  .filter(p => !assignedPlayerIds.includes(p.id))
-                  .filter(p => !searchTerm || p.name.toLowerCase().includes(searchTerm.toLowerCase()))
-                  .sort((a, b) => {
-                    const aSeeded = seededPlayerIds.includes(a.id);
-                    const bSeeded = seededPlayerIds.includes(b.id);
-                    if (aSeeded && !bSeeded) return -1;
-                    if (!aSeeded && bSeeded) return 1;
-                    return 0;
-                  })
-                  .map(player => (
-                    <div 
-                      key={player.id}
-                      draggable
-                      onDragStart={(e) => {
-                        e.dataTransfer.setData('playerId', player.id);
-                        e.dataTransfer.effectAllowed = 'move';
-                      }}
-                      className="bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 p-3 rounded-2xl cursor-grab active:cursor-grabbing hover:border-blue-500/50 hover:bg-white dark:hover:bg-slate-900 transition-all shadow-sm group"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <button 
-                          onClick={() => togglePlayerSeed(player.id)}
-                          className="flex items-center gap-2 group/btn"
-                          title={seededPlayerIds.includes(player.id) ? "Ukloni nosioca" : "Postavi za nosioca"}
-                        >
-                          <Star 
-                            size={12} 
-                            className={seededPlayerIds.includes(player.id) ? "text-amber-500 fill-amber-500" : "text-slate-300 dark:text-slate-600 group-hover/btn:text-amber-500/50"} 
-                          />
-                          <p className="font-black text-[11px] uppercase tracking-tight text-slate-700 dark:text-slate-200 truncate">{player.name}</p>
-                        </button>
+                {activeCategory?.type === 'doubles' ? (
+                  // Doubles Logic: Show teams/pairs instead of single players
+                  (activeCategory.doublesPairs || [])
+                    .filter(p => !assignedPlayerIds.includes(p.id))
+                    .filter(p => !searchTerm || p.name.toLowerCase().includes(searchTerm.toLowerCase()))
+                    .map(pair => (
+                      <div 
+                        key={pair.id}
+                        draggable
+                        onDragStart={(e) => {
+                          e.dataTransfer.setData('playerId', pair.id);
+                          e.dataTransfer.effectAllowed = 'move';
+                        }}
+                        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-2xl cursor-grab active:cursor-grabbing hover:border-blue-500/50 transition-all shadow-sm group"
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <Users size={12} className="text-blue-500" />
+                          <p className="font-black text-[10px] uppercase tracking-tight text-slate-700 dark:text-slate-200 truncate">{pair.name}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          {pair.playerIds.map(pid => {
+                            const p = allPlayers.find(pl => pl.id === pid);
+                            return (
+                              <span key={pid} className="text-[8px] font-bold text-slate-500 uppercase truncate">
+                                {p?.name.split(' ').pop()}
+                              </span>
+                            );
+                          })}
+                        </div>
                       </div>
-                      <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest truncate mt-1">{player.club || 'Individualac'}</p>
-                    </div>
-                ))}
-                {allPlayers.filter(p => assignedPlayerIds.includes(p.id)).length === allPlayers.length && (
+                    ))
+                ) : (
+                  // Singles Logic (Original)
+                  allPlayers
+                    .filter(p => activeCategory?.playerIds?.includes(p.id))
+                    .filter(p => !assignedPlayerIds.includes(p.id))
+                    .filter(p => !searchTerm || p.name.toLowerCase().includes(searchTerm.toLowerCase()))
+                    .sort((a, b) => {
+                      const aSeeded = seededPlayerIds.includes(a.id);
+                      const bSeeded = seededPlayerIds.includes(b.id);
+                      if (aSeeded && !bSeeded) return -1;
+                      if (!aSeeded && bSeeded) return 1;
+                      return 0;
+                    })
+                    .map(player => (
+                      <div 
+                        key={player.id}
+                        draggable
+                        onDragStart={(e) => {
+                          e.dataTransfer.setData('playerId', player.id);
+                          e.dataTransfer.effectAllowed = 'move';
+                        }}
+                        className="bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 p-3 rounded-2xl cursor-grab active:cursor-grabbing hover:border-blue-500/50 hover:bg-white dark:hover:bg-slate-900 transition-all shadow-sm group"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <button 
+                            onClick={() => togglePlayerSeed(player.id)}
+                            className="flex items-center gap-2 group/btn"
+                            title={seededPlayerIds.includes(player.id) ? "Ukloni nosioca" : "Postavi za nosioca"}
+                          >
+                            <Star 
+                              size={12} 
+                              className={seededPlayerIds.includes(player.id) ? "text-amber-500 fill-amber-500" : "text-slate-300 dark:text-slate-600 group-hover/btn:text-amber-500/50"} 
+                            />
+                            <p className="font-black text-[11px] uppercase tracking-tight text-slate-700 dark:text-slate-200 truncate">{player.name}</p>
+                          </button>
+                        </div>
+                        <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest truncate mt-1">{player.club || 'Individualac'}</p>
+                      </div>
+                    ))
+                )}
+                {/* Check if everything is assigned */}
+                {((activeCategory?.type === 'doubles' 
+                    ? (activeCategory.doublesPairs || []).length 
+                    : allPlayers.filter(p => activeCategory?.playerIds?.includes(p.id)).length
+                  ) === assignedPlayerIds.length) && assignedPlayerIds.length > 0 && (
                   <div className="text-center py-10 opacity-30">
                     <CheckCircle size={32} className="mx-auto mb-3 text-emerald-500" />
                     <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Svi su raspoređeni</p>

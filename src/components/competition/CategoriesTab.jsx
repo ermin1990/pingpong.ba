@@ -9,6 +9,8 @@ const CategoriesTab = ({
   setNewCategoryName, 
   newCategoryFormat, 
   setNewCategoryFormat, 
+  newCategoryType,
+  setNewCategoryType,
   handleAddCategory,
   handleDeleteCategory,
   competitionSlug
@@ -34,45 +36,47 @@ const CategoriesTab = ({
                 onClick={() => {
                   setSelectedCategoryId(cat.id);
                 }}
-                className={`p-4 rounded-2xl border transition-all cursor-pointer group ${selectedCategoryId === cat.id ? 'bg-blue-600 border-blue-400 shadow-xl shadow-blue-500/20 z-10' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-slate-700'}`}
+                className={`p-4 rounded-2xl border transition-all cursor-pointer group ${selectedCategoryId === cat.id ? 'bg-yellow-400 border-yellow-500 shadow-xl shadow-yellow-500/20 z-10' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-slate-700'}`}
               >
                 <div className="flex justify-between items-start mb-3">
-                  <h3 className={`font-black uppercase tracking-tighter text-lg ${selectedCategoryId === cat.id ? 'text-white' : 'text-slate-900 dark:text-white'}`}>{cat.name}</h3>
-                  <div className={`flex items-center gap-1.5 p-1 rounded-lg border ${selectedCategoryId === cat.id ? 'bg-white/10 border-white/20' : 'bg-slate-50 dark:bg-slate-950/50 border-slate-100 dark:border-slate-800'}`}>
+                  <h3 className={`font-black uppercase tracking-tighter text-lg ${selectedCategoryId === cat.id ? 'text-black' : 'text-slate-900 dark:text-white'}`}>{cat.name}</h3>
+                  <div className={`flex items-center gap-1.5 p-1 rounded-lg border ${selectedCategoryId === cat.id ? 'bg-black/5 border-black/10' : 'bg-slate-50 dark:bg-slate-950/50 border-slate-100 dark:border-slate-800'}`}>
                     {competitionSlug && (
                       <a 
                         href={`/p/${competitionSlug}?category=${cat.id}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className={`p-1.5 rounded transition-all ${selectedCategoryId === cat.id ? 'text-blue-100 hover:bg-white/20 hover:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white dark:hover:bg-slate-800'}`}
+                        className={`p-1.5 rounded transition-all ${selectedCategoryId === cat.id ? 'text-slate-700 hover:bg-black/10 hover:text-black' : 'text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white dark:hover:bg-slate-800'}`}
                         title="Otvori javni link"
                       >
                         <ExternalLink size={12} />
                       </a>
                     )}
-                    <span className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest ${selectedCategoryId === cat.id ? 'bg-white/30 text-white' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'}`}>
+                    <span className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-widest ${selectedCategoryId === cat.id ? 'bg-black/10 text-slate-900' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'}`}>
                       {cat.status === 'active' ? 'Aktivan' : 'Draft'}
                     </span>
                   </div>
                 </div>
                 
                 <div className="flex justify-between items-center">
-                  <span className={`text-[10px] font-black uppercase tracking-widest ${selectedCategoryId === cat.id ? 'text-blue-50' : 'text-slate-500'}`}>{cat.format === 'round_robin' ? 'LIga' : 'Grupe + KO'}</span>
-                  <span className={`text-[10px] font-black uppercase tracking-widest ${selectedCategoryId === cat.id ? 'text-white' : 'text-blue-600 whitespace-nowrap'}`}>{cat.playerIds?.length || 0} Igrača</span>
+                  <span className={`text-[10px] font-black uppercase tracking-widest ${selectedCategoryId === cat.id ? 'text-slate-700' : 'text-slate-500'}`}>
+                    {cat.type === 'doubles' ? 'Dubl' : 'Singl'} • {cat.format === 'round_robin' ? 'Liga' : 'Grupe + KO'}
+                  </span>
+                  <span className={`text-[10px] font-black uppercase tracking-widest ${selectedCategoryId === cat.id ? 'text-black' : 'text-blue-600 whitespace-nowrap'}`}>{cat.playerIds?.length || 0} Igrača</span>
                 </div>
 
                 {selectedCategoryId === cat.id && (
-                  <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="mt-4 pt-4 border-t border-black/5 flex justify-between items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
                     <button 
                       onClick={(e) => { e.stopPropagation(); handleDeleteCategory(cat.id); }}
-                      className="px-3 py-1.5 bg-white/10 text-white hover:bg-red-500/80 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-white/10 group/del"
+                      className="px-3 py-1.5 bg-black/5 text-slate-800 hover:bg-red-500/80 hover:text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-black/5 group/del"
                     >
                       <Trash2 size={12} className="group-hover/del:scale-110 transition-transform" />
                     </button>
                     <button 
                       onClick={(e) => { e.stopPropagation(); setActiveTab('players'); }}
-                      className="flex-1 bg-white text-blue-600 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest hover:bg-blue-50 transition-all shadow-lg flex items-center justify-center gap-2 group/manage"
+                      className="flex-1 bg-slate-900 text-white rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all shadow-lg flex items-center justify-center gap-2 group/manage"
                     >
                       <span>Upravljaj</span> <ChevronRight size={12} className="group-hover/manage:translate-x-1 transition-transform" />
                     </button>
@@ -95,6 +99,33 @@ const CategoriesTab = ({
                     onChange={(e) => setNewCategoryName(e.target.value)}
                     required
                   />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-600 dark:text-slate-400 mb-1 block">Format igre</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setNewCategoryType('singles')}
+                      className={`py-2 px-3 rounded-lg text-xs font-black uppercase tracking-widest transition-all border ${
+                        newCategoryType === 'singles' 
+                          ? 'bg-blue-600 border-blue-600 text-white shadow-md' 
+                          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
+                      }`}
+                    >
+                      Singl
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setNewCategoryType('doubles')}
+                      className={`py-2 px-3 rounded-lg text-xs font-black uppercase tracking-widest transition-all border ${
+                        newCategoryType === 'doubles' 
+                          ? 'bg-blue-600 border-blue-600 text-white shadow-md' 
+                          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
+                      }`}
+                    >
+                      Dubl
+                    </button>
+                  </div>
                 </div>
                 <div>
                   <label className="text-xs text-slate-600 dark:text-slate-400 mb-1 block">Tip takmičenja</label>

@@ -24,6 +24,7 @@ import AllMatchesTab from '../components/competition/AllMatchesTab';
 import AllPlayersTab from '../components/competition/AllPlayersTab';
 import RefereesTab from '../components/competition/RefereesTab';
 import TablesTab from '../components/competition/TablesTab';
+import DoublesManager from '../components/competition/DoublesManager';
 
 const CompetitionDetails = () => {
   const { id } = useParams();
@@ -82,6 +83,7 @@ const CompetitionDetails = () => {
   const [savingMatchId, setSavingMatchId] = useState(null);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryFormat, setNewCategoryFormat] = useState('round_robin'); // 'round_robin' | 'groups_knockout'
+  const [newCategoryType, setNewCategoryType] = useState('singles'); // 'singles' | 'doubles'
   const [editingFormat, setEditingFormat] = useState(false);
   const [showOnlySelected, setShowOnlySelected] = useState(true);
   const [editingMatch, setEditingMatch] = useState(null);
@@ -365,6 +367,7 @@ const CompetitionDetails = () => {
       const catData = {
         name: newCategoryName.trim(),
         format: newCategoryFormat,
+        type: newCategoryType,
         status: 'draft',
         ownerUid: competition?.ownerUid || null,
         createdAt: serverTimestamp(),
@@ -378,6 +381,7 @@ const CompetitionDetails = () => {
 
       await addDoc(collection(db, "competitions", id, "categories"), catData);
       setNewCategoryName('');
+      setNewCategoryType('singles');
       console.log("Kategorija uspješno dodana");
     } catch (err) {
       console.error("Greška pri kreiranju kategorije:", err);
@@ -491,17 +495,25 @@ const CompetitionDetails = () => {
   const handleUpdateSettings = async (settings) => {
     if (!selectedCategoryId) return;
     try {
-      const { winPoints, lossPoints, advancingPlayers, setsToWin } = settings;
+      const { winPoints, lossPoints, advancingPlayers, setsToWin, type } = settings;
       const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
-      await updateDoc(catRef, {
+      
+      const updateData = {
         winPoints: Number(winPoints),
         lossPoints: Number(lossPoints),
         advancingPlayers: Number(advancingPlayers),
         setsToWin: Number(setsToWin || 2),
         updatedAt: serverTimestamp()
-      });
+      };
+
+      if (type) {
+        updateData.type = type;
+      }
+
+      await updateDoc(catRef, updateData);
       // Maknut alert za postavke
     } catch (err) {
+      console.error("Greška pri spašavanju postavki:", err);
       alert("Greška pri spašavanju postavki.");
     }
   };
@@ -1859,6 +1871,8 @@ const CompetitionDetails = () => {
             setNewCategoryName={setNewCategoryName}
             newCategoryFormat={newCategoryFormat}
             setNewCategoryFormat={setNewCategoryFormat}
+            newCategoryType={newCategoryType}
+            setNewCategoryType={setNewCategoryType}
             handleAddCategory={handleAddCategory}
             handleDeleteCategory={handleDeleteCategory}
             competitionSlug={competition?.slug}
@@ -1866,22 +1880,36 @@ const CompetitionDetails = () => {
         )}
 
         {activeTab === 'players' && activeCategory && (
-          <PlayersTab 
-            activeCategory={activeCategory}
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            showOnlySelected={showOnlySelected}
-            setShowOnlySelected={setShowOnlySelected}
-            allPlayers={allPlayers}
-            selectedPlayers={selectedPlayers}
-            seededPlayers={seededPlayers}
-            togglePlayerSelection={togglePlayerSelection}
-            togglePlayerSeed={togglePlayerSeed}
-            onEditPlayer={startEditingPlayer}
-            assignedPlayerIds={assignedPlayerIds}
-            saveSelectedPlayers={saveSelectedPlayers}
-            setShowAddPlayer={setShowAddPlayer}
-          />
+          <div className="space-y-6">
+            {activeCategory.type === 'doubles' && (
+              <DoublesManager 
+                activeCategory={activeCategory}
+                allPlayers={allPlayers}
+                selectedPlayers={selectedPlayers}
+                onSavePairs={(newPairs) => {
+                  const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
+                  updateDoc(catRef, { doublesPairs: newPairs });
+                }}
+              />
+            )}
+            
+            <PlayersTab 
+              activeCategory={activeCategory}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              showOnlySelected={showOnlySelected}
+              setShowOnlySelected={setShowOnlySelected}
+              allPlayers={allPlayers}
+              selectedPlayers={selectedPlayers}
+              seededPlayers={seededPlayers}
+              togglePlayerSelection={togglePlayerSelection}
+              togglePlayerSeed={togglePlayerSeed}
+              onEditPlayer={startEditingPlayer}
+              assignedPlayerIds={assignedPlayerIds}
+              saveSelectedPlayers={saveSelectedPlayers}
+              setShowAddPlayer={setShowAddPlayer}
+            />
+          </div>
         )}
 
         {activeTab === 'referees' && (

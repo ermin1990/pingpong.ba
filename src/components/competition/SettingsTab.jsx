@@ -52,7 +52,39 @@ const SettingsTab = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="space-y-2.5">
+            <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider px-1">Tip Kategorije</label>
+            <div className="flex bg-slate-100 dark:bg-slate-900/50 p-1 rounded-xl gap-1">
+              <button 
+                onClick={() => {
+                  const newType = 'singles';
+                  const winPoints = Number(document.getElementById('winPointsInput').value);
+                  const lossPoints = Number(document.getElementById('lossPointsInput').value);
+                  const advancingPlayers = Number(document.getElementById('advancingPlayersInput').value);
+                  const setsToWin = Number(document.getElementById('setsToWinInput').value);
+                  handleUpdateSettings({ type: newType, winPoints, lossPoints, advancingPlayers, setsToWin });
+                }}
+                className={`flex-1 py-3 px-4 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeCategory?.type !== 'doubles' ? 'bg-white dark:bg-blue-600 text-blue-600 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                Singl
+              </button>
+              <button 
+                onClick={() => {
+                  const newType = 'doubles';
+                  const winPoints = Number(document.getElementById('winPointsInput').value);
+                  const lossPoints = Number(document.getElementById('lossPointsInput').value);
+                  const advancingPlayers = Number(document.getElementById('advancingPlayersInput').value);
+                  const setsToWin = Number(document.getElementById('setsToWinInput').value);
+                  handleUpdateSettings({ type: newType, winPoints, lossPoints, advancingPlayers, setsToWin });
+                }}
+                className={`flex-1 py-3 px-4 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeCategory?.type === 'doubles' ? 'bg-white dark:bg-blue-600 text-blue-600 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                Dubl
+              </button>
+            </div>
+          </div>
+
           <div className="space-y-2.5">
             <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider px-1">Bodovi za pobjedu</label>
             <div className="relative">
@@ -113,12 +145,21 @@ const SettingsTab = ({
 
         <div className="mt-12 flex items-center gap-4">
           <button 
-            onClick={() => handleUpdateSettings({
-              winPoints: Number(document.getElementById('winPointsInput').value),
-              lossPoints: Number(document.getElementById('lossPointsInput').value),
-              advancingPlayers: Number(document.getElementById('advancingPlayersInput').value),
-              setsToWin: Number(document.getElementById('setsToWinInput').value)
-            })}
+            onClick={() => {
+              const type = activeCategory?.type || 'singles';
+              const winPoints = Number(document.getElementById('winPointsInput').value);
+              const lossPoints = Number(document.getElementById('lossPointsInput').value);
+              const advancingPlayers = Number(document.getElementById('advancingPlayersInput').value);
+              const setsToWin = Number(document.getElementById('setsToWinInput').value);
+              
+              handleUpdateSettings({
+                type,
+                winPoints,
+                lossPoints,
+                advancingPlayers,
+                setsToWin
+              });
+            }}
             className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-lg font-bold text-sm transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-3"
           >
             <Save size={20} /> Sačuvaj sve izmjene
