@@ -230,21 +230,21 @@ const CompetitionSettings = () => {
       <div className="max-w-5xl mx-auto pb-20">
         <button 
           onClick={() => navigate(`/admin/competitions/${id}`)}
-          className="flex items-center gap-2 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors mb-6 font-bold text-xs uppercase tracking-widest"
+          className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-6 font-bold text-xs uppercase tracking-widest"
         >
           <ArrowLeft size={16} /> Nazad na takmičenje
         </button>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden">
-          <div className="p-8 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20">
+        <div className="bg-[#0f172a] border border-slate-800 rounded-2xl overflow-hidden">
+          <div className="p-6 border-b border-slate-800 bg-slate-950/30">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-600/20">
+                <div className="w-12 h-12 bg-amber-500 rounded-xl flex items-center justify-center text-black shadow-lg shadow-amber-500/20">
                   <Settings2 size={26} />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase italic tracking-tighter">Postavke Takmičenja</h1>
-                  <p className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-widest">{competition.name}</p>
+                  <h1 className="text-2xl font-black text-slate-100 uppercase italic tracking-tighter">Postavke Takmičenja</h1>
+                  <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">{competition.name}</p>
                 </div>
               </div>
 
@@ -260,7 +260,7 @@ const CompetitionSettings = () => {
                   className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
                     isPublic 
                       ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20 hover:bg-emerald-500' 
-                      : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-slate-700'
+                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700'
                   }`}
                 >
                   {isPublic ? 'Sakrij' : 'Objavi'}
@@ -270,14 +270,14 @@ const CompetitionSettings = () => {
 
             {/* Public Link Section - Only visible when public */}
             {isPublic && (
-              <div className="mt-6 bg-emerald-50 dark:bg-emerald-500/5 border border-emerald-100 dark:border-emerald-500/20 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+              <div className="mt-6 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
                 <div className="flex items-center gap-3 overflow-hidden w-full">
-                  <div className="p-2 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-lg shrink-0">
+                  <div className="p-2 bg-emerald-500/20 text-emerald-400 rounded-lg shrink-0">
                     <LinkIcon size={18} />
                   </div>
                   <div className="overflow-hidden">
-                    <p className="text-[10px] text-emerald-600 dark:text-emerald-500 font-bold uppercase tracking-widest">Javni Link Takmičenja</p>
-                    <p className="text-xs text-slate-900 dark:text-white font-bold truncate">
+                    <p className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">Javni Link Takmičenja</p>
+                    <p className="text-xs text-slate-100 font-bold truncate">
                       {`${window.location.origin}/p/${compSlug || id}`}
                     </p>
                   </div>
@@ -288,7 +288,7 @@ const CompetitionSettings = () => {
                       navigator.clipboard.writeText(`${window.location.origin}/p/${compSlug || id}`);
                       alert("Link kopiran u međuspremnik!");
                     }}
-                    className="flex-1 md:flex-none px-4 py-2.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-emerald-200 dark:border-emerald-500/30 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-all shadow-sm"
+                    className="flex-1 md:flex-none px-4 py-2.5 bg-slate-950 border border-emerald-500/30 text-slate-100 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-500/10 transition-all"
                   >
                     Kopiraj
                   </button>
@@ -305,20 +305,20 @@ const CompetitionSettings = () => {
             )}
           </div>
 
-          <div className="p-8 space-y-12">
+          <div className="p-5 space-y-7">
             {/* Osnovne Informacije */}
             <div className="space-y-6">
-              <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
                 <Info size={18} className="text-blue-500" />
-                <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">Osnovne Informacije</h3>
+                <h3 className="text-sm font-black text-slate-100 uppercase tracking-widest">Osnovne Informacije</h3>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2 md:col-span-2">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Naziv Takmičenja *</label>
                   <input 
                     type="text" 
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm dark:shadow-none"
+                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-bold outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all "
                     value={compName}
                     onChange={(e) => setCompName(e.target.value)}
                   />
@@ -327,18 +327,18 @@ const CompetitionSettings = () => {
                 <div className="space-y-2 md:col-span-2">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">URL Link (Slug)</label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 font-bold text-sm">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">
                       pingpong.ba/p/
                     </span>
                     <input 
                       type="text" 
-                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-4 pl-40 pr-4 text-blue-600 dark:text-blue-400 font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm dark:shadow-none"
+                      className="w-full bg-slate-950/70 border border-slate-800 rounded-xl py-3 pl-40 pr-4 text-amber-400 font-bold outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all "
                       value={compSlug}
                       onChange={(e) => setCompSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
                       placeholder="memorijalni-turnir-2024"
                     />
                   </div>
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium px-1 mt-1.5">
+                  <p className="text-[10px] text-slate-400 font-medium px-1 mt-1.5">
                     Prilagođeni URL link za javnu stranicu turnira. Koristite mala slova, brojeve i crtice.
                   </p>
                 </div>
@@ -349,7 +349,7 @@ const CompetitionSettings = () => {
                     <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                     <input 
                       type="text" 
-                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-4 pl-12 pr-4 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm dark:shadow-none"
+                      className="w-full bg-slate-950/70 border border-slate-800 rounded-xl py-3 pl-12 pr-4 text-slate-100 font-bold outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all "
                       value={compLocation}
                       onChange={(e) => setCompLocation(e.target.value)}
                     />
@@ -360,7 +360,7 @@ const CompetitionSettings = () => {
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Organizator</label>
                   <input 
                     type="text" 
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm dark:shadow-none"
+                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-bold outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all "
                     value={compOrganizer}
                     onChange={(e) => setCompOrganizer(e.target.value)}
                   />
@@ -370,7 +370,7 @@ const CompetitionSettings = () => {
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Direktor Turnira</label>
                   <input 
                     type="text" 
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm dark:shadow-none"
+                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-bold outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all "
                     value={compDirector}
                     onChange={(e) => setCompDirector(e.target.value)}
                   />
@@ -380,7 +380,7 @@ const CompetitionSettings = () => {
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Vrhovni Sudija</label>
                   <input 
                     type="text" 
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm dark:shadow-none"
+                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-bold outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all "
                     value={compReferee}
                     onChange={(e) => setCompReferee(e.target.value)}
                   />
@@ -392,7 +392,7 @@ const CompetitionSettings = () => {
                     <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                     <input 
                       type="date" 
-                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-4 pl-12 pr-4 text-slate-900 dark:text-white font-bold outline-none shadow-sm dark:shadow-none"
+                      className="w-full bg-slate-950/70 border border-slate-800 rounded-xl py-3 pl-12 pr-4 text-slate-100 font-bold outline-none "
                       value={compStartDate}
                       onChange={(e) => setCompStartDate(e.target.value)}
                     />
@@ -405,7 +405,7 @@ const CompetitionSettings = () => {
                     <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                     <input 
                       type="date" 
-                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-4 pl-12 pr-4 text-slate-900 dark:text-white font-bold outline-none shadow-sm dark:shadow-none"
+                      className="w-full bg-slate-950/70 border border-slate-800 rounded-xl py-3 pl-12 pr-4 text-slate-100 font-bold outline-none "
                       value={compEndDate}
                       onChange={(e) => setCompEndDate(e.target.value)}
                     />
@@ -416,9 +416,9 @@ const CompetitionSettings = () => {
 
             {/* Opis i Propozicije */}
             <div className="space-y-6">
-              <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
                 <Shield size={18} className="text-emerald-500" />
-                <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">Opis i Propozicije</h3>
+                <h3 className="text-sm font-black text-slate-100 uppercase tracking-widest">Opis i Propozicije</h3>
               </div>
 
               <div className="space-y-4">
@@ -426,7 +426,7 @@ const CompetitionSettings = () => {
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Opis Turnira</label>
                   <textarea 
                     rows={3}
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-medium outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none shadow-sm dark:shadow-none"
+                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-medium outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all resize-none "
                     value={compDescription}
                     onChange={(e) => setCompDescription(e.target.value)}
                   />
@@ -436,7 +436,7 @@ const CompetitionSettings = () => {
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Pravila i Sistemi (Propozicije)</label>
                   <textarea 
                     rows={6}
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-medium outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none shadow-sm dark:shadow-none"
+                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-medium outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all resize-none "
                     value={compRules}
                     onChange={(e) => setCompRules(e.target.value)}
                   />
@@ -447,7 +447,7 @@ const CompetitionSettings = () => {
                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Kotizacija</label>
                     <input 
                       type="text" 
-                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm dark:shadow-none"
+                      className="w-full bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-bold outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all "
                       value={compEntryFee}
                       onChange={(e) => setCompEntryFee(e.target.value)}
                     />
@@ -457,7 +457,7 @@ const CompetitionSettings = () => {
                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Nagrade</label>
                     <input 
                       type="text" 
-                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm dark:shadow-none"
+                      className="w-full bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-bold outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all "
                       value={compPrizes}
                       onChange={(e) => setCompPrizes(e.target.value)}
                     />
@@ -468,7 +468,7 @@ const CompetitionSettings = () => {
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Raspored (Satnica)</label>
                   <textarea 
                     rows={4}
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-medium outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none shadow-sm dark:shadow-none"
+                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-medium outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all resize-none "
                     value={compSchedule}
                     onChange={(e) => setCompSchedule(e.target.value)}
                   />
@@ -478,19 +478,19 @@ const CompetitionSettings = () => {
 
             {/* Kontakt Podaci */}
             <div className="space-y-6">
-              <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
                 <Phone size={18} className="text-amber-500" />
-                <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">Kontakt Podaci</h3>
+                <h3 className="text-sm font-black text-slate-100 uppercase tracking-widest">Kontakt Podaci</h3>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Kontakt Telefon</label>
                   <div className="relative">
                     <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                     <input 
                       type="text" 
-                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-4 pl-12 pr-4 text-slate-900 dark:text-white font-bold outline-none shadow-sm dark:shadow-none"
+                      className="w-full bg-slate-950/70 border border-slate-800 rounded-xl py-3 pl-12 pr-4 text-slate-100 font-bold outline-none "
                       value={compContactPhone}
                       onChange={(e) => setCompContactPhone(e.target.value)}
                     />
@@ -503,7 +503,7 @@ const CompetitionSettings = () => {
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                     <input 
                       type="email" 
-                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-4 pl-12 pr-4 text-slate-900 dark:text-white font-bold outline-none shadow-sm dark:shadow-none"
+                      className="w-full bg-slate-950/70 border border-slate-800 rounded-xl py-3 pl-12 pr-4 text-slate-100 font-bold outline-none "
                       value={compContactEmail}
                       onChange={(e) => setCompContactEmail(e.target.value)}
                     />
@@ -514,7 +514,7 @@ const CompetitionSettings = () => {
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Puna Adresa</label>
                   <input 
                     type="text" 
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm dark:shadow-none"
+                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-bold outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all "
                     value={compContactAddress}
                     onChange={(e) => setCompContactAddress(e.target.value)}
                   />
@@ -523,23 +523,23 @@ const CompetitionSettings = () => {
             </div>
 
             {/* Postavke Prijava */}
-            <div className="space-y-6 bg-blue-50/50 dark:bg-blue-600/5 p-6 rounded-2xl border border-blue-100 dark:border-blue-500/10">
-              <div className="flex items-center justify-between border-b border-blue-100 dark:border-blue-500/10 pb-4">
+            <div className="space-y-6 bg-slate-950/40 p-5 rounded-2xl border border-slate-800">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
                 <div className="flex items-center gap-6">
                   <div className="flex items-center gap-3">
-                    <LinkIcon size={18} className="text-blue-500" />
-                    <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">Postavke Prijava</h3>
+                    <LinkIcon size={18} className="text-amber-500" />
+                    <h3 className="text-sm font-black text-slate-100 uppercase tracking-widest">Postavke Prijava</h3>
                   </div>
                   
                   {/* Global Show/Hide Toggle */}
-                  <div className="flex items-center gap-2 border-l border-blue-100 dark:border-blue-900/40 pl-6">
-                    <span className={`text-[10px] font-black uppercase tracking-widest ${showRegistration ? 'text-blue-600' : 'text-slate-400'}`}>
+                  <div className="flex items-center gap-2 border-l border-slate-800 pl-6">
+                    <span className={`text-[10px] font-black uppercase tracking-widest ${showRegistration ? 'text-amber-400' : 'text-slate-400'}`}>
                       Prikaži sekciju
                     </span>
                     <button 
                       type="button"
                       onClick={() => setShowRegistration(!showRegistration)}
-                      className={`w-10 h-5 rounded-full p-1 transition-colors relative ${showRegistration ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-700'}`}
+                      className={`w-10 h-5 rounded-full p-1 transition-colors relative ${showRegistration ? 'bg-amber-500' : 'bg-slate-700'}`}
                     >
                       <div className={`w-3 h-3 bg-white rounded-full shadow-sm transition-transform ${showRegistration ? 'translate-x-5' : 'translate-x-0'}`} />
                     </button>
@@ -553,20 +553,20 @@ const CompetitionSettings = () => {
                   <button 
                     type="button"
                     onClick={() => setRegIsOpen(!regIsOpen)}
-                    className={`w-12 h-6 rounded-full p-1 transition-colors relative ${regIsOpen ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'}`}
+                    className={`w-12 h-6 rounded-full p-1 transition-colors relative ${regIsOpen ? 'bg-emerald-500' : 'bg-slate-700'}`}
                   >
                     <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${regIsOpen ? 'translate-x-6' : 'translate-x-0'}`} />
                   </button>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Link za prijavu</label>
                   <input 
                     disabled={!regIsOpen || !showRegistration}
                     type="text" 
-                    className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-bold outline-none disabled:opacity-50 shadow-sm dark:shadow-none"
+                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-bold outline-none disabled:opacity-50 "
                     value={regLink}
                     onChange={(e) => setRegLink(e.target.value)}
                   />
@@ -579,7 +579,7 @@ const CompetitionSettings = () => {
                     <input 
                       disabled={!regIsOpen || !showRegistration}
                       type="date" 
-                      className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-4 pl-12 pr-4 text-slate-900 dark:text-white font-bold outline-none disabled:opacity-50 shadow-sm dark:shadow-none"
+                      className="w-full bg-slate-950/70 border border-slate-800 rounded-xl py-3 pl-12 pr-4 text-slate-100 font-bold outline-none disabled:opacity-50 "
                       value={regDeadline}
                       onChange={(e) => setRegDeadline(e.target.value)}
                     />
@@ -589,13 +589,13 @@ const CompetitionSettings = () => {
             </div>
 
             {/* Dostupne Kategorije za Prijave */}
-            <div className="space-y-6 bg-emerald-50/50 dark:bg-emerald-600/5 p-6 rounded-2xl border border-emerald-100 dark:border-emerald-500/10">
-              <div className="flex items-center gap-3 border-b border-emerald-100 dark:border-emerald-500/10 pb-4">
+            <div className="space-y-6 bg-emerald-500/5 p-5 rounded-2xl border border-emerald-500/15">
+              <div className="flex items-center gap-3 border-b border-emerald-500/20 pb-4">
                 <Award size={18} className="text-emerald-500" />
-                <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">Dostupne Kategorije za Prijave</h3>
+                <h3 className="text-sm font-black text-slate-100 uppercase tracking-widest">Dostupne Kategorije za Prijave</h3>
               </div>
 
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+              <p className="text-xs text-slate-400 font-medium">
                 Dodajte kategorije koje će biti dostupne za prijave na javnoj stranici turnira (npr. "Muški Singl", "Ženski Singl", "Mlađi Pioniri", itd.)
               </p>
 
@@ -603,7 +603,7 @@ const CompetitionSettings = () => {
                 <input 
                   type="text" 
                   placeholder="Unesite naziv kategorije..."
-                  className="flex-1 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-sm dark:shadow-none"
+                  className="flex-1 bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-bold outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all "
                   value={newCategory}
                   onChange={(e) => setNewCategory(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && addCategory()}
@@ -618,19 +618,19 @@ const CompetitionSettings = () => {
               </div>
 
               {availableCategories.length > 0 && (
-                <div className="bg-white dark:bg-slate-950 rounded-xl p-4 border border-slate-200 dark:border-slate-800">
+                <div className="bg-slate-950/70 rounded-xl p-4 border border-slate-800">
                   <div className="flex flex-wrap gap-2">
                     {availableCategories.map((category, index) => (
                       <div 
                         key={index} 
-                        className="flex items-center gap-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-4 py-2 rounded-lg font-bold text-sm"
+                        className="flex items-center gap-2 bg-emerald-500/15 text-emerald-300 px-4 py-2 rounded-lg font-bold text-sm border border-emerald-500/20"
                       >
                         <Award size={14} />
                         <span>{category}</span>
                         <button 
                           type="button"
                           onClick={() => removeCategory(category)}
-                          className="ml-1 text-emerald-600 dark:text-emerald-500 hover:text-red-500 transition-colors"
+                          className="ml-1 text-emerald-400 hover:text-red-400 transition-colors"
                         >
                           <X size={14} />
                         </button>
@@ -641,7 +641,7 @@ const CompetitionSettings = () => {
               )}
 
               {availableCategories.length === 0 && (
-                <div className="text-center py-8 text-slate-400 dark:text-slate-500">
+                <div className="text-center py-8 text-slate-400">
                   <Award size={32} className="mx-auto mb-2 opacity-30" />
                   <p className="text-xs font-bold uppercase tracking-widest">Nema dodanih kategorija</p>
                 </div>
@@ -650,9 +650,9 @@ const CompetitionSettings = () => {
 
             {/* Pravila Mečeva */}
             <div className="space-y-6">
-              <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
                 <Settings2 size={18} className="text-slate-500" />
-                <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">Podrazumijevana Pravila Mečeva</h3>
+                <h3 className="text-sm font-black text-slate-100 uppercase tracking-widest">Podrazumijevana Pravila Mečeva</h3>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -660,7 +660,7 @@ const CompetitionSettings = () => {
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1 text-center block">Setova do pobjede</label>
                   <input 
                     type="number" 
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-black text-center outline-none shadow-sm dark:shadow-none"
+                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-black text-center outline-none "
                     value={compSetsToWin}
                     onChange={(e) => setCompSetsToWin(e.target.value)}
                   />
@@ -669,7 +669,7 @@ const CompetitionSettings = () => {
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1 text-center block">Pobjeda (Bodovi)</label>
                   <input 
                     type="number" 
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-black text-center outline-none shadow-sm dark:shadow-none"
+                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-black text-center outline-none "
                     value={compWinPoints}
                     onChange={(e) => setCompWinPoints(e.target.value)}
                   />
@@ -678,7 +678,7 @@ const CompetitionSettings = () => {
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1 text-center block">Poraz (Bodovi)</label>
                   <input 
                     type="number" 
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-black text-center outline-none shadow-sm dark:shadow-none"
+                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-black text-center outline-none "
                     value={compLossPoints}
                     onChange={(e) => setCompLossPoints(e.target.value)}
                   />
@@ -687,7 +687,7 @@ const CompetitionSettings = () => {
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1 text-center block">Prolazi iz grupe</label>
                   <input 
                     type="number" 
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-black text-center outline-none shadow-sm dark:shadow-none"
+                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-black text-center outline-none "
                     value={compAdvancingPlayers}
                     onChange={(e) => setCompAdvancingPlayers(e.target.value)}
                   />
@@ -700,15 +700,15 @@ const CompetitionSettings = () => {
 
             {/* Saradnici */}
             <div className="space-y-6">
-              <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
                 <Users size={18} className="text-purple-500" />
-                <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">Saradnici (Pristup)</h3>
+                <h3 className="text-sm font-black text-slate-100 uppercase tracking-widest">Saradnici (Pristup)</h3>
               </div>
 
               <div className="flex gap-2">
                 <input 
                   type="email" 
-                  className="flex-1 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm dark:shadow-none"
+                  className="flex-1 bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-bold outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all "
                   value={newCollabEmail}
                   onChange={(e) => setNewCollabEmail(e.target.value)}
                   placeholder="email@example.com"
@@ -716,7 +716,7 @@ const CompetitionSettings = () => {
                 />
                 <button 
                   onClick={addCollaborator}
-                  className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white px-8 rounded-xl font-black uppercase text-xs tracking-widest transition-all border border-slate-200 dark:border-slate-700"
+                  className="bg-slate-900 hover:bg-slate-800 text-slate-200 px-8 rounded-xl font-black uppercase text-xs tracking-widest transition-all border border-slate-700"
                 >
                   Dodaj
                 </button>
@@ -724,34 +724,34 @@ const CompetitionSettings = () => {
 
               <div className="space-y-2">
                 {collaborators.map((email) => (
-                  <div key={email} className="flex items-center justify-between bg-white dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800 p-4 rounded-xl group transition-all">
-                    <span className="text-slate-900 dark:text-white text-sm font-bold">{email}</span>
+                  <div key={email} className="flex items-center justify-between bg-slate-950/70 border border-slate-800 p-4 rounded-xl group transition-all">
+                    <span className="text-slate-100 text-sm font-bold">{email}</span>
                     <button 
                       onClick={() => removeCollaborator(email)}
-                      className="text-slate-400 hover:text-red-500 dark:text-slate-500 transition-colors"
+                      className="text-slate-400 hover:text-red-500 transition-colors"
                     >
                       <X size={16} />
                     </button>
                   </div>
                 ))}
                 {collaborators.length === 0 && (
-                  <p className="text-center py-6 text-slate-400 dark:text-slate-600 text-[10px] font-bold uppercase tracking-widest border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-xl">Nema dodanih saradnika</p>
+                  <p className="text-center py-6 text-slate-400 text-[10px] font-bold uppercase tracking-widest border-2 border-dashed border-slate-800 rounded-xl">Nema dodanih saradnika</p>
                 )}
               </div>
             </div>
           </div>
 
-          <div className="p-8 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20 flex gap-4">
+          <div className="p-6 border-t border-slate-800 bg-slate-950/30 flex gap-3">
             <button 
               onClick={() => navigate(`/admin/competitions/${id}`)}
-              className="flex-1 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white py-4 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-all border border-slate-200 dark:border-slate-700"
+              className="flex-1 bg-slate-900 text-slate-200 py-3 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-slate-800 transition-all border border-slate-700"
             >
               Otkaži
             </button>
             <button 
               onClick={handleSave}
               disabled={saving}
-              className="flex-[2] bg-amber-400 hover:bg-amber-500 text-black py-4 rounded-xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-amber-500/20 flex items-center justify-center gap-3 disabled:opacity-50"
+              className="flex-[2] bg-amber-400 hover:bg-amber-500 text-black py-3 rounded-xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-amber-500/20 flex items-center justify-center gap-3 disabled:opacity-50"
             >
               {saving ? 'Spremanje...' : (
                 <>

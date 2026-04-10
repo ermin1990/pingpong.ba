@@ -1,6 +1,11 @@
-import { initializeApp } from "firebase/app";
+import { getApp, getApps, initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
-import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "firebase/firestore";
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+  persistentSingleTabManager
+} from "firebase/firestore";
 import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
@@ -13,12 +18,16 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// DODANO: Offline persistence čini aplikaciju "instant" na drugi load
+// Stabilniji Firestore u dev-u (HMR + više reconnecta): single-tab manager.
+// U produkciji zadržavamo multiple-tab manager.
+const isDev = import.meta.env.DEV;
+const tabManager = isDev ? persistentSingleTabManager() : persistentMultipleTabManager();
+
 const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+  localCache: persistentLocalCache({ tabManager })
 });
 
 const googleProvider = new GoogleAuthProvider();

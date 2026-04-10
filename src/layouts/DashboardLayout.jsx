@@ -49,117 +49,113 @@ const DashboardLayout = ({ children, title }) => {
   };
 
   return (
-    <div className="flex h-screen bg-slate-50 dark:bg-[#070b14] text-slate-900 dark:text-slate-200 transition-colors duration-300">
-      {/* Mobile Sidebar Toggle - Moved and styled better */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 z-50 flex items-center px-4">
-        <button 
-          onClick={() => setSidebarOpen(true)}
-          className="p-2 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-500 transition-colors"
-        >
-          <Menu size={20} />
-        </button>
-        <div className="ml-4 font-black tracking-tighter text-blue-600 dark:text-blue-500 text-lg">PINGPONG.BA</div>
-      </div>
+    <div className="admin-dark flex flex-col h-screen bg-[#070b14] text-slate-300 transition-colors duration-300 dark overflow-hidden">
+      {/* Top Navbar */}
+      <header className="h-20 bg-slate-950 border-b border-slate-900 flex items-center justify-between px-6 shrink-0 z-50">
+        <div className="flex items-center gap-8">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/20">
+              <Trophy size={20} className="text-black" />
+            </div>
+            <div className="hidden sm:block overflow-hidden whitespace-nowrap">
+              <div className="text-2xl font-black text-white tracking-tighter italic leading-none">PINGPONG.BA</div>
+              <div className="text-[10px] text-amber-500/60 font-black uppercase tracking-[0.2em] mt-1">ADMIN PANEL</div>
+            </div>
+          </div>
+
+          <nav className="hidden lg:flex items-center gap-1">
+            {navItems.map((item) => (
+              <Link 
+                to={item.href}
+                key={item.href}
+                className={`flex items-center gap-2.5 px-4 py-2 rounded-xl transition-all ${
+                  window.location.pathname === item.href 
+                    ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/10' 
+                    : 'text-slate-400 hover:text-white hover:bg-slate-900 border border-transparent'
+                }`}
+              >
+                <span className={`transition-transform ${window.location.pathname === item.href ? 'text-black' : ''}`}>{item.icon}</span>
+                <span className="text-[11px] font-black uppercase tracking-widest">{item.label}</span>
+              </Link>
+            ))}
+          </nav>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-4 py-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all border border-transparent"
+          >
+            <LogOut size={18} />
+            <span className="hidden sm:block text-[11px] font-black uppercase tracking-widest">Odjava</span>
+          </button>
+          
+          <button 
+            onClick={() => setSidebarOpen(true)}
+            className="lg:hidden p-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-300 hover:text-amber-400 transition-colors"
+          >
+            <Menu size={20} />
+          </button>
+        </div>
+      </header>
 
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 bg-slate-950/60 z-[55] lg:hidden backdrop-blur-sm transition-opacity"
+          className="fixed inset-0 bg-black/60 z-[55] lg:hidden backdrop-blur-sm transition-opacity"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      {/* Sidebar */}
+      {/* Mobile Drawer (Sidebar) */}
       <aside className={`
-        fixed inset-y-0 left-0 z-[60] bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-900 transition-all duration-300 lg:static
-        ${isSidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0 lg:shadow-none'}
-        ${isSidebarCollapsed ? 'lg:w-20' : 'lg:w-64 w-64'}
+        fixed inset-y-0 left-0 z-[60] w-72 bg-slate-950 border-r border-slate-900 shadow-2xl transition-all duration-300 lg:hidden
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <div className="h-full flex flex-col relative">
-          {/* Mobile Close Button */}
           <button 
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden absolute top-4 right-4 p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white z-50 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="absolute top-6 right-6 p-2 text-slate-300 hover:text-white z-50 rounded-xl bg-slate-900 border border-slate-700"
           >
             <X size={20} />
           </button>
 
-          {/* Collapse Toggle Desktop */}
-          <button 
-            onClick={toggleSidebar}
-            className="hidden lg:flex absolute -right-3 top-10 w-6 h-6 bg-blue-600 rounded-full items-center justify-center text-white border border-slate-900 hover:bg-blue-500 transition-all z-50 shadow-lg"
-          >
-            {isSidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-          </button>
-
-          <div className={`p-6 ${isSidebarCollapsed ? 'flex flex-col items-center px-0 pt-4' : ''}`}>
-            <div className={`flex items-center gap-3 mb-10 ${isSidebarCollapsed ? 'justify-center mx-0 mb-8' : 'px-2'}`}>
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shrink-0">
-                <Trophy size={18} className="text-white" />
+          <div className="p-8">
+            <div className="flex items-center gap-4 mb-10">
+              <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center shrink-0">
+                <Trophy size={20} className="text-black" />
               </div>
-              {!isSidebarCollapsed && (
-                <div className="overflow-hidden whitespace-nowrap">
-                  <div className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">PINGPONG.BA</div>
-                  <div className="text-[10px] text-blue-600 dark:text-blue-500 font-bold uppercase tracking-wider"></div>
-                </div>
-              )}
+              <div>
+                <div className="text-2xl font-black text-white italic tracking-tighter">PINGPONG.BA</div>
+              </div>
             </div>
             
-            <nav className="space-y-1">
+            <nav className="space-y-2">
               {navItems.map((item) => (
                 <Link 
                   to={item.href}
                   key={item.href}
-                  title={isSidebarCollapsed ? item.label : ''}
-                  className={`flex items-center gap-3 py-3 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-900 rounded-xl transition-all ${isSidebarCollapsed ? 'justify-center px-0' : 'px-4'}`}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex items-center gap-4 px-5 py-4 rounded-[20px] transition-all ${
+                    window.location.pathname === item.href 
+                      ? 'bg-amber-500 text-black' 
+                      : 'text-slate-300 hover:bg-slate-900'
+                  }`}
                 >
-                  <span className={`${isSidebarCollapsed ? '' : 'text-slate-500 dark:text-slate-500'}`}>{item.icon}</span>
-                  {!isSidebarCollapsed && <span className="text-sm font-medium">{item.label}</span>}
+                  {item.icon}
+                  <span className="text-[11px] font-black uppercase tracking-widest">{item.label}</span>
                 </Link>
               ))}
             </nav>
           </div>
-
-          <div className={`mt-auto p-6 border-t border-slate-900 ${isSidebarCollapsed ? 'px-0 flex justify-center' : ''}`}>
-            <button 
-              onClick={handleLogout}
-              title={isSidebarCollapsed ? 'Odjava' : ''}
-              className={`flex items-center gap-3 w-full py-3 text-slate-500 hover:text-red-500 hover:bg-red-500/5 rounded-xl transition-all ${isSidebarCollapsed ? 'justify-center px-0' : 'px-4'}`}
-            >
-              <LogOut size={20} className="shrink-0" />
-              {!isSidebarCollapsed && <span className="text-sm font-medium">Odjava</span>}
-            </button>
-          </div>
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-y-auto p-2">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 lg:mb-10 gap-4">
-          <h1 className="text-xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight uppercase">{title}</h1>
-          
-          <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
-            <button
-              onClick={toggleDarkMode}
-              className="p-2 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors shadow-sm dark:shadow-none"
-              title={isDark ? 'Prebaci na svijetlu temu' : 'Prebaci na tamnu temu'}
-            >
-              {isDark ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
-
-            <div className="flex items-center gap-3 bg-white dark:bg-slate-900/50 p-1.5 pl-3 rounded-full border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-none">
-              <div className="text-right hidden sm:block">
-                <div className="text-[9px] font-black text-slate-500 uppercase tracking-wider leading-none">{userData?.role === 'super_admin' ? 'Super Admin' : 'Admin'}</div>
-                <div className="text-[11px] text-slate-700 dark:text-slate-300 font-bold truncate max-w-[120px]">{user.email}</div>
-              </div>
-              <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-[10px] font-black text-white border border-blue-500 shadow-lg shadow-blue-500/20">
-                {user.email.charAt(0).toUpperCase()}
-              </div>
-            </div>
-          </div>
+      {/* Main Content Area */}
+      <main className="flex-1 overflow-y-auto px-4 py-6 md:px-8 md:py-10">
+        <div className="max-w-[1600px] mx-auto">
+          {children}
         </div>
-
-        {children}
       </main>
     </div>
   );

@@ -143,23 +143,23 @@ const Home = () => {
             {/* Custom Blurred Backgrounds */}
             <div className="absolute inset-0 opacity-10 pointer-events-none select-none z-0">
                 <div className="absolute top-10 left-10 w-72 h-72 bg-blue-500 rounded-full blur-3xl"></div>
-                <div className="absolute bottom-10 right-10 w-96 h-96 bg-purple-500 rounded-full blur-3xl"></div>
+                <div className="absolute bottom-10 right-10 w-96 h-96 bg-amber-500 rounded-full blur-3xl"></div>
             </div>
 
             {/* Existing Background Effects */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-blue-600/20 rounded-full blur-[120px] -z-10 opacity-30 pointer-events-none" />
-            <div className="absolute bottom-0 right-0 w-[800px] h-[600px] bg-indigo-600/10 rounded-full blur-[100px] -z-10 opacity-20 pointer-events-none" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-amber-600/20 rounded-full blur-[120px] -z-10 opacity-30 pointer-events-none" />
+            <div className="absolute bottom-0 right-0 w-[800px] h-[600px] bg-emerald-600/10 rounded-full blur-[100px] -z-10 opacity-20 pointer-events-none" />
 
             {/* Simple Nav */}
             <nav className="p-6 md:p-8 flex justify-between items-center max-w-7xl mx-auto border-b border-white/5 backdrop-blur-sm sticky top-0 z-50 bg-[#070b14]/80">
                 <div className="flex items-center gap-2">
-                    <div className="bg-blue-600 p-1.5 rounded-lg">
+                    <div className="bg-amber-500 p-1.5 rounded-lg">
                         <Trophy size={20} className="text-white" />
                     </div>
                     <div className="text-xl md:text-2xl font-semibold text-white tracking-tight">PINGPONG.BA</div>
                 </div>
                 <div className="flex gap-4 md:gap-8 items-center">
-                    <Link to="/login" className="bg-blue-600/10 text-blue-400 border border-blue-500/20 px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-lg shadow-blue-900/20">
+                    <Link to="/login" className="bg-amber-500/10 text-amber-300 border border-amber-500/20 px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-amber-500 hover:text-black hover:border-amber-500 transition-all shadow-lg shadow-blue-900/20">
                         Prijava
                     </Link>
                     <Link to="/p/help" className="hidden md:inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white/90 px-3 py-2 rounded-lg border border-transparent hover:border-slate-700 transition">
@@ -170,33 +170,33 @@ const Home = () => {
             </nav>
 
             <div className="flex flex-col items-center justify-center pt-20 pb-32 px-4 text-center max-w-7xl mx-auto z-10 relative">
-                 <div className="inline-flex items-center gap-2 px-4 py-2 mb-8 text-xs md:text-sm font-medium tracking-wide text-blue-400 uppercase bg-blue-950/40 border border-blue-500/20 rounded-full animate-fade-in-up">
+                 <div className="inline-flex items-center gap-2 px-4 py-2 mb-8 text-xs md:text-sm font-medium tracking-wide text-amber-300 uppercase bg-amber-950/40 border border-amber-500/20 rounded-full animate-fade-in-up">
                     <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-300 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
                     </span>
                     Profesionalni Sistem za Turnire
                 </div>
                 
                 <h1 className="text-5xl md:text-7xl lg:text-8xl font-semibold mb-8 leading-tight tracking-tight">
-                    <span className="text-white">Organizuj.</span> <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400">Pobjedi.</span>
+                    <span className="text-white">Organizuj.</span> <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-orange-300 to-emerald-300">Pobjedi.</span>
                     <br/>
                     <span className="text-slate-600">Dominiraj.</span>
                 </h1>
                 
                 <p className="text-lg md:text-xl text-slate-400 mb-12 max-w-2xl mx-auto leading-relaxed font-normal">
                     Sveobuhvatna platforma za stonoteniske klubove i organizatore. 
-                    Kreiraj <span className="text-blue-400 font-medium">Bergerove tabele</span>, 
-                    upravljaj <span className="text-indigo-400 font-medium">eliminacijama</span> i 
-                    prati rezultate <span className="text-purple-400 font-medium">uživo</span>.
+                    Kreiraj <span className="text-amber-300 font-medium">Bergerove tabele</span>, 
+                    upravljaj <span className="text-orange-300 font-medium">eliminacijama</span> i 
+                    prati rezultate <span className="text-emerald-300 font-medium">uživo</span>.
                 </p>
 
                 {/* Stats & Live link */}
                 <div className="flex flex-wrap justify-center gap-10 md:gap-20 mb-16">
                     <div className="flex flex-col items-center group">
-                        <div className="text-5xl md:text-6xl font-medium text-white group-hover:text-blue-500 transition-colors">{stats.tournaments}</div>
+                        <div className="text-5xl md:text-6xl font-medium text-white group-hover:text-amber-400 transition-colors">{stats.tournaments}</div>
                         <div className="flex items-center gap-2 mt-2">
-                             <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></div>
+                             <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse"></div>
                              <span className="text-xs md:text-sm font-medium text-slate-500 uppercase tracking-wide">Turnira Online</span>
                         </div>
                     </div>
@@ -212,7 +212,7 @@ const Home = () => {
                 <div className="flex flex-col sm:flex-row gap-5 w-full sm:w-auto z-20">
                     <button 
                         onClick={() => setShowForm(true)}
-                        className="group bg-blue-600 text-white px-10 py-5 rounded-lg font-semibold hover:bg-blue-500 transition-all shadow-[0_0_40px_-10px_rgba(37,99,235,0.5)] hover:shadow-[0_0_60px_-15px_rgba(37,99,235,0.6)] text-base md:text-lg flex items-center justify-center gap-3 active:scale-95"
+                        className="group bg-amber-500 text-black px-10 py-5 rounded-lg font-semibold hover:bg-amber-400 transition-all shadow-[0_0_40px_-10px_rgba(245,158,11,0.5)] hover:shadow-[0_0_60px_-15px_rgba(245,158,11,0.6)] text-base md:text-lg flex items-center justify-center gap-3 active:scale-95"
                     >
                         Postani Organizator <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                     </button>
@@ -265,11 +265,11 @@ const Home = () => {
 
                                                 <div className="space-y-4 mb-8">
                                                     <div className="flex items-center gap-3 text-sm font-medium text-slate-300">
-                                                        <div className="p-1.5 bg-blue-500/10 rounded-lg"><Trophy size={14} className="text-blue-400" /></div>
+                                                        <div className="p-1.5 bg-blue-500/10 rounded-lg"><Trophy size={14} className="text-amber-300" /></div>
                                                         {plan.tournaments}
                                                     </div>
                                                     <div className="flex items-center gap-3 text-sm font-medium text-slate-300">
-                                                        <div className="p-1.5 bg-blue-500/10 rounded-lg"><Users size={14} className="text-blue-400" /></div>
+                                                        <div className="p-1.5 bg-blue-500/10 rounded-lg"><Users size={14} className="text-amber-300" /></div>
                                                         {plan.categories}
                                                     </div>
                                                 </div>
@@ -294,11 +294,11 @@ const Home = () => {
 
                                     {/* Contact Section */}
                                     <div className="bg-slate-900 border border-slate-800 rounded-[2.5rem] p-8 md:p-12 shadow-2xl relative overflow-hidden">
-                                        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/5 rounded-full blur-3xl -mr-32 -mt-32" />
+                                        <div className="absolute top-0 right-0 w-64 h-64 bg-amber-600/5 rounded-full blur-3xl -mr-32 -mt-32" />
                                         
                                         <div className="relative z-10 flex flex-col lg:flex-row gap-12">
                                             <div className="lg:w-1/3 text-left">
-                                                <div className="w-16 h-16 bg-blue-600 rounded-lg flex items-center justify-center mb-6 shadow-xl shadow-blue-600/20">
+                                                <div className="w-16 h-16 bg-amber-500 rounded-lg flex items-center justify-center mb-6 shadow-xl shadow-blue-600/20">
                                                     <Building2 size={32} className="text-white" />
                                                 </div>
                                                 <h3 className="text-3xl font-black text-white italic tracking-tighter mb-4 uppercase">Informacije</h3>
@@ -308,7 +308,7 @@ const Home = () => {
                                                 
                                                 <div className="mt-8 flex flex-col gap-4">
                                                     <div className="flex items-center gap-4 text-sm font-bold text-slate-300 bg-slate-950 p-4 rounded-lg border border-slate-800">
-                                                        <CreditCard className="text-blue-400" />
+                                                        <CreditCard className="text-amber-300" />
                                                         <span>Plan: {plans.find(p => p.id === requestForm.plan)?.name}</span>
                                                     </div>
                                                 </div>
@@ -321,7 +321,7 @@ const Home = () => {
                                                         <input 
                                                             required
                                                             placeholder="npr. STK PING PONG"
-                                                            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-5 py-4 text-white focus:border-blue-500 outline-none transition-all placeholder:text-slate-800 font-medium"
+                                                            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-5 py-4 text-white focus:border-amber-500 outline-none transition-all placeholder:text-slate-800 font-medium"
                                                             value={requestForm.club}
                                                             onChange={e => setRequestForm({...requestForm, club: e.target.value})}
                                                         />
@@ -331,7 +331,7 @@ const Home = () => {
                                                         <input 
                                                             required
                                                             placeholder="Ime i Prezime"
-                                                            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-5 py-4 text-white focus:border-blue-500 outline-none transition-all placeholder:text-slate-800 font-medium"
+                                                            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-5 py-4 text-white focus:border-amber-500 outline-none transition-all placeholder:text-slate-800 font-medium"
                                                             value={requestForm.name}
                                                             onChange={e => setRequestForm({...requestForm, name: e.target.value})}
                                                         />
@@ -342,7 +342,7 @@ const Home = () => {
                                                             required
                                                             type="email"
                                                             placeholder="vas-email@gmail.com"
-                                                            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-5 py-4 text-white focus:border-blue-500 outline-none transition-all placeholder:text-slate-800 font-medium"
+                                                            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-5 py-4 text-white focus:border-amber-500 outline-none transition-all placeholder:text-slate-800 font-medium"
                                                             value={requestForm.email}
                                                             onChange={e => setRequestForm({...requestForm, email: e.target.value})}
                                                         />
@@ -352,7 +352,7 @@ const Home = () => {
                                                         <input 
                                                             required
                                                             placeholder="+387 6x xxx xxx"
-                                                            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-5 py-4 text-white focus:border-blue-500 outline-none transition-all placeholder:text-slate-800 font-medium"
+                                                            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-5 py-4 text-white focus:border-amber-500 outline-none transition-all placeholder:text-slate-800 font-medium"
                                                             value={requestForm.phone}
                                                             onChange={e => setRequestForm({...requestForm, phone: e.target.value})}
                                                         />
@@ -362,7 +362,7 @@ const Home = () => {
                                                         <input 
                                                             required
                                                             placeholder="Grad, Država"
-                                                            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-5 py-4 text-white focus:border-blue-500 outline-none transition-all placeholder:text-slate-800 font-medium"
+                                                            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-5 py-4 text-white focus:border-amber-500 outline-none transition-all placeholder:text-slate-800 font-medium"
                                                             value={requestForm.city}
                                                             onChange={e => setRequestForm({...requestForm, city: e.target.value})}
                                                         />
@@ -371,7 +371,7 @@ const Home = () => {
                                                     <div className="md:col-span-2 pt-4">
                                                         <button 
                                                             disabled={isSubmitting}
-                                                            className="group w-full bg-blue-600 hover:bg-blue-500 text-white font-black uppercase italic tracking-widest py-5 rounded-lg transition-all shadow-xl shadow-blue-600/30 flex items-center justify-center gap-3 disabled:opacity-50 active:scale-[0.98]"
+                                                            className="group w-full bg-amber-500 hover:bg-amber-400 text-black font-black uppercase italic tracking-widest py-5 rounded-lg transition-all shadow-xl shadow-amber-600/30 flex items-center justify-center gap-3 disabled:opacity-50 active:scale-[0.98]"
                                                         >
                                                             {isSubmitting ? (
                                                                 <Loader2 className="animate-spin" size={24} />
@@ -412,11 +412,11 @@ const Home = () => {
                 {/* Info Card for Approval */}
                 <div className="mt-24 max-w-3xl mx-auto">
                     <div className="bg-gradient-to-br from-slate-900/80 to-slate-900/40 backdrop-blur-xl border border-slate-700/50 p-6 md:p-8 rounded-lg relative overflow-hidden group hover:border-blue-500/30 transition-all">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl -mr-16 -mt-16 group-hover:bg-blue-500/20 transition-all" />
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl -mr-16 -mt-16 group-hover:bg-amber-400/20 transition-all" />
                         
                         <div className="flex flex-col md:flex-row items-center gap-6 relative z-10">
                             <div className="w-16 h-16 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0 border border-blue-500/20 shadow-lg shadow-blue-500/5">
-                                <ShieldCheck size={32} className="text-blue-400" />
+                                <ShieldCheck size={32} className="text-amber-300" />
                             </div>
                             <div className="text-left flex-1">
                                 <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">

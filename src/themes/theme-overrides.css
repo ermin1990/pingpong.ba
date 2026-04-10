@@ -31,6 +31,115 @@ h1, h2, h3, h4, h5, h6 {
   color: #64748b !important;
 }
 
+/* Admin-only dark readability + no-white-surfaces policy */
+.admin-dark {
+  color: #d5dfed;
+}
+
+.admin-dark .text-slate-300,
+.admin-dark .dark\:text-slate-300,
+.admin-dark .text-gray-300,
+.admin-dark .dark\:text-gray-300 {
+  color: #c8d4e6 !important;
+}
+
+.admin-dark .text-slate-400,
+.admin-dark .dark\:text-slate-400,
+.admin-dark .text-gray-400,
+.admin-dark .dark\:text-gray-400 {
+  color: #afbdd1 !important;
+}
+
+.admin-dark .text-slate-500,
+.admin-dark .dark\:text-slate-500,
+.admin-dark .text-gray-500,
+.admin-dark .dark\:text-gray-500 {
+  color: #bcc9db !important;
+}
+
+.admin-dark .text-slate-600,
+.admin-dark .dark\:text-slate-600,
+.admin-dark .text-gray-600,
+.admin-dark .dark\:text-gray-600 {
+  color: #c8d3e2 !important;
+}
+
+.admin-dark .text-slate-700,
+.admin-dark .text-gray-700,
+.admin-dark .text-slate-800,
+.admin-dark .text-gray-800,
+.admin-dark .text-slate-900,
+.admin-dark .text-gray-900,
+.admin-dark .dark\:text-slate-900,
+.admin-dark .dark\:text-gray-900,
+.admin-dark .text-black,
+.admin-dark .dark\:text-black {
+  color: #e2e8f0 !important;
+}
+
+.admin-dark .bg-white,
+.admin-dark .dark\:bg-white,
+.admin-dark .hover\:bg-white:hover,
+.admin-dark .dark\:hover\:bg-white:hover {
+  background-color: #0f172a !important;
+}
+
+.admin-dark .bg-slate-50,
+.admin-dark .bg-slate-100,
+.admin-dark .bg-gray-50,
+.admin-dark .bg-gray-100,
+.admin-dark .dark\:bg-slate-50,
+.admin-dark .dark\:bg-slate-100,
+.admin-dark .dark\:bg-gray-50,
+.admin-dark .dark\:bg-gray-100,
+.admin-dark .hover\:bg-slate-50:hover,
+.admin-dark .hover\:bg-slate-100:hover,
+.admin-dark .hover\:bg-gray-50:hover,
+.admin-dark .hover\:bg-gray-100:hover {
+  background-color: #111827 !important;
+}
+
+.admin-dark .bg-slate-800,
+.admin-dark .dark\:bg-slate-800,
+.admin-dark .hover\:bg-slate-800:hover,
+.admin-dark .dark\:hover\:bg-slate-800:hover {
+  background-color: #1a2437 !important;
+}
+
+.admin-dark .hover\:bg-blue-50:hover,
+.admin-dark .bg-blue-50 {
+  background-color: rgba(30, 64, 175, 0.16) !important;
+}
+
+.admin-dark .border-slate-100,
+.admin-dark .border-slate-200,
+.admin-dark .border-gray-100,
+.admin-dark .border-gray-200,
+.admin-dark .dark\:border-slate-100,
+.admin-dark .dark\:border-slate-200,
+.admin-dark .dark\:border-gray-100,
+.admin-dark .dark\:border-gray-200 {
+  border-color: #253047 !important;
+}
+
+.admin-dark .border-slate-700,
+.admin-dark .border-slate-800,
+.admin-dark .border-slate-900,
+.admin-dark .dark\:border-slate-700,
+.admin-dark .dark\:border-slate-800,
+.admin-dark .dark\:border-slate-900 {
+  border-color: #2f3d56 !important;
+}
+
+.admin-dark .placeholder\:text-slate-400::placeholder,
+.admin-dark .dark\:placeholder\:text-slate-400::placeholder,
+.admin-dark .placeholder\:text-slate-500::placeholder,
+.admin-dark .dark\:placeholder\:text-slate-500::placeholder,
+.admin-dark .placeholder\:text-gray-400::placeholder,
+.admin-dark .placeholder\:text-gray-500::placeholder {
+  color: #7f8ea3 !important;
+}
+
 /* Trophy Theme (Gold accents) */
 [data-theme="trophy"] {
   /* Override blue colors with gold */

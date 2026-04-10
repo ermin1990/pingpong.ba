@@ -25,17 +25,70 @@ import AllPlayersTab from '../components/competition/AllPlayersTab';
 import RefereesTab from '../components/competition/RefereesTab';
 import TablesTab from '../components/competition/TablesTab';
 import DoublesManager from '../components/competition/DoublesManager';
+import CompetitionExport from '../components/competition/CompetitionExport';
+import { useCompetitionData } from '../hooks/useCompetitionData';
+import { useReferees } from '../hooks/useReferees';
+import PlayerAddModal from '../components/competition/PlayerAddModal';
 
 const CompetitionDetails = () => {
   const { id } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, userData, planDetails, isSuperAdmin } = useAuth();
+  
+  // Custom Hooks
+  const { 
+    competition: dbCompetition, 
+    categories: dbCategories, 
+    matches: dbMatches, 
+    loading: dbLoading 
+  } = useCompetitionData(id);
+
+  const { referees: dbReferees } = useReferees(id);
+
+  // Sync state with hooks
+  useEffect(() => {
+    if (dbCompetition) {
+      setCompetition(dbCompetition);
+      // Sync all other detail states here...
+      setCompName(dbCompetition.name || '');
+      setCompSlug(dbCompetition.slug || '');
+      setCompStartDate(dbCompetition.startDate || '');
+      setCompEndDate(dbCompetition.endDate || '');
+      setCompLocation(dbCompetition.location || '');
+      setCompDescription(dbCompetition.description || '');
+      setCompRules(dbCompetition.rules || '');
+      setCompContactPhone(dbCompetition.contact?.phone || '');
+      setCompContactEmail(dbCompetition.contact?.email || '');
+      setCompContactAddress(dbCompetition.contact?.address || '');
+      setCompOrganizer(dbCompetition.organizer || '');
+      setCompDirector(dbCompetition.director || '');
+      setCompReferee(dbCompetition.referee || '');
+      setCompEntryFee(dbCompetition.entryFee || '');
+      setCompPrizes(dbCompetition.prizes || '');
+      setCompSchedule(dbCompetition.schedule || '');
+      setRegIsOpen(dbCompetition.registration?.isOpen || false);
+      setRegLink(dbCompetition.registration?.link || '');
+      setRegDeadline(dbCompetition.registration?.deadline || '');
+      setCompSetsToWin(dbCompetition.defaultSettings?.setsToWin || 2);
+      setCompWinPoints(dbCompetition.defaultSettings?.winPoints || 2);
+      setCompLossPoints(dbCompetition.defaultSettings?.lossPoints || 0);
+      setCompAdvancingPlayers(dbCompetition.defaultSettings?.advancingPlayers || 2);
+      setCollaborators(dbCompetition.collaborators || []);
+      setIsPublic(dbCompetition.isPublic || false);
+    }
+    if (dbCategories.length > 0) setCategories(dbCategories);
+    if (dbMatches.length > 0) setMatches(dbMatches);
+    if (dbReferees) setReferees(dbReferees);
+    setLoading(dbLoading);
+  }, [dbCompetition, dbCategories, dbMatches, dbReferees, dbLoading]);
+
   const [competition, setCompetition] = useState(null);
   const [loading, setLoading] = useState(true);
   const [allPlayers, setAllPlayers] = useState([]);
   const [categories, setCategories] = useState([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [showExport, setShowExport] = useState(false);
   
   // URL state management
   const selectedCategoryId = searchParams.get('category') || '';
@@ -132,14 +185,69 @@ const CompetitionDetails = () => {
   const [editPlayerClub, setEditPlayerClub] = useState('');
   const [updatingPlayer, setUpdatingPlayer] = useState(false);
 
-  useEffect(() => {
-    if (!id) return;
-    const q = query(collection(db, "referees"), where("competitionId", "==", id));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setReferees(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  const getSortedKnockoutRoundKeys = (knockoutMatches) => {
+    const roundMap = {};
+
+    knockoutMatches.forEach((match) => {
+      const key = match.roundName || `Runda ${match.round}`;
+      if (!roundMap[key]) roundMap[key] = [];
+      roundMap[key].push(match);
     });
-    return () => unsubscribe();
-  }, [id]);
+
+    return Object.keys(roundMap).sort((a, b) => {
+      const getRoundWeight = (name) => {
+        const sample = roundMap[name]?.[0];
+        const numericRound = Number(sample?.round);
+
+        if (!Number.isNaN(numericRound)) return numericRound;
+        if (name.includes('Baraž')) return 0;
+        if (name.includes('1/32')) return 1;
+        if (name.includes('1/16')) return 2;
+        if (name.includes('1/8')) return 3;
+        if (name.includes('1/4')) return 4;
+        if (name.includes('Polufinale')) return 5;
+        if (name.includes('Finale') && !name.includes('1/')) return 6;
+
+        const fallback = name.match(/\d+/);
+        return fallback ? Number(fallback[0]) : 999;
+      };
+
+      return getRoundWeight(a) - getRoundWeight(b);
+    });
+  };
+
+  const findNextKnockoutSlot = (allMatches, currentMatch) => {
+    const knockoutOnly = allMatches.filter((match) => match.isKnockout);
+    const currentIndex = Number(currentMatch?.bracketIndex ?? 0);
+    const nextIndex = Math.floor(currentIndex / 2);
+    const nextSlot = currentIndex % 2 === 0 ? 'player1' : 'player2';
+    const currentRound = Number(currentMatch?.round);
+
+    if (!Number.isNaN(currentRound)) {
+      const numericNext = knockoutOnly.find(
+        (match) => Number(match.round) === currentRound + 1 && Number(match.bracketIndex ?? 0) === nextIndex
+      );
+
+      if (numericNext) {
+        return { nextMatch: numericNext, nextSlot };
+      }
+    }
+
+    const roundKeys = getSortedKnockoutRoundKeys(knockoutOnly);
+    const currentRoundKey = currentMatch?.roundName || `Runda ${currentMatch?.round}`;
+    const currentRoundIdx = roundKeys.findIndex((key) => key === currentRoundKey);
+
+    if (currentRoundIdx === -1 || currentRoundIdx >= roundKeys.length - 1) {
+      return { nextMatch: null, nextSlot };
+    }
+
+    const nextRoundKey = roundKeys[currentRoundIdx + 1];
+    const namedNext = knockoutOnly.find(
+      (match) => (match.roundName || `Runda ${match.round}`) === nextRoundKey && Number(match.bracketIndex ?? 0) === nextIndex
+    );
+
+    return { nextMatch: namedNext || null, nextSlot };
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -393,6 +501,7 @@ const CompetitionDetails = () => {
     if (activeCategory?.status !== 'draft') return;
 
     let newSelected;
+    let newSeeding = seededPlayers;
     // Check if adding a player (not removing)
     if (!selectedPlayers.includes(playerId)) {
       if (!isSuperAdmin && planDetails?.playersLimit) {
@@ -404,15 +513,20 @@ const CompetitionDetails = () => {
       newSelected = [...selectedPlayers, playerId];
     } else {
       newSelected = selectedPlayers.filter(pid => pid !== playerId);
+      newSeeding = seededPlayers.filter(pid => pid !== playerId);
     }
     
     setSelectedPlayers(newSelected);
+    if (newSeeding !== seededPlayers) {
+      setSeededPlayers(newSeeding);
+    }
 
     // Auto-save to Firestore
     try {
       const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
       await updateDoc(catRef, {
         playerIds: newSelected,
+        seededPlayerIds: newSeeding,
         updatedAt: serverTimestamp()
       });
     } catch (err) {
@@ -422,6 +536,7 @@ const CompetitionDetails = () => {
 
   const togglePlayerSeed = async (playerId) => {
     if (activeCategory?.status !== 'draft') return;
+    if (!selectedPlayers.includes(playerId)) return;
     
     const newSeeding = seededPlayers.includes(playerId) 
       ? seededPlayers.filter(pid => pid !== playerId) 
@@ -1083,6 +1198,30 @@ const CompetitionDetails = () => {
         },
         updatedAt: serverTimestamp()
       });
+
+      setMatches((prev) => prev.map((match) => (
+        match.id === matchId
+          ? {
+              ...match,
+              [updateKey]: {
+                id: playerData.id,
+                name: playerData.name
+              }
+            }
+          : match
+      )));
+
+      setAllMatchesForSearch((prev) => prev.map((match) => (
+        match.id === matchId
+          ? {
+              ...match,
+              [updateKey]: {
+                id: playerData.id,
+                name: playerData.name
+              }
+            }
+          : match
+      )));
     } catch (err) {
       console.error("Match Update Error:", err);
       alert("Greška pri ažuriranju igrača u meču: " + err.message);
@@ -1237,7 +1376,7 @@ const CompetitionDetails = () => {
         if (winner && winner.id && winner.id !== 'tbd') {
           const currentRound = Number(match.round);
           const currentIndex = Number(match.bracketIndex ?? 0);
-          
+
           let nextMatch = null;
           let nextSlot = null;
 
@@ -1266,16 +1405,9 @@ const CompetitionDetails = () => {
                  nextSlot = targetSlot.slot;
              }
           } else {
-             // Standardna logika za ostale runde
-             const nextRound = currentRound + 1;
-             const nextIndex = Math.floor(currentIndex / 2);
-             nextSlot = (currentIndex % 2 === 0) ? 'player1' : 'player2';
-
-             nextMatch = matches.find(m => 
-                m.isKnockout && 
-                Number(m.round) === nextRound && 
-                Number(m.bracketIndex ?? 0) === nextIndex
-             );
+             const resolvedNext = findNextKnockoutSlot(matches, match);
+             nextMatch = resolvedNext.nextMatch;
+             nextSlot = resolvedNext.nextSlot;
           }
 
           if (nextMatch && nextSlot) {
@@ -1838,8 +1970,8 @@ const CompetitionDetails = () => {
   }
 
   return (
-    <DashboardLayout title={competition.name}>
-      <div className="max-w-7xl mx-auto px-2 py-4 sm:py-8">
+    <DashboardLayout title={competition?.name || 'Takmičenje'}>
+      <div className="max-w-6xl mx-auto px-3 sm:px-5 lg:px-6 py-4 sm:py-6">
         <GlobalMatchSearch 
           matchSearchQuery={matchSearchQuery}
           setMatchSearchQuery={setMatchSearchQuery}
@@ -1859,187 +1991,203 @@ const CompetitionDetails = () => {
           categoriesLoading={categoriesLoading}
           activeCategory={activeCategory}
           categories={categories}
+          onShowExport={() => setShowExport(true)}
         />
 
-        {activeTab === 'categories' && (
-          <CategoriesTab 
+        {showExport && (
+          <CompetitionExport 
+            competition={competition}
             categories={categories}
-            selectedCategoryId={selectedCategoryId}
-            setSelectedCategoryId={setSelectedCategoryId}
-            setActiveTab={setActiveTab}
-            newCategoryName={newCategoryName}
-            setNewCategoryName={setNewCategoryName}
-            newCategoryFormat={newCategoryFormat}
-            setNewCategoryFormat={setNewCategoryFormat}
-            newCategoryType={newCategoryType}
-            setNewCategoryType={setNewCategoryType}
-            handleAddCategory={handleAddCategory}
-            handleDeleteCategory={handleDeleteCategory}
-            competitionSlug={competition?.slug}
+            matches={allMatchesForSearch}
+            allPlayers={allPlayers}
+            initialCategoryId="all"
+            onClose={() => setShowExport(false)}
           />
         )}
 
-        {activeTab === 'players' && activeCategory && (
-          <div className="space-y-6">
-            {activeCategory.type === 'doubles' && (
-              <DoublesManager 
-                activeCategory={activeCategory}
-                allPlayers={allPlayers}
-                selectedPlayers={selectedPlayers}
-                onSavePairs={(newPairs) => {
-                  const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
-                  updateDoc(catRef, { doublesPairs: newPairs });
-                }}
+        <div className="mt-6">
+          <div className="bg-slate-900/70 backdrop-blur-xl rounded-[24px] border border-slate-800/80 overflow-hidden shadow-lg">
+            {activeTab === 'categories' && (
+              <CategoriesTab 
+                categories={categories}
+                selectedCategoryId={selectedCategoryId}
+                setSelectedCategoryId={setSelectedCategoryId}
+                setActiveTab={setActiveTab}
+                newCategoryName={newCategoryName}
+                setNewCategoryName={setNewCategoryName}
+                newCategoryFormat={newCategoryFormat}
+                setNewCategoryFormat={setNewCategoryFormat}
+                newCategoryType={newCategoryType}
+                setNewCategoryType={setNewCategoryType}
+                handleAddCategory={handleAddCategory}
+                handleDeleteCategory={handleDeleteCategory}
+                competitionSlug={competition?.slug}
               />
             )}
-            
-            <PlayersTab 
-              activeCategory={activeCategory}
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              showOnlySelected={showOnlySelected}
-              setShowOnlySelected={setShowOnlySelected}
-              allPlayers={allPlayers}
-              selectedPlayers={selectedPlayers}
-              seededPlayers={seededPlayers}
-              togglePlayerSelection={togglePlayerSelection}
-              togglePlayerSeed={togglePlayerSeed}
-              onEditPlayer={startEditingPlayer}
-              assignedPlayerIds={assignedPlayerIds}
-              saveSelectedPlayers={saveSelectedPlayers}
-              setShowAddPlayer={setShowAddPlayer}
-            />
-          </div>
-        )}
 
-        {activeTab === 'referees' && (
-          <RefereesTab 
-            competitionId={id} 
-            tables={competition?.tables || []} 
-            categories={categories || []}
-          />
-        )}
-
-        {activeTab === 'tables' && (
-          <TablesTab 
-            competition={competition} 
-            id={id} 
-            matches={matches}
-            referees={referees}
-            setEditingMatch={setEditingMatch}
-            setShowMatchModal={setShowMatchModal}
-            saveMatchResult={saveMatchResult}
-          />
-        )}
-
-        {activeTab === 'matches' && (
-          <MatchesTab 
-            activeCategory={activeCategory}
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            allPlayers={allPlayers}
-            showOnlySelected={showOnlySelected}
-            selectedPlayers={selectedPlayers}
-            assignedPlayerIds={assignedPlayerIds}
-            groups={groups}
-            setGroups={setGroups}
-            handleGenerateMatches={handleGenerateMatches}
-            generating={generating}
-            calculateStandings={calculateStandings}
-            matches={matches}
-            movePlayerToGroup={movePlayerToGroup}
-            removePlayerFromGroups={removePlayerFromGroups}
-            setEditingMatch={setEditingMatch}
-            setShowMatchModal={setShowMatchModal}
-            saveMatchResult={saveMatchResult}
-            savingMatchId={savingMatchId}
-            handleScoreChange={handleScoreChange}
-            handleSaveManualOrder={handleSaveManualOrder}
-            handleDeleteMatch={handleDeleteMatch}
-            handleToggleStage={handleToggleStage}
-            handleReturnToDraft={handleReturnToDraft}
-            handleClearCategory={handleClearCategory}
-            handleAutoAssignGroups={handleAutoAssignGroups}
-            togglePlayerSeed={togglePlayerSeed}
-            seededPlayers={seededPlayers}
-            planDetails={planDetails}
-            isSuperAdmin={isSuperAdmin}
-            handleAssignTableToGroup={handleAssignTableToGroup}
-            handleAssignTableToCategory={handleAssignTableToCategory}
-            tables={competition?.tables || []}
-          />
-        )}
-
-        {activeTab === 'knockout' && (
-          <div className="min-h-[500px]">
-            {!activeCategory ? (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-12 text-center backdrop-blur-xl">
-                <div className="w-16 h-16 bg-red-500/20 rounded-lg flex items-center justify-center mx-auto mb-6 text-red-500">
-                  <AlertTriangle size={32} />
-                </div>
-                <h3 className="text-xl font-semibold text-white uppercase italic tracking-tight mb-2">Kategorija nije pronađena</h3>
-                <button 
-                  onClick={() => setActiveTab('categories')} 
-                  className="bg-blue-600 text-white px-6 py-3 rounded-xl text-xs font-semibold uppercase"
-                >
-                  Nazad na kategorije
-                </button>
+            {activeTab === 'players' && activeCategory && (
+              <div className="p-5 sm:p-6">
+                {activeCategory.type === 'doubles' && (
+                  <DoublesManager 
+                    activeCategory={activeCategory}
+                    allPlayers={allPlayers}
+                    selectedPlayers={selectedPlayers}
+                    onSavePairs={(newPairs) => {
+                      const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
+                      updateDoc(catRef, { doublesPairs: newPairs });
+                    }}
+                  />
+                )}
+                
+                <PlayersTab 
+                  activeCategory={activeCategory}
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                  showOnlySelected={showOnlySelected}
+                  setShowOnlySelected={setShowOnlySelected}
+                  allPlayers={allPlayers}
+                  selectedPlayers={selectedPlayers}
+                  seededPlayers={seededPlayers}
+                  togglePlayerSelection={togglePlayerSelection}
+                  togglePlayerSeed={togglePlayerSeed}
+                  onEditPlayer={startEditingPlayer}
+                  assignedPlayerIds={assignedPlayerIds}
+                  saveSelectedPlayers={saveSelectedPlayers}
+                  setShowAddPlayer={setShowAddPlayer}
+                />
               </div>
-            ) : (
-              <KnockoutTab 
-                activeCategory={activeCategory}
+            )}
+            
+            {activeTab === 'referees' && (
+              <RefereesTab 
+                competitionId={id} 
+                tables={competition?.tables || []} 
+                categories={categories || []}
+              />
+            )}
+
+            {activeTab === 'tables' && (
+              <TablesTab 
+                competition={competition} 
+                id={id} 
                 matches={matches}
-                groups={groups}
-                allPlayers={allPlayers}
-                calculateStandings={calculateStandings}
+                referees={referees}
                 setEditingMatch={setEditingMatch}
                 setShowMatchModal={setShowMatchModal}
-                handleToggleStage={handleToggleStage}
-                handleGenerateKnockout={handleGenerateKnockout}
-                handleResetKnockout={handleResetKnockout}
-                handleUpdateMatchPlayer={handleUpdateMatchPlayer}
-                handleAddManualMatch={handleAddManualMatch}
-                handleGenerateTemplate={handleGenerateTemplate}
-                generating={generating}
                 saveMatchResult={saveMatchResult}
+              />
+            )}
+
+            {activeTab === 'matches' && (
+              <MatchesTab 
+                activeCategory={activeCategory}
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                allPlayers={allPlayers}
+                showOnlySelected={showOnlySelected}
+                selectedPlayers={selectedPlayers}
+                assignedPlayerIds={assignedPlayerIds}
+                groups={groups}
+                setGroups={setGroups}
+                handleGenerateMatches={handleGenerateMatches}
+                generating={generating}
+                calculateStandings={calculateStandings}
+                matches={matches}
+                movePlayerToGroup={movePlayerToGroup}
+                removePlayerFromGroups={removePlayerFromGroups}
+                setEditingMatch={setEditingMatch}
+                setShowMatchModal={setShowMatchModal}
+                saveMatchResult={saveMatchResult}
+                savingMatchId={savingMatchId}
+                handleScoreChange={handleScoreChange}
+                handleSaveManualOrder={handleSaveManualOrder}
                 handleDeleteMatch={handleDeleteMatch}
+                handleToggleStage={handleToggleStage}
+                handleReturnToDraft={handleReturnToDraft}
+                handleClearCategory={handleClearCategory}
+                handleAutoAssignGroups={handleAutoAssignGroups}
+                togglePlayerSeed={togglePlayerSeed}
+                seededPlayers={seededPlayers}
+                planDetails={planDetails}
+                isSuperAdmin={isSuperAdmin}
+                handleAssignTableToGroup={handleAssignTableToGroup}
+                handleAssignTableToCategory={handleAssignTableToCategory}
                 tables={competition?.tables || []}
+              />
+            )}
+
+            {activeTab === 'knockout' && (
+              <div className="min-h-[500px]">
+                {!activeCategory ? (
+                  <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-12 text-center backdrop-blur-xl">
+                    <div className="w-16 h-16 bg-red-500/20 rounded-lg flex items-center justify-center mx-auto mb-6 text-red-500">
+                      <AlertTriangle size={32} />
+                    </div>
+                    <h3 className="text-xl font-semibold text-white uppercase italic tracking-tight mb-2">Kategorija nije pronađena</h3>
+                    <button 
+                      onClick={() => setActiveTab('categories')} 
+                      className="bg-blue-600 text-white px-6 py-3 rounded-xl text-xs font-semibold uppercase"
+                    >
+                      Nazad na kategorije
+                    </button>
+                  </div>
+                ) : (
+                  <KnockoutTab 
+                    activeCategory={activeCategory}
+                    matches={matches}
+                    groups={groups}
+                    allPlayers={allPlayers}
+                    calculateStandings={calculateStandings}
+                    setEditingMatch={setEditingMatch}
+                    setShowMatchModal={setShowMatchModal}
+                    handleToggleStage={handleToggleStage}
+                    handleGenerateKnockout={handleGenerateKnockout}
+                    handleResetKnockout={handleResetKnockout}
+                    handleUpdateMatchPlayer={handleUpdateMatchPlayer}
+                    handleAddManualMatch={handleAddManualMatch}
+                    handleGenerateTemplate={handleGenerateTemplate}
+                    generating={generating}
+                    saveMatchResult={saveMatchResult}
+                    handleDeleteMatch={handleDeleteMatch}
+                    tables={competition?.tables || []}
+                    handleDeleteAllMatches={handleDeleteAllMatches}
+                  />
+                )}
+              </div>
+            )}
+
+            {activeTab === 'settings' && activeCategory && (
+                <SettingsTab 
+                  activeCategory={activeCategory}
+                  handleUpdateSettings={handleUpdateSettings}
+                  handleToggleStage={handleToggleStage}
+                  handleDeleteCompetition={handleDeleteCompetition}
+                  isSuperAdmin={userData?.role === 'super_admin'}
+                  isOwner={competition?.ownerUid === userData?.uid}
+                />
+            )}
+
+            {activeTab === 'all-matches' && (
+              <AllMatchesTab
+                allMatches={allMatchesForSearch}
+                categories={categories}
+                allPlayers={allPlayers}
+                setEditingMatch={setEditingMatch}
+                setShowMatchModal={setShowMatchModal}
+                handleDeleteMatch={handleDeleteMatch}
                 handleDeleteAllMatches={handleDeleteAllMatches}
               />
             )}
+
+            {activeTab === 'all-players' && (
+              <AllPlayersTab
+                allPlayers={allPlayers}
+                handleDeletePlayer={handleDeletePlayer}
+                handleDeleteAllPlayers={handleDeleteAllPlayers}
+              />
+            )}
           </div>
-        )}
-
-        {activeTab === 'settings' && activeCategory && (
-            <SettingsTab 
-              activeCategory={activeCategory}
-              handleUpdateSettings={handleUpdateSettings}
-              handleToggleStage={handleToggleStage}
-              handleDeleteCompetition={handleDeleteCompetition}
-              isSuperAdmin={userData?.role === 'super_admin'}
-              isOwner={competition?.ownerUid === userData?.uid}
-            />
-        )}
-
-        {activeTab === 'all-matches' && (
-          <AllMatchesTab
-            allMatches={allMatchesForSearch}
-            categories={categories}
-            allPlayers={allPlayers}
-            setEditingMatch={setEditingMatch}
-            setShowMatchModal={setShowMatchModal}
-            handleDeleteMatch={handleDeleteMatch}
-            handleDeleteAllMatches={handleDeleteAllMatches}
-          />
-        )}
-
-        {activeTab === 'all-players' && (
-          <AllPlayersTab
-            allPlayers={allPlayers}
-            handleDeletePlayer={handleDeletePlayer}
-            handleDeleteAllPlayers={handleDeleteAllPlayers}
-          />
-        )}
+        </div>
       </div>
 
       <MatchUpdateModal 
@@ -2107,104 +2255,20 @@ const CompetitionDetails = () => {
 
       {/* Add Player Modal */}
       {showAddPlayer && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
-          <div className="bg-slate-900 border border-slate-800 rounded-[32px] w-full max-w-md overflow-hidden shadow-2xl">
-            <div className="p-8 border-b border-slate-800 flex justify-between items-center">
-              <div>
-                <h3 className="text-xl font-semibold text-white uppercase italic tracking-tight">Novi Igrač(i)</h3>
-                <p className="text-slate-500 text-xs font-medium uppercase tracking-wide mt-1">Dodajte direktno u sistem</p>
-              </div>
-              <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
-                <button 
-                  onClick={() => setPlayerFormMode('single')}
-                  className={`p-2 rounded-lg transition-all ${playerFormMode === 'single' ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'text-slate-500 hover:text-white'}`}
-                >
-                  <UserPlus size={18} />
-                </button>
-                <button 
-                  onClick={() => setPlayerFormMode('bulk')}
-                  className={`p-2 rounded-lg transition-all ${playerFormMode === 'bulk' ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'text-slate-500 hover:text-white'}`}
-                >
-                  <FileText size={18} />
-                </button>
-              </div>
-            </div>
-            
-            <div className="p-8">
-              {playerFormMode === 'single' ? (
-                <form onSubmit={handleQuickAddPlayer} className="space-y-5">
-                  <div className="space-y-2">
-                      <label className="text-xs font-medium text-slate-500 uppercase tracking-wide ml-1">Ime i Prezime</label>
-                      <input 
-                      required
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-5 py-4 text-white focus:outline-none focus:border-blue-500 transition-all placeholder:text-slate-700"
-                      placeholder="npr. Edin Džeko"
-                      value={newPlayerName}
-                      onChange={(e) => setNewPlayerName(e.target.value)}
-                      />
-                  </div>
-                  <div className="space-y-2">
-                      <label className="text-xs font-medium text-slate-500 uppercase tracking-wide ml-1">Klub (opciono)</label>
-                      <input 
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-5 py-4 text-white focus:outline-none focus:border-blue-500 transition-all placeholder:text-slate-700"
-                      placeholder="npr. STK Spin"
-                      value={newPlayerClub}
-                      onChange={(e) => setNewPlayerClub(e.target.value)}
-                      />
-                  </div>
-                  <div className="flex gap-3 pt-2">
-                    <button 
-                      type="button"
-                      onClick={() => setShowAddPlayer(false)}
-                      className="flex-1 py-4 text-slate-500 font-medium text-xs uppercase tracking-wide hover:text-white transition-all"
-                    >
-                      Otkaži
-                    </button>
-                    <button 
-                      type="submit"
-                      className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-4 rounded-lg font-semibold text-xs uppercase tracking-wide transition-all shadow-lg shadow-blue-600/20 active:scale-95"
-                    >
-                      Dodaj Igrača
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <form onSubmit={handleQuickBulkAdd} className="space-y-5">
-                  <div className="space-y-2">
-                      <div className="flex justify-between items-center ml-1">
-                        <label className="text-xs font-medium text-slate-500 uppercase tracking-wide">Lista igrača</label>
-                                               <span className="text-[10px] text-blue-500 font-medium uppercase">Format: Ime, Klub;</span>
-                      </div>
-                      <textarea 
-                      required
-                      rows={6}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-5 py-4 text-white font-mono text-xs focus:outline-none focus:border-blue-500 transition-all placeholder:text-slate-800 resize-none"
-                      placeholder="Haris Tabaković, STK Spin;&#10;Ermin H., STK Sarajevo;"
-                      value={bulkPlayerText}
-                      onChange={(e) => setBulkPlayerText(e.target.value)}
-                      />
-                  </div>
-                  <div className="flex gap-3 pt-2">
-                    <button 
-                      type="button"
-                      onClick={() => setShowAddPlayer(false)}
-                      className="flex-1 py-4 text-slate-500 font-medium text-xs uppercase tracking-wide hover:text-white transition-all"
-                    >
-                      Otkaži
-                    </button>
-                    <button 
-                      type="submit"
-                      disabled={generating}
-                      className={`flex-1 ${generating ? 'bg-slate-800' : 'bg-white text-slate-900 hover:bg-blue-500 hover:text-white'} py-4 rounded-lg font-semibold text-xs uppercase tracking-wide transition-all shadow-xl active:scale-95`}
-                    >
-                      {generating ? 'Procesiranje...' : 'Uvezi Listu'}
-                    </button>
-                  </div>
-                </form>
-              )}
-            </div>
-          </div>
-        </div>
+        <PlayerAddModal 
+          show={showAddPlayer}
+          onClose={() => setShowAddPlayer(false)}
+          mode={playerFormMode}
+          setMode={setPlayerFormMode}
+          newPlayerName={newPlayerName}
+          setNewPlayerName={setNewPlayerName}
+          newPlayerClub={newPlayerClub}
+          setNewPlayerClub={setNewPlayerClub}
+          bulkPlayerText={bulkPlayerText}
+          setBulkPlayerText={setBulkPlayerText}
+          onSingleAdd={handleQuickAddPlayer}
+          onBulkAdd={handleQuickBulkAdd}
+        />
       )}
     </DashboardLayout>
   );

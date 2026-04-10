@@ -1,0 +1,134 @@
+[
+  {
+    "id": "gY1SnhPd4rlfcfcr03FP",
+    "name": "Balkan Cup 2026 - International Table Tennis Open",
+    "date": "2026-05-15",
+    "endDate": "2026-05-17",
+    "location": "Sportska dvorana 'Novo Sarajevo' (Grbavica)",
+    "description": "Najveći međunarodni stonoteniski turnir u regiji koji okuplja preko 300 takmičara iz cijelog Balkana i šire. Očekuju vas vrhunski mečevi, odlična atmosfera i bogat nagradni fond.",
+    "status": "active",
+    "type": "tournament",
+    "image": "https://images.unsplash.com/photo-1534158914592-062992fbe900?auto=format&fit=crop&q=80&w=1200",
+    "organizer": "Stonoteniski klub 'SPIN' Sarajevo",
+    "director": "Mirza Ibrahimović",
+    "referee": "Adnan Hodžić (ITTF International Umpire)",
+    "entryFee": "30 KM (15 EUR) pojedinačno, 50 KM parovi",
+    "prizes": "Ukupni nagradni fond: 5.000 KM. Pobjednik dobija 1.500 KM + Pehar. Ostali nagrađeni opremom brenda Butterfly.",
+    "schedule": "PETAK (15.05.2026):\n- 18:00 - Registracija i akreditacije\n- 19:00 - Tehnički sastanak\n\nSUBOTA (16.05.2026):\n- 08:30 - Otvaranje dvorane\n- 09:30 - Svečano otvaranje\n- 10:00 - Grupna faza (Seniori i U21)\n- 14:00 - Pauza\n- 15:30 - Nastavak takmičenja po grupama\n\nNEDJELJA (17.05.2026):\n- 09:00 - Glavni žrijeb (Knockout faza)\n- 11:30 - Polufinala i Finala\n- 13:00 - Dodjela nagrada",
+    "rules": "1. Turnir se igra po važećim ITTF pravilima.\n2. Kategorije: Seniori (M/Ž), U21, Veterani 40-50, 50-60, 60+.\n3. Sve partije se igraju u 3 dobijena seta (best of 5).\n4. Obavezna je sportska dvoranska oprema.\n5. Loptice: Butterfly R40+ ***.\n6. Žalbe se podnose vrhovnom sudiji uz taksu od 50 KM.",
+    "contact": {
+      "phone": "+387 61 123 456",
+      "email": "info@spin-sarajevo.ba",
+      "address": "Zvornička 15, 71000 Sarajevo, Bosna i Hercegovina"
+    },
+    "categoryIds": [],
+    "createdAt": {
+      "_seconds": 1770286888,
+      "_nanoseconds": 725000000
+    },
+    "startDate": "2026-05-16",
+    "availableCategories": [
+      "Kadeti",
+      "Kadetkinje",
+      "Najmlađi kadeti",
+      "Juniori",
+      "Juniorke"
+    ],
+    "slug": "balkancup2026",
+    "defaultSettings": {
+      "setsToWin": 3,
+      "winPoints": 2,
+      "lossPoints": 0,
+      "advancingPlayers": 2
+    },
+    "registration": {
+      "isOpen": true,
+      "show": true,
+      "link": "http://localhost:5173/p/gY1SnhPd4rlfcfcr03FP",
+      "deadline": "2026-05-10"
+    },
+    "collaborators": [
+      "erminselimovic90@gmail.com",
+      "selimovicermin90+admin@gmail.com"
+    ],
+    "tables": [
+      {
+        "id": "1771271597702-1",
+        "name": "Stol 1"
+      },
+      {
+        "id": "1771271597702-2",
+        "name": "Stol 2"
+      },
+      {
+        "id": "1771271597702-3",
+        "name": "Stol 3"
+      },
+      {
+        "id": "1771271597702-4",
+        "name": "Stol 4"
+      },
+      {
+        "id": "1771271597702-5",
+        "name": "Stol 5"
+      }
+    ],
+    "isPublic": true,
+    "updatedAt": {
+      "_seconds": 1771282610,
+      "_nanoseconds": 15000000
+    }
+  },
+  {
+    "id": "siWtPLJ0LAfDMIPg9Is2",
+    "name": "JOOLA Kup 2025 Tuzla",
+    "slug": "joola-kup-2025-tuzla",
+    "type": "tournament",
+    "status": "active",
+    "participantsCount": 0,
+    "sport": "Table Tennis",
+    "createdAt": {
+      "_seconds": 1770077587,
+      "_nanoseconds": 116000000
+    },
+    "organizationId": "E9RaaxT0RAoSEqDTt7qs",
+    "entryFee": "",
+    "availableCategories": [],
+    "endDate": null,
+    "director": "",
+    "description": "",
+    "rules": "",
+    "referee": "",
+    "schedule": "",
+    "organizer": "",
+    "contact": {
+      "phone": "",
+      "email": "",
+      "address": ""
+    },
+    "prizes": "",
+    "collaborators": [
+      "erminselimovic90@gmail.com",
+      "smoranjkic@gmail.com"
+    ],
+    "location": "",
+    "startDate": null,
+    "registration": {
+      "isOpen": false,
+      "show": false,
+      "link": "",
+      "deadline": null
+    },
+    "defaultSettings": {
+      "setsToWin": 3,
+      "winPoints": 2,
+      "lossPoints": 0,
+      "advancingPlayers": 2
+    },
+    "isPublic": true,
+    "updatedAt": {
+      "_seconds": 1771281563,
+      "_nanoseconds": 983000000
+    }
+  }
+]
