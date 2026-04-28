@@ -1628,8 +1628,11 @@ const CompetitionDetails = () => {
       }
     }
 
-    // 1. Pronađi igrača
-    const player = allPlayers.find(p => p.id === playerId);
+    // 1. Pronađi igrača (ili par u doubles kategoriji)
+    let player = allPlayers.find(p => p.id === playerId);
+    if (!player && activeCategory?.type === 'doubles') {
+      player = (activeCategory.doublesPairs || []).find(p => p.id === playerId);
+    }
     if (!player) return;
 
     // 2. Napravi nove grupe i ukloni igrača iz svih trenutnih grupa
@@ -1657,6 +1660,39 @@ const CompetitionDetails = () => {
     const cleanedGroups = groups.map(g => g.filter(p => p.id !== playerId));
     setGroups(cleanedGroups);
     saveGroupConfig(cleanedGroups);
+  };
+
+  const addGroup = () => {
+    if (!isSuperAdmin && planDetails?.groupsLimit) {
+      if (groups.length >= planDetails.groupsLimit) {
+        alert(`Vaš plan dozvoljava maksimalno ${planDetails.groupsLimit} grupa.`);
+        return;
+      }
+    }
+    const newGroups = [...groups, []];
+    setGroups(newGroups);
+    saveGroupConfig(newGroups);
+  };
+
+  const removeGroup = (groupIdx) => {
+    if (groups.length <= 1) {
+      alert("Mora postojati barem jedna grupa.");
+      return;
+    }
+    if ((groups[groupIdx]?.length || 0) > 0) {
+      const letter = String.fromCharCode(65 + groupIdx);
+      if (!window.confirm(`Grupa ${letter} sadrži igrače. Sigurno želite obrisati ovu grupu? Igrači će biti vraćeni u "Igrači na Čekanju".`)) return;
+    }
+    const newGroups = groups.filter((_, idx) => idx !== groupIdx);
+    setGroups(newGroups);
+    saveGroupConfig(newGroups);
+  };
+
+  const clearAllGroups = () => {
+    if (!window.confirm("Sigurno želite isprazniti SVE grupe? Igrači ostaju selektovani u kategoriji.")) return;
+    const newGroups = groups.map(() => []);
+    setGroups(newGroups);
+    saveGroupConfig(newGroups);
   };
 
   const handleAutoAssignGroups = () => {
@@ -2113,6 +2149,9 @@ const CompetitionDetails = () => {
                 handleAssignTableToGroup={handleAssignTableToGroup}
                 handleAssignTableToCategory={handleAssignTableToCategory}
                 tables={competition?.tables || []}
+                addGroup={addGroup}
+                removeGroup={removeGroup}
+                clearAllGroups={clearAllGroups}
               />
             )}
 

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { 
   Users, Search, CheckCircle, PlayCircle, X, LayoutGrid, Edit2, 
   ChevronDown, ArrowUp, ArrowDown, ListOrdered, Zap, RotateCcw, Trash2,
-  AlertTriangle, Star, Trophy, CheckCircle2
+  AlertTriangle, Star, Trophy, CheckCircle2, Shuffle, Plus, PlayCircle as Play, Eraser
 } from 'lucide-react';
 
 const MatchesTab = ({ 
@@ -38,12 +38,38 @@ const MatchesTab = ({
   isSuperAdmin,  // Receive isSuperAdmin
   handleAssignTableToGroup,
   handleAssignTableToCategory,
-  tables
+  tables,
+  addGroup,
+  removeGroup,
+  clearAllGroups
 }) => {
   const [manualEditingGroups, setManualEditingGroups] = useState({});
   const [selectedGroup, setSelectedGroup] = useState('all');
+  const [dragOverGroup, setDragOverGroup] = useState(null);
   const seededPlayerIds = activeCategory?.seededPlayerIds || [];
   const isGroupsCompleted = activeCategory?.stages?.groups?.completed || false;
+  const isDraft = activeCategory?.status === 'draft';
+  const isGroupsKO = activeCategory?.format === 'groups_knockout';
+
+  const handleDropOnGroup = (e, groupIdx) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOverGroup(null);
+    const playerId = e.dataTransfer.getData('playerId');
+    if (playerId && typeof movePlayerToGroup === 'function') {
+      movePlayerToGroup(playerId, groupIdx);
+    }
+  };
+
+  const handleDragOverGroup = (e, groupIdx) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (dragOverGroup !== groupIdx) setDragOverGroup(groupIdx);
+  };
+
+  const handleDragLeaveGroup = () => {
+    setDragOverGroup(null);
+  };
 
   const getStandings = (groupIdx) => {
     if (typeof calculateStandings !== 'function') return [];
@@ -289,6 +315,69 @@ const MatchesTab = ({
             </div>
           )}
 
+          {/* Draft Controls Bar (Auto-assign, Add group, Clear, Generate) */}
+          {isDraft && (activeCategory?.format === 'groups_knockout' || activeCategory?.format === 'round_robin') && (
+            <div className="bg-slate-950/90 backdrop-blur-xl border border-slate-800 rounded-[24px] p-4 sm:p-5 shadow-lg mb-6">
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-amber-500/12 rounded-xl flex items-center justify-center text-amber-300 border border-amber-500/15">
+                      <LayoutGrid size={18} />
+                    </div>
+                    <div>
+                      <span className="text-xs font-black text-white uppercase tracking-tight italic block">
+                        {isGroupsKO ? 'Raspored Grupa' : 'Liga (Round Robin)'}
+                      </span>
+                      <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest leading-none mt-1">
+                        {isGroupsKO 
+                          ? `${groups.length} grupa · ${groups.flat().length} igrača raspoređeno · ${(selectedPlayers?.length || 0) - groups.flat().length} na čekanju`
+                          : `${selectedPlayers?.length || 0} igrača selektovano`}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleGenerateMatches}
+                    disabled={generating || (selectedPlayers?.length || 0) < 2}
+                    className="px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-emerald-600/20"
+                    title="Generiši mečeve i pokreni kategoriju"
+                  >
+                    <Play size={14} strokeWidth={3} fill="currentColor" />
+                    {generating ? 'Generišem...' : 'Generiši Mečeve'}
+                  </button>
+                </div>
+
+                {isGroupsKO && (
+                  <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-800">
+                    <button
+                      onClick={handleAutoAssignGroups}
+                      disabled={generating}
+                      className="px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 bg-sky-500/10 text-sky-300 border border-sky-500/20 hover:bg-sky-500 hover:text-white"
+                      title="Automatski rasporedi neraspoređene igrače balansirano po klubovima i nosiocima"
+                    >
+                      <Shuffle size={13} strokeWidth={2.5} /> Auto Raspored
+                    </button>
+                    <button
+                      onClick={addGroup}
+                      disabled={generating}
+                      className="px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 hover:bg-emerald-500 hover:text-white"
+                      title="Dodaj novu grupu"
+                    >
+                      <Plus size={13} strokeWidth={2.5} /> Dodaj Grupu
+                    </button>
+                    <button
+                      onClick={clearAllGroups}
+                      disabled={generating || groups.flat().length === 0}
+                      className="px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 bg-amber-500/10 text-amber-300 border border-amber-500/20 hover:bg-amber-500 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-amber-500/10 disabled:hover:text-amber-300"
+                      title="Vrati sve igrače iz grupa nazad u 'Igrači na Čekanju'"
+                    >
+                      <Eraser size={13} strokeWidth={2.5} /> Očisti Grupe
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {(activeCategory?.format === 'groups_knockout' || activeCategory?.format === 'round_robin') && groups.length > 0 ? (
             <div className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
@@ -312,10 +401,18 @@ const MatchesTab = ({
                       .map(Number)
                       .sort((a, b) => a - b);
 
+                    const isDropping = dragOverGroup === idx;
                     return (
                       <div 
                         key={idx} 
-                        className={`bg-slate-950/90 backdrop-blur-xl border shadow-lg flex flex-col transition-all duration-300 rounded-[20px] overflow-hidden ${isGroupCompleted ? 'border-emerald-500/20' : 'border-slate-800 hover:border-slate-700'}`}
+                        onDragOver={isDraft && isGroupsKO ? (e) => handleDragOverGroup(e, idx) : undefined}
+                        onDragLeave={isDraft && isGroupsKO ? handleDragLeaveGroup : undefined}
+                        onDrop={isDraft && isGroupsKO ? (e) => handleDropOnGroup(e, idx) : undefined}
+                        className={`bg-slate-950/90 backdrop-blur-xl border shadow-lg flex flex-col transition-all duration-300 rounded-[20px] overflow-hidden ${
+                          isDropping 
+                            ? 'border-sky-500 ring-2 ring-sky-500/40 scale-[1.01]' 
+                            : isGroupCompleted ? 'border-emerald-500/20' : 'border-slate-800 hover:border-slate-700'
+                        }`}
                       >
                         {/* Group Header */}
                         <div className="bg-gradient-to-r from-sky-500/10 to-cyan-500/5 px-4 py-3 border-b border-slate-800">
@@ -324,28 +421,98 @@ const MatchesTab = ({
                               <span className="bg-sky-500/15 text-sky-200 border border-sky-500/20 px-3 py-1 rounded-full text-[11px] uppercase tracking-widest">
                                 Grupa {String.fromCharCode(65 + idx)}
                               </span>
+                              {isDraft && isGroupsKO && (
+                                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                                  · {groupPlayerIds.length} {groupPlayerIds.length === 1 ? 'igrač' : 'igrača'}
+                                </span>
+                              )}
                             </h4>
                             <div className="flex items-center space-x-2">
-                              <button
-                                onClick={() => toggleManual(idx)}
-                                className={`text-white text-[10px] px-3 py-1.5 rounded-lg transition-colors font-semibold ${
-                                  manualEditingGroups[idx]
-                                    ? 'bg-amber-600 hover:bg-amber-500'
-                                    : 'bg-slate-800 hover:bg-slate-700'
-                                }`}
-                                title={manualEditingGroups[idx] ? 'Isključi ručno prilagođavanje' : 'Uključi ručno prilagođavanje'}
-                              >
-                                ✏️ Ručno prilagodi
-                              </button>
-                              <span className="text-gray-400 text-xs">
-                                {groupMatches.filter(m => m.status === 'completed').length}/{groupMatches.length} mečeva
-                              </span>
+                              {isDraft && isGroupsKO ? (
+                                <button
+                                  onClick={() => removeGroup && removeGroup(idx)}
+                                  className="text-red-400 hover:text-white hover:bg-red-500 bg-red-500/10 border border-red-500/20 text-[10px] px-3 py-1.5 rounded-lg transition-colors font-semibold flex items-center gap-1"
+                                  title="Obriši grupu"
+                                >
+                                  <Trash2 size={11} /> Grupu
+                                </button>
+                              ) : (
+                                <>
+                                  <button
+                                    onClick={() => toggleManual(idx)}
+                                    className={`text-white text-[10px] px-3 py-1.5 rounded-lg transition-colors font-semibold ${
+                                      manualEditingGroups[idx]
+                                        ? 'bg-amber-600 hover:bg-amber-500'
+                                        : 'bg-slate-800 hover:bg-slate-700'
+                                    }`}
+                                    title={manualEditingGroups[idx] ? 'Isključi ručno prilagođavanje' : 'Uključi ručno prilagođavanje'}
+                                  >
+                                    ✏️ Ručno prilagodi
+                                  </button>
+                                  <span className="text-gray-400 text-xs">
+                                    {groupMatches.filter(m => m.status === 'completed').length}/{groupMatches.length} mečeva
+                                  </span>
+                                </>
+                              )}
                             </div>
                           </div>
                         </div>
 
                         <div className="px-4 py-3 bg-slate-900/30">
-                          {/* Standings Table */}
+                          {/* Draft mode: Player list with remove + drop zone hint */}
+                          {isDraft && isGroupsKO && (
+                            <div className="mb-3">
+                              {groupPlayerIds.length === 0 ? (
+                                <div className={`border-2 border-dashed rounded-[16px] py-8 px-4 text-center transition-all ${
+                                  isDropping ? 'border-sky-500 bg-sky-500/10' : 'border-slate-700/60 bg-slate-950/40'
+                                }`}>
+                                  <Users size={24} className={`mx-auto mb-2 ${isDropping ? 'text-sky-400' : 'text-slate-700'}`} />
+                                  <p className={`text-[10px] font-black uppercase tracking-widest ${isDropping ? 'text-sky-300' : 'text-slate-600'}`}>
+                                    {isDropping ? 'Spusti ovdje' : 'Dovuci igrače ovdje'}
+                                  </p>
+                                </div>
+                              ) : (
+                                <div className={`space-y-1.5 p-2 rounded-[16px] transition-all ${
+                                  isDropping ? 'bg-sky-500/10 ring-2 ring-sky-500/40' : 'bg-slate-950/40 border border-slate-800/60'
+                                }`}>
+                                  {groupPlayerIds.map((p) => {
+                                    const isSeed = seededPlayerIds.includes(p.id);
+                                    return (
+                                      <div 
+                                        key={p.id}
+                                        draggable
+                                        onDragStart={(e) => {
+                                          e.dataTransfer.setData('playerId', p.id);
+                                          e.dataTransfer.effectAllowed = 'move';
+                                        }}
+                                        className="flex items-center justify-between gap-2 bg-slate-900/70 border border-slate-800 hover:border-sky-500/30 rounded-xl px-3 py-2 cursor-grab active:cursor-grabbing transition-all group/row"
+                                      >
+                                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                                          {isSeed && <Star size={11} className="text-amber-500 fill-amber-500 flex-shrink-0" />}
+                                          <div className="min-w-0">
+                                            <p className="text-[11px] font-bold uppercase tracking-tight text-white truncate">{p.name}</p>
+                                            {p.club && (
+                                              <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500 truncate">{p.club}</p>
+                                            )}
+                                          </div>
+                                        </div>
+                                        <button
+                                          onClick={() => removePlayerFromGroups && removePlayerFromGroups(p.id)}
+                                          className="opacity-50 group-hover/row:opacity-100 text-slate-500 hover:text-red-400 hover:bg-red-500/10 p-1.5 rounded-lg transition-all flex-shrink-0"
+                                          title="Ukloni iz grupe"
+                                        >
+                                          <X size={12} />
+                                        </button>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Standings Table - hide in draft */}
+                          {!(isDraft && isGroupsKO) && (
                           <div className="bg-slate-950/40 border border-slate-800/60 rounded-[16px] overflow-hidden">
                             <table className="w-full text-xs text-left">
                               <thead>
@@ -427,8 +594,10 @@ const MatchesTab = ({
                               </tbody>
                             </table>
                           </div>
+                          )}
 
-                          {/* Matches List */}
+                          {/* Matches List - hide in draft (no matches yet) */}
+                          {!(isDraft && isGroupsKO) && (
                           <div className="px-0 pt-3 border-t border-gray-700/50 mt-3">
                             <div className="flex items-center gap-2 mb-2">
                               <Zap size={10} className="text-sky-400" fill="currentColor" />
@@ -533,6 +702,7 @@ const MatchesTab = ({
                               ))}
                             </div>
                           </div>
+                          )}
                         </div>
                       </div>
                     );
