@@ -132,6 +132,7 @@ const KnockoutTab = ({
   }, [knockoutMatches, roundKeys]);
 
   const knockoutMatchesCount = knockoutMatches.length;
+  const hasBarazRound = knockoutMatches.some(m => m.roundName === 'Baraž');
 
   const suggestedMatches = React.useMemo(() => {
     if (!groups || groups.length < 2) return [];
@@ -866,6 +867,184 @@ const KnockoutTab = ({
           </div>
         )}
       </div>
+
+      {/* Setup Knockout Template Modal */}
+      {showSetupModal && (
+        <div className="fixed inset-0 z-[105] flex items-center justify-center p-4 bg-black/60 dark:bg-black/90 backdrop-blur-md">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-2xl rounded-lg overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900/50">
+              <div>
+                <h3 className="text-slate-900 dark:text-white font-bold text-lg">Kreiraj eliminacioni kostur</h3>
+                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Izaberi veličinu žrijeba ili dodaj meč ručno</p>
+              </div>
+              <button onClick={() => setShowSetupModal(false)} className="text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"><X size={20} /></button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              <div>
+                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">Prazan kostur (TBD slotovi)</p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {[4, 8, 16, 32].map(size => (
+                    <button
+                      key={size}
+                      onClick={async () => {
+                        await handleGenerateTemplate(size);
+                        setShowSetupModal(false);
+                      }}
+                      disabled={generating}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-lg shadow-blue-600/20 disabled:opacity-50"
+                    >
+                      {size} Igrača
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {hasBarazRound && (
+                <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 rounded-lg p-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-[10px] font-bold text-amber-700 dark:text-amber-500 uppercase tracking-widest mb-1">Baraž detektovan</p>
+                      <p className="text-xs text-amber-800 dark:text-amber-300">Možeš regenerisati glavni kostur i sačuvati postojeće baraž mečeve.</p>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        await handleGenerateTemplate(16, true);
+                        setShowSetupModal(false);
+                      }}
+                      disabled={generating}
+                      className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all disabled:opacity-50"
+                    >
+                      Sačuvaj Baraž
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">Napredno</p>
+                <button
+                  onClick={() => {
+                    setShowSetupModal(false);
+                    setShowManualModal(true);
+                  }}
+                  className="w-full bg-white dark:bg-slate-800 text-slate-700 dark:text-white px-5 py-3 rounded-lg text-xs font-black uppercase tracking-widest hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm border border-slate-200 dark:border-slate-700"
+                >
+                  Ručno dodaj pojedinačni meč
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Manual Match Modal */}
+      {showManualModal && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 dark:bg-black/90 backdrop-blur-md">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-lg rounded-lg overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900/50">
+              <h3 className="text-slate-900 dark:text-white font-bold text-lg">Ručno kreiranje meča</h3>
+              <button onClick={() => setShowManualModal(false)} className="text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"><X size={20} /></button>
+            </div>
+            
+            <div className="p-8 space-y-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
+              {suggestedMatches.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Zap size={14} className="text-blue-600 dark:text-blue-400" />
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Prijedlozi na osnovu grupa</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {suggestedMatches.map((s, idx) => {
+                      const isUsed = placedPlayerIds.has(s.p1.id) || placedPlayerIds.has(s.p2.id);
+                      return (
+                        <button 
+                          key={idx}
+                          disabled={isUsed}
+                          onClick={() => {
+                            setManualMatch({
+                              ...manualMatch,
+                              player1Id: s.p1.id,
+                              player2Id: s.p2.id
+                            });
+                          }}
+                          className={`flex flex-col p-3 rounded-lg border text-left transition-all ${isUsed ? 'bg-slate-50 dark:bg-slate-900/40 border-slate-100 dark:border-slate-800 opacity-20' : 'bg-blue-50 dark:bg-blue-500/5 border-blue-100 dark:border-blue-500/20 hover:bg-blue-100 dark:hover:bg-blue-500/10'}`}
+                        >
+                          <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase">{s.label}</span>
+                          <span className="text-[9px] text-slate-500 dark:text-slate-400 font-medium uppercase truncate">{s.desc}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+                {/* Player 1 Selection */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Igrač 1</label>
+                  <select 
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer shadow-sm"
+                    value={manualMatch.player1Id}
+                    onChange={(e) => setManualMatch({...manualMatch, player1Id: e.target.value})}
+                  >
+                    <option value="">Izaberi igrača</option>
+                    {allPlayers.map(p => (
+                      <option key={p.id} value={p.id} className="dark:bg-slate-950 font-bold">{p.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Player 2 Selection */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Igrač 2</label>
+                  <select 
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer shadow-sm"
+                    value={manualMatch.player2Id}
+                    onChange={(e) => setManualMatch({...manualMatch, player2Id: e.target.value})}
+                  >
+                    <option value="">Izaberi igrača</option>
+                    {allPlayers.map(p => (
+                      <option key={p.id} value={p.id} className="dark:bg-slate-950 font-bold">{p.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Naziv runde</label>
+                  <input 
+                    type="text" 
+                    placeholder="Npr. Polufinale"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 shadow-sm"
+                    value={manualMatch.roundName}
+                    onChange={(e) => setManualMatch({...manualMatch, roundName: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Redni broj runde</label>
+                  <input 
+                    type="number" 
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 shadow-sm"
+                    value={manualMatch.round}
+                    onChange={(e) => setManualMatch({...manualMatch, round: e.target.value})}
+                  />
+                </div>
+              </div>
+
+              <div className="pt-4">
+                <button 
+                  onClick={onAddManual}
+                  className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold uppercase tracking-widest text-xs hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/30"
+                >
+                  Kreiraj Meč
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {editingPlayerSlot && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/60 dark:bg-black/90 backdrop-blur-md">
