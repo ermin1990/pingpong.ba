@@ -25,9 +25,16 @@ const KnockoutTab = ({
 }) => {
   const seededPlayerIds = activeCategory?.seededPlayerIds || [];
   const [showSetupModal, setShowSetupModal] = React.useState(false);
+  const [showManualModal, setShowManualModal] = React.useState(false);
   const [editingPlayerSlot, setEditingPlayerSlot] = React.useState(null); // { matchId, playerSlot }
   const [scale, setScale] = React.useState(1);
   const [showQualifiersSidebar, setShowQualifiersSidebar] = React.useState(false);
+  const [manualMatch, setManualMatch] = React.useState({
+    player1Id: '',
+    player2Id: '',
+    roundName: 'Polufinale',
+    round: 1
+  });
 
   const isGroupsCompleted = activeCategory?.stages?.groups?.completed || false;
   const isKnockoutCompleted = activeCategory?.stages?.knockout?.completed || false;
@@ -215,6 +222,43 @@ const KnockoutTab = ({
       Number(m.round) === prevRound && 
       Number(m.bracketIndex) === sourceIndex
     );
+  };
+
+  const onAddManual = async () => {
+    if (!manualMatch.roundName?.trim()) {
+      alert('Molimo unesite naziv runde.');
+      return;
+    }
+
+    const p1 = allPlayers.find(p => p.id === manualMatch.player1Id);
+    const p2 = allPlayers.find(p => p.id === manualMatch.player2Id);
+
+    const player1 = p1 ? { id: p1.id, name: p1.name } : { id: 'tbd', name: 'TBD' };
+    const player2 = p2 ? { id: p2.id, name: p2.name } : { id: 'tbd', name: 'TBD' };
+
+    try {
+      await handleAddManualMatch({
+        player1,
+        player2,
+        roundName: manualMatch.roundName.trim(),
+        round: Number.parseInt(manualMatch.round, 10) || 1,
+        player1Score: 0,
+        player2Score: 0,
+        status: 'pending',
+        isKnockout: true,
+        bracketIndex: rounds[manualMatch.roundName]?.length || 0
+      });
+
+      setShowManualModal(false);
+      setManualMatch(prev => ({
+        ...prev,
+        player1Id: '',
+        player2Id: ''
+      }));
+    } catch (err) {
+      console.error('Manual add error:', err);
+      alert('Greška pri dodavanju meča.');
+    }
   };
 
   const onSelectPlayerForSlot = async (player) => {
