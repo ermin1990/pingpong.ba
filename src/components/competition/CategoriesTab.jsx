@@ -50,7 +50,7 @@ const CategoriesTab = ({
                 <div className="relative z-10 flex justify-between items-end mt-auto">
                   <div className="flex flex-col gap-1">
                     <span className={`text-[10px] font-black uppercase tracking-widest ${selectedCategoryId === cat.id ? 'text-slate-300' : 'text-slate-400'}`}>
-                      {cat.type === 'doubles' ? 'DUBL' : 'SINGL'} • {cat.format === 'round_robin' ? 'LIGA' : 'GRUPE + KO'}
+                      {cat.type === 'doubles' ? 'DUBL' : 'SINGL'} • {cat.format === 'round_robin' ? 'LIGA' : cat.format === 'direct_knockout' ? 'DIREKTNI KO' : 'GRUPE + KO'}
                     </span>
                     <span className={`text-[11px] font-black uppercase tracking-widest ${selectedCategoryId === cat.id ? 'text-sky-200' : 'text-sky-400'}`}>{cat.playerIds?.length || 0} IGRAČA</span>
                   </div>

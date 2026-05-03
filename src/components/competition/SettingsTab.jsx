@@ -3,16 +3,19 @@ import { Trophy, X, Save, Settings2, CheckCircle, Clock, Plus, Trash2, AlertTria
 const SettingsTab = ({ 
   activeCategory, 
   handleUpdateSettings,
+  handleUpdateFormat,
   handleToggleStage,
   handleDeleteCompetition,
   isSuperAdmin,
   isOwner
 }) => {
   const isGroupsCompleted = activeCategory?.stages?.groups?.completed || false;
+  const isDirectKnockout = activeCategory?.format === 'direct_knockout';
 
   return (
     <div className="max-w-4xl mx-auto space-y-5 p-5 sm:p-6">
       {/* Dugme za status faze */}
+      {!isDirectKnockout && (
       <div className="bg-slate-950/90 border border-slate-800 rounded-[24px] p-5 shadow-lg">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-4 w-full sm:w-auto">
@@ -40,6 +43,7 @@ const SettingsTab = ({
           </button>
         </div>
       </div>
+      )}
 
       <div className="bg-slate-950/90 border border-slate-800 rounded-[24px] p-5 sm:p-6 shadow-lg">
         <div className="flex items-center gap-4 mb-6">
@@ -53,6 +57,19 @@ const SettingsTab = ({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="space-y-2.5">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider px-1">Format Kategorije</label>
+            <select
+              value={activeCategory?.format || 'round_robin'}
+              onChange={(e) => handleUpdateFormat && handleUpdateFormat(e.target.value)}
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl py-3 px-4 text-white font-bold text-sm focus:border-sky-500 outline-none transition-all"
+            >
+              <option value="round_robin">Liga (Round Robin)</option>
+              <option value="groups_knockout">Grupe + Eliminacije</option>
+              <option value="direct_knockout">Direktne Eliminacije</option>
+            </select>
+          </div>
+
           <div className="space-y-2.5">
             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider px-1">Tip Kategorije</label>
             <div className="flex bg-slate-900/50 p-1 rounded-xl gap-1 border border-slate-800">

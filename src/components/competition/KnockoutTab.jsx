@@ -38,6 +38,9 @@ const KnockoutTab = ({
 
   const isGroupsCompleted = activeCategory?.stages?.groups?.completed || false;
   const isKnockoutCompleted = activeCategory?.stages?.knockout?.completed || false;
+  const isGroupsKnockout = activeCategory?.format === 'groups_knockout';
+  const isDirectKnockout = activeCategory?.format === 'direct_knockout';
+  const supportsKnockoutView = isGroupsKnockout || isDirectKnockout;
 
   // Izračunaj bazen igrača koji su prošli
   const advancingPool = [];
@@ -54,6 +57,14 @@ const KnockoutTab = ({
       });
     });
   }
+
+  const directKnockoutPool = React.useMemo(() => {
+    if (!isDirectKnockout) return [];
+    if (activeCategory?.type === 'doubles') return activeCategory?.doublesPairs || [];
+    return allPlayers.filter((p) => (activeCategory?.playerIds || []).includes(p.id));
+  }, [isDirectKnockout, activeCategory, allPlayers]);
+
+  const knockoutSeedPool = isDirectKnockout ? directKnockoutPool : advancingPool;
 
   const knockoutMatches = React.useMemo(() => {
     return matches.filter(m => 
@@ -467,7 +478,7 @@ const KnockoutTab = ({
 
       <div className="flex flex-col lg:flex-row gap-5 pb-10">
         {/* Pool of Players Sidebar */}
-        {advancingPool.length > 0 && knockoutMatches.length > 0 && showQualifiersSidebar && (
+        {knockoutSeedPool.length > 0 && knockoutMatches.length > 0 && showQualifiersSidebar && (
           <div className="w-full lg:w-72 space-y-4 shrink-0 animation-slide-in">
             <div className="bg-slate-950/90 backdrop-blur-xl border border-slate-800 rounded-[24px] p-5 sticky top-24 shadow-lg">
               <div className="flex items-center justify-between mb-5 pb-3 border-b border-slate-800/50">
@@ -483,10 +494,10 @@ const KnockoutTab = ({
               </div>
 
               {/* Fill Remaining Button */}
-              {advancingPool.some(p => !placedPlayerIds.has(p.id)) && (
+              {knockoutSeedPool.some(p => !placedPlayerIds.has(p.id)) && (
                 <button 
                   onClick={async () => {
-                    const unassigned = advancingPool.filter(p => !placedPlayerIds.has(p.id));
+                    const unassigned = knockoutSeedPool.filter(p => !placedPlayerIds.has(p.id));
                     const firstRoundMatches = knockoutMatches.filter(m => m.round === 1).sort((a,b) => a.bracketIndex - b.bracketIndex);
                     
                     let pIdx = 0;
@@ -507,7 +518,7 @@ const KnockoutTab = ({
               )}
 
             <div className="space-y-2.5 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
-              {advancingPool.map(player => {
+              {knockoutSeedPool.map(player => {
                 const isAssigned = assignedPlayerIdsInKO.has(player.id);
                 return (
                   <div 
@@ -525,8 +536,12 @@ const KnockoutTab = ({
                           )}
                         </div>
                         <div className="flex items-center gap-3 mt-2">
-                           <span className="px-2 py-0.5 rounded-lg bg-sky-500/10 text-sky-300 text-[9px] font-black uppercase tracking-widest border border-sky-500/20">Grupa {player.fromGroup}</span>
-                           <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">#{player.rank} mjesto</span>
+                           <span className="px-2 py-0.5 rounded-lg bg-sky-500/10 text-sky-300 text-[9px] font-black uppercase tracking-widest border border-sky-500/20">
+                             {isDirectKnockout ? 'Direktni KO' : `Grupa ${player.fromGroup}`}
+                           </span>
+                           {!isDirectKnockout && (
+                             <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">#{player.rank} mjesto</span>
+                           )}
                         </div>
                       </div>
                       {isAssigned && <CheckCircle size={16} className="text-emerald-500 shrink-0 ml-3" />}
@@ -562,7 +577,7 @@ const KnockoutTab = ({
               </div>
             )}
             
-            {!showQualifiersSidebar && advancingPool.length > 0 && (
+            {!showQualifiersSidebar && knockoutSeedPool.length > 0 && (
               <button 
                 onClick={() => setShowQualifiersSidebar(true)}
                 className="bg-slate-900 text-slate-300 border border-slate-800 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:text-white hover:border-sky-500/30 transition-all flex items-center gap-2 shadow-inner"
@@ -607,7 +622,7 @@ const KnockoutTab = ({
           </div>
         </div>
 
-        {activeCategory.format !== 'groups_knockout' ? (
+        {!supportsKnockoutView ? (
           <div className="bg-[#0f172a] border-2 border-dashed border-slate-800 rounded-[40px] p-24 text-center shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 right-0 p-10 opacity-5">
               <AlertTriangle size={200} />
@@ -618,13 +633,13 @@ const KnockoutTab = ({
               </div>
               <h3 className="text-3xl font-black text-white uppercase italic tracking-tighter mb-4">Format nije podržan</h3>
               <p className="text-slate-500 text-xs font-bold uppercase tracking-[0.3em] max-w-sm mx-auto leading-relaxed">
-                Eliminaciona faza je dostupna samo za <span className="text-amber-500 font-black italic">"Grupe + Knockout"</span> format. <br/>Trenutni format: <span className="text-white font-black">{activeCategory.format}</span>
+                Eliminaciona faza je dostupna za <span className="text-amber-500 font-black italic">"Grupe + Knockout"</span> i <span className="text-amber-500 font-black italic">"Direktne Eliminacije"</span>. <br/>Trenutni format: <span className="text-white font-black">{activeCategory.format}</span>
               </p>
             </div>
           </div>
         ) : knockoutMatchesCount === 0 ? (
           <div className="space-y-5">
-            {!isGroupsCompleted ? (
+            {isGroupsKnockout && !isGroupsCompleted ? (
               <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 rounded-lg p-8 flex items-center gap-6 shadow-sm dark:shadow-none">
                 <div className="w-12 h-12 bg-amber-500/10 dark:bg-amber-500/20 rounded-lg flex items-center justify-center text-amber-600 dark:text-amber-500 shrink-0 border border-amber-200 dark:border-transparent">
                   <Clock size={24} />
@@ -641,23 +656,25 @@ const KnockoutTab = ({
                 <div className="w-16 h-16 bg-sky-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-sky-400 border border-sky-500/20">
                   <Zap size={32} />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">Grupna faza završena</h3>
+                <h3 className="text-xl font-bold text-white mb-2">{isDirectKnockout ? 'Direktne eliminacije' : 'Grupna faza završena'}</h3>
                 <p className="text-slate-400 text-xs font-medium max-w-sm mx-auto mb-6">
-                  Pokrenite setup ili automatski generišite žrijeb. Dodatne opcije za parove ostaju unutar setup dijaloga.
+                  {isDirectKnockout
+                    ? 'Pokrenite setup ili automatski generišite direktni knockout žrijeb.'
+                    : 'Pokrenite setup ili automatski generišite žrijeb. Dodatne opcije za parove ostaju unutar setup dijaloga.'}
                 </p>
 
                 <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 rounded-lg p-4 mb-8 max-w-md mx-auto">
                     <div className="flex items-center justify-around gap-4">
                         <div className="text-center flex-1">
                             <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Kvalifikovanih</p>
-                            <p className="text-2xl font-black text-slate-900 dark:text-white leading-none">{advancingPool.length}</p>
+                          <p className="text-2xl font-black text-slate-900 dark:text-white leading-none">{knockoutSeedPool.length}</p>
                         </div>
                         <div className="w-px h-8 bg-slate-200 dark:bg-slate-800"></div>
                         <div className="text-center flex-1">
                             <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Preporuka</p>
                             <p className="text-sm font-bold text-blue-600 dark:text-blue-400 uppercase leading-none">
                                 {(() => {
-                                    const count = advancingPool.length;
+                                  const count = knockoutSeedPool.length;
                                     if (count <= 2) return "Finale";
                                     if (count <= 4) return "1/2 Finale";
                                     if (count <= 8) return "1/4 Finale";
@@ -671,11 +688,11 @@ const KnockoutTab = ({
                         <div className="text-center flex-1">
                             <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Status</p>
                             <div className="flex flex-col items-center">
-                                <p className={`text-[10px] font-bold uppercase leading-none ${advancingPool.length % 2 === 0 ? 'text-emerald-600 dark:text-emerald-500' : 'text-amber-600 dark:text-amber-500'}`}>
-                                    {advancingPool.length % 2 === 0 ? 'Paran Broj' : 'Neparan Broj'}
+                                <p className={`text-[10px] font-bold uppercase leading-none ${knockoutSeedPool.length % 2 === 0 ? 'text-emerald-600 dark:text-emerald-500' : 'text-amber-600 dark:text-amber-500'}`}>
+                                  {knockoutSeedPool.length % 2 === 0 ? 'Paran Broj' : 'Neparan Broj'}
                                 </p>
                                 {(() => {
-                                    const count = advancingPool.length;
+                                  const count = knockoutSeedPool.length;
                                     let p2 = 2;
                                     while(p2 * 2 <= count) p2 *= 2;
                                     if (count > 2 && count !== p2) {
@@ -707,6 +724,7 @@ const KnockoutTab = ({
               </div>
             )}
             
+            {isGroupsKnockout && (
             <details className="group bg-slate-950/80 border border-slate-800 rounded-[20px] p-4">
               <summary className="flex items-center justify-between cursor-pointer list-none">
                 <div>
@@ -754,6 +772,7 @@ const KnockoutTab = ({
               })}
               </div>
             </details>
+            )}
           </div>
         ) : (
           <div className="bg-slate-950/90 backdrop-blur-xl rounded-[24px] p-4 md:p-5 border border-slate-800 mb-4 shadow-lg">

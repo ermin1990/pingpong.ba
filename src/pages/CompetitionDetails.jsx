@@ -291,10 +291,7 @@ const CompetitionDetails = () => {
           if (compData.type === 'Groups') {
             setNewCategoryFormat('groups_knockout');
           } else if (compData.type === 'Knockout') {
-             // Ako je čisti knockout, možemo defaultati na groups_knockout jer često imaju grupe prije, 
-             // ili ako dodamo clean knockout opciju kasnije. Za sada neka bude groups_knockout jer je bliže tome.
-             // Ali zapravo, trenutni select ima samo 'round_robin' i 'groups_knockout'.
-             setNewCategoryFormat('groups_knockout'); 
+             setNewCategoryFormat('direct_knockout');
           }
           
           // 2. Dohvati igrače
@@ -379,6 +376,12 @@ const CompetitionDetails = () => {
   }, [id]);
 
   const activeCategory = categories.find(c => c.id === selectedCategoryId);
+
+  useEffect(() => {
+    if (activeCategory?.format === 'direct_knockout' && activeTab === 'matches') {
+      setActiveTab('knockout');
+    }
+  }, [activeCategory?.format, activeTab]);
 
   const filteredGlobalMatches = useMemo(() => {
     // Ako nema ni upita ni filtera za stol, ne prikazujemo ništa (da ne zakrčimo ekran svim mečevima)
@@ -869,7 +872,7 @@ const CompetitionDetails = () => {
   };
 
   const handleGenerateKnockout = async () => {
-    if (!activeCategory || groups.length === 0) return;
+    if (!activeCategory) return;
     if (!window.confirm("Ovim ćete pobrisati postojeći žrijeb i rezultate eliminacija za ovu kategoriju. Nastaviti?")) return;
     
     setGenerating(true);
@@ -889,26 +892,53 @@ const CompetitionDetails = () => {
       const advancingCount = activeCategory.advancingPlayers || 2;
       const allAdvancing = [];
 
-      // 1. Prikupi pobjednike iz svih grupa
+      // 1. Formiraj bazen učesnika za knockout
       const rank1 = [];
       const rank2 = [];
       const others = [];
 
-      groups.forEach((group, idx) => {
-        const standings = calculateStandings(idx);
-        const winners = standings.slice(0, advancingCount).map(p => ({
-          ...p,
-          fromGroup: String.fromCharCode(65 + idx),
-          rankInGroup: standings.indexOf(p) + 1,
-          isStarred: seededPlayers.includes(p.id)
-        }));
-        
-        winners.forEach(p => {
-          if (p.rankInGroup === 1) rank1.push(p);
-          else if (p.rankInGroup === 2) rank2.push(p);
-          else others.push(p);
+      if (activeCategory.format === 'direct_knockout') {
+        const directParticipants = activeCategory.type === 'doubles'
+          ? (activeCategory.doublesPairs || [])
+          : allPlayers.filter((p) => (activeCategory.playerIds || []).includes(p.id));
+
+        if (directParticipants.length < 2) {
+          alert("Nema dovoljno učesnika za direktne eliminacije.");
+          setGenerating(false);
+          return;
+        }
+
+        directParticipants.forEach((p) => {
+          rank1.push({
+            ...p,
+            fromGroup: 'KO',
+            rankInGroup: 1,
+            isStarred: seededPlayers.includes(p.id)
+          });
         });
-      });
+      } else {
+        if (groups.length === 0) {
+          alert("Prvo morate kreirati grupe.");
+          setGenerating(false);
+          return;
+        }
+
+        groups.forEach((group, idx) => {
+          const standings = calculateStandings(idx);
+          const winners = standings.slice(0, advancingCount).map(p => ({
+            ...p,
+            fromGroup: String.fromCharCode(65 + idx),
+            rankInGroup: standings.indexOf(p) + 1,
+            isStarred: seededPlayers.includes(p.id)
+          }));
+          
+          winners.forEach(p => {
+            if (p.rankInGroup === 1) rank1.push(p);
+            else if (p.rankInGroup === 2) rank2.push(p);
+            else others.push(p);
+          });
+        });
+      }
 
       // Seeding: Prvo rasporedi zvjezdice (nosioce) među prvoplasirane
       const seededRank1 = rank1.filter(p => p.isStarred).sort(() => Math.random() - 0.5);
@@ -1588,11 +1618,13 @@ const CompetitionDetails = () => {
       const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
       await updateDoc(catRef, {
         format: newFormat,
+        ...(newFormat === 'direct_knockout' ? { groupConfig: null, ['stages.groups.completed']: false } : {}),
         updatedAt: serverTimestamp()
       });
       setEditingFormat(false);
       // Resetuj grupe ako prelazimo na format bez grupa
       if (newFormat !== 'groups_knockout') setGroups([]);
+      if (newFormat === 'direct_knockout') setActiveTab('knockout');
     } catch (err) {
       alert("Greška pri ažuriranju formata.");
     }
@@ -2199,6 +2231,7 @@ const CompetitionDetails = () => {
                 <SettingsTab 
                   activeCategory={activeCategory}
                   handleUpdateSettings={handleUpdateSettings}
+                  handleUpdateFormat={handleUpdateFormat}
                   handleToggleStage={handleToggleStage}
                   handleDeleteCompetition={handleDeleteCompetition}
                   isSuperAdmin={userData?.role === 'super_admin'}

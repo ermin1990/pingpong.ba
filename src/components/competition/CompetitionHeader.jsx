@@ -12,6 +12,7 @@ const CompetitionHeader = ({
 }) => {
   const navigate = useNavigate();
   const participantCount = activeCategory?.playerIds?.length || 0;
+  const showMatchesTab = activeCategory?.format !== 'direct_knockout';
   const formatLabel = activeCategory?.format === 'groups_knockout'
     ? 'Grupe + Knockout'
     : activeCategory?.format === 'round_robin'
@@ -200,12 +201,14 @@ const CompetitionHeader = ({
                   Igrači
                 </button>
 
-                <button 
-                  onClick={() => setActiveTab('matches')}
-                  className={`px-3.5 py-2 rounded-lg text-[11px] font-semibold uppercase tracking-wide transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'matches' ? 'bg-sky-600 text-white shadow-md shadow-sky-600/20' : 'text-slate-300 hover:text-white hover:bg-slate-800'}`}
-                >
-                  Raspored
-                </button>
+                {showMatchesTab && (
+                  <button 
+                    onClick={() => setActiveTab('matches')}
+                    className={`px-3.5 py-2 rounded-lg text-[11px] font-semibold uppercase tracking-wide transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'matches' ? 'bg-sky-600 text-white shadow-md shadow-sky-600/20' : 'text-slate-300 hover:text-white hover:bg-slate-800'}`}
+                  >
+                    Raspored
+                  </button>
+                )}
 
                 <button 
                   onClick={() => setActiveTab('knockout')}
