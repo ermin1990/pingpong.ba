@@ -112,10 +112,14 @@ const TabContent = ({ activeTab, competitionId, categorySlug, activeCategory, al
       .sort((a, b) => Number(a) - Number(b))
       .forEach((key) => {
         gArray.push(
-          config[key].map((id) => ({
-            id,
-            name: (allPlayers.find((p) => p.id === id) || {}).name || "Nepoznat",
-          }))
+          config[key].map((id) => {
+            const player = allPlayers.find((p) => p.id === id) || {};
+            return {
+              id,
+              name: player.name || "Nepoznat",
+              club: player.club || null,
+            };
+          })
         );
       });
     return gArray;
@@ -123,7 +127,10 @@ const TabContent = ({ activeTab, competitionId, categorySlug, activeCategory, al
 
   const calculateStandings = (groupIdx) => {
     const groupMatches = allMatches.filter(
-      (m) => m.groupId === groupIdx && m.status === "completed"
+      (m) =>
+        (!m.categoryId || m.categoryId === activeCategory?.id) &&
+        m.groupId === groupIdx &&
+        m.status === "completed"
     );
     const groupPlayers = groups[groupIdx] || [];
 
@@ -150,9 +157,15 @@ const TabContent = ({ activeTab, competitionId, categorySlug, activeCategory, al
         p2.setsWon += match.player2Score || 0;
         p2.setsLost += match.player1Score || 0;
 
-        // Points for sets
-        p1.pointDiff += (match.player1Score || 0) - (match.player2Score || 0);
-        p2.pointDiff += (match.player2Score || 0) - (match.player1Score || 0);
+        // Points (gems) from individual sets
+        if (match.sets && match.sets.length > 0) {
+          match.sets.forEach((set) => {
+            const s1 = set.p1 || 0;
+            const s2 = set.p2 || 0;
+            p1.pointDiff += s1 - s2;
+            p2.pointDiff += s2 - s1;
+          });
+        }
 
         if (match.player1Score > match.player2Score) {
           p1.won++;
@@ -186,6 +199,7 @@ const TabContent = ({ activeTab, competitionId, categorySlug, activeCategory, al
             const advancingCount = activeCategory.advancingPlayers || 2;
             const groupMatches = allMatches
               .filter((m) => {
+                if (m.categoryId && m.categoryId !== activeCategory.id) return false;
                 if (m.isKnockout) return false;
                 if (m.groupId === gIdx) return true;
                 if (activeCategory.format === "round_robin" && gIdx === 0 && (m.groupId === undefined || m.groupId === null)) return true;

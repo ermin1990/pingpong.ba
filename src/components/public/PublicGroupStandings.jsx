@@ -17,79 +17,75 @@ const PublicGroupStandings = ({ standings = [], advancingCount = 0 }) => {
   }
 
   return (
-    <div className="mb-4 overflow-x-auto -mx-2 px-2 md:mx-0 md:px-0">
-      <div className="min-w-[420px]">
-        <div className="flex items-center justify-between px-1 mb-2">
-          <h5 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.15em]">
-            Poredak u Grupi
-          </h5>
-        </div>
+    <div className="mb-4">
+      <div className="flex items-center justify-between px-1 mb-2">
+        <h5 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.15em]">
+          Poredak u Grupi
+        </h5>
+      </div>
 
-        {/* Table Header */}
-        <div className="grid grid-cols-12 gap-1 mb-1.5 text-[9px] md:text-[10px] text-slate-500 font-bold uppercase tracking-tighter px-2.5">
-          <div className="col-span-6 flex items-center gap-2">
-            <span className="w-5 text-center">#</span>
-            <span>Igrač</span>
-          </div>
-          <div className="col-span-1 text-center">M</div>
-          <div className="col-span-1 text-center">P</div>
-          <div className="col-span-1 text-center">I</div>
-          <div className="col-span-1 text-center">S</div>
-          <div className="col-span-1 text-center">G</div>
-          <div className="col-span-1 text-center text-blue-400">Bod</div>
-        </div>
+      {/* Table Header */}
+      <div className="grid grid-cols-[auto_1fr_auto_auto_auto_auto_auto] md:grid-cols-[auto_1fr_auto_auto_auto_auto_auto_auto] gap-x-1.5 mb-1.5 text-[9px] text-slate-500 font-bold uppercase tracking-tighter px-2.5">
+        <div className="flex items-center w-5 justify-center">#</div>
+        <div>Igrač</div>
+        <div className="hidden md:block text-center w-6">M</div>
+        <div className="text-center w-5">P</div>
+        <div className="text-center w-5">I</div>
+        <div className="text-center w-7">S</div>
+        <div className="text-center w-7">G</div>
+        <div className="text-center w-8 text-blue-400">Bod</div>
+      </div>
 
-        {/* Table Rows */}
-        <div className="space-y-1.5">
-          {standings.map((p, idx) => {
-            const isAdvancing = idx < advancingCount;
-            
-            return (
-              <div 
-                key={idx} 
-                className={`grid grid-cols-12 gap-1 items-center py-2 px-2.5 rounded-lg transition-all duration-300 border ${
-                  isAdvancing 
-                  ? 'bg-emerald-500/10 border-emerald-500/20' 
+      {/* Table Rows */}
+      <div className="space-y-1.5">
+        {standings.map((p, idx) => {
+          const isAdvancing = idx < advancingCount;
+          const setsDiff = p.setsWon - p.setsLost;
+
+          return (
+            <div
+              key={idx}
+              className={`grid grid-cols-[auto_1fr_auto_auto_auto_auto_auto] md:grid-cols-[auto_1fr_auto_auto_auto_auto_auto_auto] gap-x-1.5 items-center py-2 px-2.5 rounded-lg transition-all duration-300 border ${
+                isAdvancing
+                  ? 'bg-emerald-500/10 border-emerald-500/20'
                   : 'bg-slate-900/40 border-slate-800/80'
-                } hover:bg-slate-800/60 group`}
-              >
-                <div className="col-span-6 flex items-center gap-2 overflow-hidden">
-                  <span className={`w-5 text-center text-[10px] font-black ${isAdvancing ? 'text-emerald-400' : 'text-slate-500'}`}>
-                      {idx + 1}
+              } hover:bg-slate-800/60`}
+            >
+              <span className={`w-5 text-center text-[10px] font-black ${isAdvancing ? 'text-emerald-400' : 'text-slate-500'}`}>
+                {idx + 1}
+              </span>
+
+              <div className="flex flex-col min-w-0 overflow-hidden">
+                <span className="text-white font-bold text-[12px] truncate leading-tight">
+                  {p.name}
+                </span>
+                {p.club && p.club !== 'Individual' && p.club !== 'Individualno' && (
+                  <span className="text-slate-500 text-[9px] uppercase font-bold truncate leading-none mt-0.5 tracking-tight">
+                    {p.club}
                   </span>
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-white font-bold text-[12px] truncate">
-                        {p.name}
-                    </span>
-                    {p.club && p.club !== 'Individual' && p.club !== 'Individualno' && (
-                        <span className="text-slate-500 text-[9px] lowercase italic truncate leading-none mt-0.5">
-                            {p.club}
-                        </span>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="col-span-1 text-center text-slate-300 font-bold text-[11px]">{p.played}</div>
-                <div className="col-span-1 text-center text-emerald-300 font-bold text-[11px]">{p.won}</div>
-                <div className="col-span-1 text-center text-rose-300 text-[11px] font-bold">{p.lost}</div>
-                
-                <div className={`col-span-1 text-center font-black text-[11px] ${(p.setsWon - p.setsLost) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                   {(p.setsWon - p.setsLost) > 0 ? `+${p.setsWon - p.setsLost}` : p.setsWon - p.setsLost}
-                </div>
-                
-                <div className={`col-span-1 text-center text-[10px] font-bold ${p.pointDiff >= 0 ? 'text-emerald-500/80' : 'text-rose-500/80'}`}>
-                   {p.pointDiff > 0 ? `+${p.pointDiff}` : p.pointDiff}
-                </div>
-                
-                <div className="col-span-1 text-center">
-                    <span className="bg-blue-500/15 text-blue-300 px-2 py-0.5 rounded-md text-[11px] font-black ring-1 ring-inset ring-blue-500/20">
-                      {p.points}
-                    </span>
-                </div>
+                )}
               </div>
-            );
-          })}
-        </div>
+
+              <div className="hidden md:flex w-6 justify-center text-slate-300 font-bold text-[11px]">{p.played}</div>
+              <div className="w-5 text-center text-emerald-300 font-bold text-[11px]">{p.won}</div>
+              <div className="w-5 text-center text-rose-300 font-bold text-[11px]">{p.lost}</div>
+
+              <div className={`w-7 text-center font-black text-[11px] ${setsDiff >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                {setsDiff > 0 ? `+${setsDiff}` : setsDiff}
+              </div>
+
+              <div className={`w-7 text-center text-[10px] font-bold ${p.pointDiff >= 0 ? 'text-emerald-500/80' : 'text-rose-500/80'}`}>
+                {p.pointDiff > 0 ? `+${p.pointDiff}` : p.pointDiff}
+              </div>
+
+              <div className="w-8 flex justify-center">
+                <span className="bg-blue-500/15 text-blue-300 px-1.5 py-0.5 rounded-md text-[11px] font-black ring-1 ring-inset ring-blue-500/20">
+                  {p.points}
+                </span>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

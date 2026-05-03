@@ -536,7 +536,9 @@ const MatchesTab = ({
                                   const label = getPlayerLabel(p);
                                   const club = getPlayerClub(p);
                                   const setsDiff = (p.setsWon || 0) - (p.setsLost || 0);
+                                  const gemsDiff = p.pointDiff || 0;
                                   const setsDiffClass = setsDiff > 0 ? 'text-green-400' : setsDiff < 0 ? 'text-red-400' : 'text-gray-300';
+                                  const gemsDiffClass = gemsDiff > 0 ? 'text-green-400' : gemsDiff < 0 ? 'text-red-400' : 'text-gray-300';
                                   return (
                                     <tr key={p.id || `${label}-${pIdx}`} className={`border-b border-slate-800/60 hover:bg-slate-900/60 transition-colors ${isAdvancing ? 'bg-emerald-500/6' : ''}`}>
                                       <td className="py-2 pr-2 pl-3 text-slate-400 font-mono text-xs">
@@ -557,11 +559,11 @@ const MatchesTab = ({
                                       <td className="py-2 px-1 text-center text-slate-300 text-xs">{p.won + p.lost}</td>
                                       <td className="py-2 px-1 text-center text-green-400 text-xs">{p.won}</td>
                                       <td className="py-2 px-1 text-center text-red-400 text-xs">{p.lost}</td>
-                                      <td className="py-2 px-1 text-center text-slate-300 text-xs font-medium">
-                                        {p.setsWon}:{p.setsLost}
-                                      </td>
                                       <td className={`py-2 px-1 text-center text-xs ${setsDiffClass}`}>
                                         {setsDiff > 0 ? `+${setsDiff}` : setsDiff}
+                                      </td>
+                                      <td className={`py-2 px-1 text-center text-xs ${gemsDiffClass}`}>
+                                        {gemsDiff > 0 ? `+${gemsDiff}` : gemsDiff}
                                       </td>
                                       <td className="py-2 px-1 text-center text-green-400 font-bold text-xs">
                                         {p.points}

@@ -228,8 +228,15 @@ const CompetitionExport = ({
       p1.setsLost += s2;
       p2.setsWon += s2;
       p2.setsLost += s1;
-      p1.pointDiff += s1 - s2;
-      p2.pointDiff += s2 - s1;
+
+      if (Array.isArray(match.sets) && match.sets.length > 0) {
+        match.sets.forEach((set) => {
+          const p1SetPoints = safeNum(set?.p1 ?? set?.home);
+          const p2SetPoints = safeNum(set?.p2 ?? set?.away);
+          p1.pointDiff += p1SetPoints - p2SetPoints;
+          p2.pointDiff += p2SetPoints - p1SetPoints;
+        });
+      }
 
       if (s1 > s2) {
         p1.won += 1;
