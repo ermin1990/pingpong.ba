@@ -1,4 +1,4 @@
-import { List, Users, Settings, Calendar, MapPin, Shield, LayoutGrid, FileText, ArrowLeft, Zap } from 'lucide-react';
+import { List, Users, Settings, Calendar, MapPin, Shield, LayoutGrid, FileText, ArrowLeft, Zap, Trash2, Database } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const CompetitionHeader = ({ 
@@ -8,7 +8,8 @@ const CompetitionHeader = ({
   categoriesLoading, 
   activeCategory,
   categories,
-  onShowExport
+  onShowExport,
+  onShowBackup
 }) => {
   const navigate = useNavigate();
   const participantCount = activeCategory?.playerIds?.length || 0;
@@ -82,6 +83,14 @@ const CompetitionHeader = ({
               >
                 <FileText className="w-4 h-4 mr-2" />
                 PDF Izvjestaj
+              </button>
+
+              <button
+                onClick={onShowBackup}
+                className="inline-flex items-center px-3 py-2 sm:px-3.5 sm:py-2.5 bg-blue-700/30 hover:bg-blue-600/50 text-blue-300 rounded-xl border border-blue-600/40 transition-colors font-semibold text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+              >
+                <Database className="w-4 h-4 mr-2" />
+                Backup
               </button>
             </div>
         </div>
@@ -188,6 +197,13 @@ const CompetitionHeader = ({
               className={`px-3.5 py-2 rounded-lg text-[11px] font-semibold uppercase tracking-wide transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'referees' ? 'bg-sky-600 text-white shadow-md shadow-sky-600/20' : 'text-slate-300 hover:text-white hover:bg-slate-800'}`}
             >
               <Shield size={14} /> Sudije
+            </button>
+
+            <button 
+              onClick={() => setActiveTab('recycle-bin')}
+              className={`px-3.5 py-2 rounded-lg text-[11px] font-semibold uppercase tracking-wide transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'recycle-bin' ? 'bg-red-600 text-white shadow-md shadow-red-600/20' : 'text-slate-400 hover:text-red-400 hover:bg-slate-800'}`}
+            >
+              <Trash2 size={14} /> Recycle Bin
             </button>
             
             {activeCategory && (

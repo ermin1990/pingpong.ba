@@ -26,6 +26,8 @@ import RefereesTab from '../components/competition/RefereesTab';
 import TablesTab from '../components/competition/TablesTab';
 import DoublesManager from '../components/competition/DoublesManager';
 import CompetitionExport from '../components/competition/CompetitionExport';
+import RecycleBin from '../components/competition/RecycleBin';
+import CompetitionBackup from '../components/competition/CompetitionBackup';
 import { useCompetitionData } from '../hooks/useCompetitionData';
 import { useReferees } from '../hooks/useReferees';
 import PlayerAddModal from '../components/competition/PlayerAddModal';
@@ -89,6 +91,8 @@ const CompetitionDetails = () => {
   const [categories, setCategories] = useState([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [showExport, setShowExport] = useState(false);
+  const [exportInitialCategoryId, setExportInitialCategoryId] = useState('all');
+  const [showBackup, setShowBackup] = useState(false);
   
   // URL state management
   const selectedCategoryId = searchParams.get('category') || '';
@@ -636,6 +640,44 @@ const CompetitionDetails = () => {
     }
   };
 
+  // Soft delete: moves match docs from 'matches' to 'deleted_matches'
+  const softDeleteMatches = async (matchArray, reason = 'manual') => {
+    if (!matchArray || !matchArray.length) return;
+    const batch = writeBatch(db);
+    matchArray.forEach(m => {
+      const { id: originalId, ...data } = m;
+      const deletedRef = doc(collection(db, 'deleted_matches'));
+      batch.set(deletedRef, {
+        ...data,
+        originalId,
+        competitionId: data.competitionId || id,
+        deletedAt: serverTimestamp(),
+        deletedBy: user?.uid || null,
+        deleteReason: reason,
+      });
+      batch.delete(doc(db, 'matches', originalId));
+    });
+    await batch.commit();
+  };
+
+  // Soft delete from Firestore QueryDocumentSnapshots
+  const softDeleteMatchDocs = async (docs, reason = 'manual') => {
+    if (!docs || !docs.length) return;
+    const batch = writeBatch(db);
+    docs.forEach(d => {
+      const deletedRef = doc(collection(db, 'deleted_matches'));
+      batch.set(deletedRef, {
+        ...d.data(),
+        originalId: d.id,
+        deletedAt: serverTimestamp(),
+        deletedBy: user?.uid || null,
+        deleteReason: reason,
+      });
+      batch.delete(d.ref);
+    });
+    await batch.commit();
+  };
+
   const handleToggleStage = async (stage, status) => {
     if (!selectedCategoryId) return;
     try {
@@ -647,13 +689,15 @@ const CompetitionDetails = () => {
 
       // Ako ponovo otvaramo grupe, automatski obriši knockout mečeve te kategorije
       if (stage === 'groups' && status === false) {
-        const koMatches = matches.filter(m => m.isKnockout);
-        if (koMatches.length > 0) {
-          const batch = writeBatch(db);
-          koMatches.forEach(m => {
-            batch.delete(doc(db, "matches", m.id));
-          });
-          await batch.commit();
+        const koQ = query(
+          collection(db, "matches"),
+          where("competitionId", "==", id),
+          where("categoryId", "==", selectedCategoryId),
+          where("isKnockout", "==", true)
+        );
+        const koSnap = await getDocs(koQ);
+        if (!koSnap.empty) {
+          await softDeleteMatchDocs(koSnap.docs, 'toggle_stage');
         }
       }
     } catch (err) {
@@ -667,14 +711,11 @@ const CompetitionDetails = () => {
     
     setGenerating(true);
     try {
-      const batch = writeBatch(db);
-      
-      // Obriši sve mečeve ove kategorije
-      matches.forEach(m => {
-        batch.delete(doc(db, "matches", m.id));
-      });
+      // Soft delete svih mečeva ove kategorije
+      await softDeleteMatches(matches, 'return_to_draft');
 
       // Vrati status na draft
+      const batch = writeBatch(db);
       const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
       batch.update(catRef, {
         status: 'draft',
@@ -700,13 +741,15 @@ const CompetitionDetails = () => {
     
     setGenerating(true);
     try {
-      const koMatches = matches.filter(m => m.isKnockout);
-      if (koMatches.length > 0) {
-        const batch = writeBatch(db);
-        koMatches.forEach(m => {
-          batch.delete(doc(db, "matches", m.id));
-        });
-        await batch.commit();
+      const koQ = query(
+        collection(db, "matches"),
+        where("competitionId", "==", id),
+        where("categoryId", "==", selectedCategoryId),
+        where("isKnockout", "==", true)
+      );
+      const koSnap = await getDocs(koQ);
+      if (!koSnap.empty) {
+        await softDeleteMatchDocs(koSnap.docs, 'reset_knockout');
       }
       alert("Knockout faza je resetovana.");
       window.location.reload();
@@ -734,13 +777,11 @@ const CompetitionDetails = () => {
     
     setGenerating(true);
     try {
-      const batch = writeBatch(db);
-      
-      // 1. Obriši sve mečeve ove kategorije
+      // 1. Soft delete svih mečeva ove kategorije
       const allCategoryMatches = matches.filter(m => m.categoryId === selectedCategoryId);
-      allCategoryMatches.forEach(m => {
-        batch.delete(doc(db, "matches", m.id));
-      });
+      await softDeleteMatches(allCategoryMatches, 'clear_category');
+
+      const batch = writeBatch(db);
 
       // 2. Resetuj kategoriju - obriši sve osim igrača
       const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
@@ -1488,12 +1529,17 @@ const CompetitionDetails = () => {
   };
 
   const handleDeleteMatch = async (matchId) => {
-    if (!confirm("Da li ste sigurni da želite obrisati ovaj meč? Ova akcija se ne može poništiti.")) return;
+    if (!confirm("Da li ste sigurni da želite obrisati ovaj meč? Biće premješten u recycle bin.")) return;
     
     try {
-      await deleteDoc(doc(db, "matches", matchId));
+      const matchToDelete = matches.find(m => m.id === matchId);
+      if (matchToDelete) {
+        await softDeleteMatches([matchToDelete], 'delete_match');
+      } else {
+        await deleteDoc(doc(db, "matches", matchId));
+      }
       setMatches(prev => prev.filter(m => m.id !== matchId));
-      alert("Meč je uspješno obrisan.");
+      alert("Meč je premješten u recycle bin.");
     } catch (err) {
       console.error("Error deleting match:", err);
       alert("Greška pri brisanju meča.");
@@ -1572,11 +1618,8 @@ const CompetitionDetails = () => {
 
   const handleDeleteAllMatches = async (matchIds) => {
     try {
-      const batch = writeBatch(db);
-      matchIds.forEach(matchId => {
-        batch.delete(doc(db, "matches", matchId));
-      });
-      await batch.commit();
+      const matchesToDelete = matches.filter(m => matchIds.includes(m.id));
+      await softDeleteMatches(matchesToDelete, 'delete_all_matches');
       // Maknut alert
     } catch (err) {
       console.error("Error deleting matches:", err);
@@ -2059,7 +2102,11 @@ const CompetitionDetails = () => {
           categoriesLoading={categoriesLoading}
           activeCategory={activeCategory}
           categories={categories}
-          onShowExport={() => setShowExport(true)}
+          onShowExport={() => {
+            setExportInitialCategoryId(selectedCategoryId || 'all');
+            setShowExport(true);
+          }}
+          onShowBackup={() => setShowBackup(true)}
         />
 
         {showExport && (
@@ -2068,8 +2115,18 @@ const CompetitionDetails = () => {
             categories={categories}
             matches={allMatchesForSearch}
             allPlayers={allPlayers}
-            initialCategoryId="all"
+            initialCategoryId={exportInitialCategoryId || 'all'}
             onClose={() => setShowExport(false)}
+          />
+        )}
+
+        {showBackup && (
+          <CompetitionBackup
+            competition={competition}
+            categories={categories}
+            matches={allMatchesForSearch}
+            allPlayers={allPlayers}
+            onClose={() => setShowBackup(false)}
           />
         )}
 
@@ -2257,6 +2314,10 @@ const CompetitionDetails = () => {
                 handleDeletePlayer={handleDeletePlayer}
                 handleDeleteAllPlayers={handleDeleteAllPlayers}
               />
+            )}
+
+            {activeTab === 'recycle-bin' && (
+              <RecycleBin competitionId={id} />
             )}
           </div>
         </div>

@@ -448,6 +448,8 @@ const CompetitionExport = ({
               ? rawGroupIndices.filter((groupIdx) => String(groupIdx) === selectedGroupId)
               : rawGroupIndices;
           const knockoutRounds = getKnockoutRoundGroups(category);
+          const hasGroups = groupIndices.length > 0;
+          const hasKnockout = knockoutRounds.length > 0;
           const advancing = category?.advancingCount || category?.advancingPlayers || 2;
           const groupPages = exportLayout === 'propositions'
             ? groupIndices.map((groupIdx) => [groupIdx])
@@ -455,7 +457,7 @@ const CompetitionExport = ({
 
           return (
             <React.Fragment key={category.id}>
-              {groupIndices.length === 0 && (
+              {!hasGroups && !hasKnockout && (
                 <section className="preview-page">
                   {categoryIndex === 0 ? (
                     <header className="tournament-header">
@@ -482,7 +484,7 @@ const CompetitionExport = ({
                 </section>
               )}
 
-              {groupPages.map((groupPage, pageIndex) => {
+              {hasGroups && groupPages.map((groupPage, pageIndex) => {
                 const isSingleGroupPage = groupPage.length === 1;
                 return (
                   <section key={`${category.id}-groups-${pageIndex}`} className="preview-page">
@@ -684,7 +686,7 @@ const CompetitionExport = ({
                 );
               })}
 
-              {exportLayout === 'report' && knockoutRounds.length > 0 && (
+              {exportLayout === 'report' && hasKnockout && (
                 <section className="preview-page">
                   <div className="section-page-header">
                     <h3>Eliminaciona Faza</h3>

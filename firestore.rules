@@ -97,6 +97,16 @@ service cloud.firestore {
       allow update, delete: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin';
     }
 
+    // Deleted matches (recycle bin): only admins and owners can read/write
+    match /deleted_matches/{docId} {
+      allow read, create, delete: if request.auth != null && (
+        isAdmin()
+        || resource.data.deletedBy == request.auth.uid
+        || request.resource.data.deletedBy == request.auth.uid
+      );
+      allow update: if false;
+    }
+
     // Global settings (e.g. theme)
     match /settings/{docId} {
       allow read: if true;
