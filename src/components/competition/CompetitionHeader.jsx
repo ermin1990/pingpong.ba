@@ -243,7 +243,7 @@ const CompetitionHeader = ({
             )}
           </div>
         </div>
-      ) : null}
+      )}
     </>
   );
 };

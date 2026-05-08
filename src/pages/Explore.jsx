@@ -4,7 +4,7 @@ import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { Link } from 'react-router-dom';
 import { 
   Trophy, Calendar, Search, ChevronRight, 
-  MapPin, Users, Clock, Activity 
+  MapPin, Users, Clock, Activity, ArrowRight 
 } from 'lucide-react';
 
 const Explore = () => {
@@ -143,33 +143,41 @@ const Explore = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#070b14] text-slate-200 font-sans selection:bg-emerald-500/30">
-            <div className="border-b border-slate-800/50 bg-[#070b14]/80 backdrop-blur-xl sticky top-0 z-50">
-                <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-                    <Link to="/" className="flex items-center gap-4 group">
-                        <div className="w-11 h-11 bg-amber-500 rounded-xl flex items-center justify-center rotate-3 shadow-lg shadow-amber-500/20 group-hover:rotate-6 transition-transform">
-                            <Trophy size={26} className="text-white -rotate-3 group-hover:-rotate-6 transition-transform" />
-                        </div>
-                        <span className="text-xl font-black uppercase tracking-tighter text-white italic">
-                            pingpong<span className="text-amber-400">.ba</span>
-                        </span>
-                    </Link>
-                </div>
+        <div className="min-h-screen bg-[#081427] text-slate-100">
+            <div className="pointer-events-none fixed inset-0 -z-10">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_10%,rgba(34,197,94,0.14),transparent_32%),radial-gradient(circle_at_84%_12%,rgba(251,191,36,0.12),transparent_30%),linear-gradient(160deg,#060f1d_0%,#081427_46%,#0a1a2f_100%)]" />
             </div>
 
-            <main className="max-w-7xl mx-auto px-6 py-12">
-                <div className="mb-14 relative">
-                    <div className="absolute -top-20 -left-10 w-72 h-72 bg-amber-500/10 rounded-full blur-[100px]" />
-                    <h1 className="text-4xl md:text-6xl font-black text-white uppercase italic tracking-tighter mb-4 relative">ISTRAŽI <span className="text-amber-400 block md:inline">TAKMIČENJA</span></h1>
-                    <p className="text-slate-400 text-base md:text-lg font-medium max-w-2xl leading-relaxed">Prati rezultate uživo, provjeri tabele i saznaj termine narednih mečeva.</p>
+            <nav className="sticky top-0 z-40 border-b border-white/10 bg-[#081427]/80 backdrop-blur-xl">
+                <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+                    <Link to="/" className="flex min-h-11 items-center gap-3 rounded-full pr-2">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-400 text-slate-950 shadow-[0_18px_40px_-18px_rgba(16,185,129,1)]">
+                            <Trophy size={20} />
+                        </div>
+                        <div>
+                            <div className="text-sm font-bold uppercase tracking-[0.24em] text-emerald-200">PingPong.ba</div>
+                            <div className="text-xs text-slate-400">Javna takmičenja</div>
+                        </div>
+                    </Link>
+                    <Link to="/login" className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-emerald-400 px-5 py-2 text-xs font-black uppercase tracking-[0.15em] text-slate-950 transition hover:bg-emerald-300">
+                        Prijava <ArrowRight size={14} />
+                    </Link>
+                </div>
+            </nav>
+
+            <main className="mx-auto max-w-7xl px-4 pb-24 pt-10 sm:px-6 lg:px-8">
+                <div className="mb-10">
+                    <div className="text-xs font-black uppercase tracking-[0.17em] text-slate-400">Javni prikaz</div>
+                    <h1 className="font-title text-[clamp(2.2rem,6vw,4.5rem)] leading-[0.96] tracking-tight text-white">Istraži <span className="bg-gradient-to-r from-emerald-300 to-amber-200 bg-clip-text text-transparent">takmičenja</span></h1>
+                    <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-300">Prati rezultate uživo, provjeri tabele i saznaj termine narednih mečeva.</p>
                 </div>
 
-                <div className="relative mb-14 max-w-2xl group">
-                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 transition-colors group-focus-within:text-amber-400" size={18} />
+                <div className="relative mb-10 max-w-xl group">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 transition-colors group-focus-within:text-emerald-300" size={16} />
                     <input 
                         type="text" 
                         placeholder="Pretraži turnir, grad ili sport..."
-                        className="w-full bg-[#0a0f1d] border border-slate-800 rounded-[20px] py-4 pl-14 pr-6 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/40 transition-all font-bold uppercase tracking-wide text-xs"
+                        className="w-full rounded-2xl border border-white/10 bg-white/5 py-3 pl-11 pr-5 text-sm text-white placeholder:text-slate-500 outline-none transition focus:border-emerald-300/40 focus:bg-white/8 backdrop-blur-xl"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -184,9 +192,9 @@ const Explore = () => {
                         {filteredLive.length > 0 && (
                             <section>
                                 <div className="flex items-center gap-4 mb-6">
-                                    <h2 className="text-2xl font-black text-white uppercase italic tracking-tight shrink-0">Rezultati Uživo</h2>
-                                    <div className="h-[2px] w-full bg-gradient-to-r from-emerald-500/50 to-transparent" />
-                                    <span className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-full text-[10px] font-black animate-pulse uppercase tracking-widest whitespace-nowrap">Live mečevi</span>
+                                    <h2 className="font-title text-3xl text-white shrink-0">Rezultati Uživo</h2>
+                                    <div className="h-px w-full bg-gradient-to-r from-emerald-400/40 to-transparent" />
+                                    <span className="whitespace-nowrap rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-emerald-200">Live</span>
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {filteredLive.map(comp => (
@@ -204,8 +212,8 @@ const Explore = () => {
                         {filteredUpcoming.length > 0 && (
                             <section>
                                 <div className="flex items-center gap-4 mb-6">
-                                    <h2 className="text-2xl font-black text-white uppercase italic tracking-tight shrink-0">U PRIPREMI</h2>
-                                    <div className="h-[2px] w-full bg-gradient-to-r from-amber-500/50 to-transparent" />
+                                    <h2 className="font-title text-3xl text-white shrink-0">U pripremi</h2>
+                                    <div className="h-px w-full bg-gradient-to-r from-amber-300/40 to-transparent" />
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {filteredUpcoming.map(comp => (
@@ -222,9 +230,9 @@ const Explore = () => {
 
                         {filteredFinished.length > 0 && (
                             <section>
-                                <div className="flex items-center gap-4 mb-6 opacity-50">
-                                    <h2 className="text-2xl font-black text-white uppercase italic tracking-tight shrink-0">ARHIVA</h2>
-                                    <div className="h-[2px] w-full bg-gradient-to-r from-slate-700 to-transparent" />
+                                <div className="flex items-center gap-4 mb-6 opacity-60">
+                                    <h2 className="font-title text-3xl text-white shrink-0">Arhiva</h2>
+                                    <div className="h-px w-full bg-gradient-to-r from-slate-600/50 to-transparent" />
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 opacity-70">
                                     {filteredFinished.map(comp => (
@@ -239,10 +247,10 @@ const Explore = () => {
                         )}
                         
                         {!filteredLive.length && !filteredUpcoming.length && !filteredFinished.length && (
-                            <div className="text-center py-40 bg-[#0a0f1d] border-2 border-dashed border-slate-800 rounded-[40px]">
-                                <Activity size={60} className="text-slate-800 mx-auto mb-6" />
-                                <h3 className="text-2xl font-black text-slate-500 uppercase italic">Nema pronađenih takmičenja</h3>
-                                <button onClick={() => setSearchTerm('')} className="mt-6 text-amber-400 font-bold uppercase tracking-widest text-sm hover:underline">Očisti pretragu</button>
+                            <div className="rounded-3xl border border-white/10 bg-white/5 py-32 text-center backdrop-blur-xl">
+                                <Activity size={48} className="mx-auto mb-5 text-slate-600" />
+                                <h3 className="font-title text-3xl text-slate-400">Nema pronađenih takmičenja</h3>
+                                <button onClick={() => setSearchTerm('')} className="mt-5 text-xs font-black uppercase tracking-[0.16em] text-emerald-300 hover:text-emerald-200">Očisti pretragu</button>
                             </div>
                         )}
                     </div>
