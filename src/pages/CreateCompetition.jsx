@@ -174,38 +174,38 @@ const CreateCompetition = () => {
       <div className="max-w-4xl mx-auto pb-20">
         <button 
           onClick={() => navigate('/admin/competitions')}
-          className="flex items-center gap-2 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors mb-6 font-bold text-xs uppercase tracking-widest"
+          className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-6 font-bold text-xs uppercase tracking-widest"
         >
           <ArrowLeft size={16} /> Nazad na listu
         </button>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden">
-          <div className="p-8 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20">
+        <div className="bg-[#0f172a] border border-slate-800 rounded-2xl overflow-hidden">
+          <div className="p-6 border-b border-slate-800 bg-slate-950/30">
             <div className="flex items-center gap-4 mb-2">
-              <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-600/20">
+              <div className="w-12 h-12 bg-amber-500 rounded-xl flex items-center justify-center text-black shadow-lg shadow-amber-500/20">
                 <Trophy size={26} />
               </div>
               <div>
-                <h1 className="text-2xl font-black text-slate-900 dark:text-white uppercase italic tracking-tighter">Kreiraj Novo Takmičenje</h1>
-                <p className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-widest">Popunite detalje vašeg sportskog događaja</p>
+                <h1 className="text-2xl font-black text-slate-100 uppercase italic tracking-tighter">Kreiraj Novo Takmičenje</h1>
+                <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Popunite detalje vašeg sportskog događaja</p>
               </div>
             </div>
           </div>
 
-          <form onSubmit={handleCreate} className="p-8 space-y-12">
+          <form onSubmit={handleCreate} className="p-5 space-y-8">
             <div className="space-y-6">
-              <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
                 <Info size={18} className="text-blue-500" />
-                <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">Osnovne Informacije</h3>
+                <h3 className="text-sm font-black text-slate-100 uppercase tracking-widest">Osnovne Informacije</h3>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2 md:col-span-2">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Naziv Takmičenja *</label>
                   <input 
                     required
                     type="text" 
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm dark:shadow-none"
+                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-bold outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all shadow-sm "
                     value={name}
                     onChange={(e) => handleNameChange(e.target.value)}
                     placeholder="npr. Memorijalni turnir 2024"
@@ -215,18 +215,18 @@ const CreateCompetition = () => {
                 <div className="space-y-2 md:col-span-2">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">URL Link (Slug)</label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 font-bold text-sm">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400  font-bold text-sm">
                       pingpong.ba/p/
                     </span>
                     <input 
                       type="text" 
-                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-4 pl-40 pr-4 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm dark:shadow-none"
+                      className="w-full bg-slate-950/70 border border-slate-800 rounded-xl py-3 pl-40 pr-4 text-slate-100 font-bold outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all shadow-sm "
                       value={slug}
                       onChange={(e) => handleSlugChange(e.target.value)}
                       placeholder="memorijalni-turnir-2024"
                     />
                   </div>
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium px-1 mt-1.5">
+                  <p className="text-[10px] text-slate-400 font-medium px-1 mt-1.5">
                     Automatski se generiše iz naziva. Koristite mala slova, brojeve i crtice.
                   </p>
                 </div>
@@ -235,7 +235,7 @@ const CreateCompetition = () => {
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Organizator</label>
                   <input 
                     type="text" 
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm dark:shadow-none"
+                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-bold outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all shadow-sm "
                     value={organizer}
                     onChange={(e) => setOrganizer(e.target.value)}
                     placeholder="Ime kluba ili organizacije"
@@ -246,7 +246,7 @@ const CreateCompetition = () => {
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Direktor Turnira</label>
                   <input 
                     type="text" 
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm dark:shadow-none"
+                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-bold outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all shadow-sm "
                     value={director}
                     onChange={(e) => setDirector(e.target.value)}
                     placeholder="Ime i prezime"
@@ -257,7 +257,7 @@ const CreateCompetition = () => {
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Vrhovni Sudija</label>
                   <input 
                     type="text" 
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm dark:shadow-none"
+                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-bold outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all shadow-sm "
                     value={referee}
                     onChange={(e) => setReferee(e.target.value)}
                     placeholder="Ime i prezime vrhovnog sudije"
@@ -266,16 +266,15 @@ const CreateCompetition = () => {
 
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Tip Takmičenja</label>
-                    <select 
-                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-bold outline-none cursor-pointer appearance-none"
-                      value={type}
-                      onChange={(e) => setType(e.target.value)}
-                    >
-                      <option value="Groups">Grupna Faza + Knockout</option>
-                      <option value="Knockout">Samo Knockout (Eliminacije)</option>
-                      <option value="League_Season">Ligaški Sistem (Grupna + Razigravanje za svako mjesto)</option>
-                    </select>
-                  </div>
+                  <select 
+                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-bold outline-none cursor-pointer appearance-none"
+                    value={type}
+                    onChange={(e) => setType(e.target.value)}
+                  >
+                    <option value="Groups">Grupna Faza + Knockout</option>
+                    <option value="Knockout">Samo Knockout (Eliminacije)</option>
+                  </select>
+                </div>
 
                   {type === 'League_Season' && (
                     <div className="md:col-span-2 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 rounded-2xl p-6 mt-4 animate-in fade-in slide-in-from-top-2">
@@ -331,7 +330,7 @@ const CreateCompetition = () => {
                     <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                     <input 
                       type="text" 
-                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-4 pl-12 pr-4 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm dark:shadow-none"
+                      className="w-full bg-slate-950/70 border border-slate-800 rounded-xl py-3 pl-12 pr-4 text-slate-100 font-bold outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all shadow-sm "
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
                       placeholder="Dvorana Borik, Grad..."
@@ -345,7 +344,7 @@ const CreateCompetition = () => {
                     <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                     <input 
                       type="date" 
-                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-4 pl-12 pr-4 text-slate-900 dark:text-white font-bold outline-none shadow-sm dark:shadow-none"
+                      className="w-full bg-slate-950/70 border border-slate-800 rounded-xl py-3 pl-12 pr-4 text-slate-100 font-bold outline-none shadow-sm "
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
                     />
@@ -358,7 +357,7 @@ const CreateCompetition = () => {
                     <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                     <input 
                       type="date" 
-                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-4 pl-12 pr-4 text-slate-900 dark:text-white font-bold outline-none shadow-sm dark:shadow-none"
+                      className="w-full bg-slate-950/70 border border-slate-800 rounded-xl py-3 pl-12 pr-4 text-slate-100 font-bold outline-none shadow-sm "
                       value={endDate}
                       onChange={(e) => setEndDate(e.target.value)}
                     />
@@ -368,9 +367,9 @@ const CreateCompetition = () => {
             </div>
 
             <div className="space-y-6">
-              <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
                 <Shield size={18} className="text-emerald-500" />
-                <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">Opis i Propozicije</h3>
+                <h3 className="text-sm font-black text-slate-100 uppercase tracking-widest">Opis i Propozicije</h3>
               </div>
 
               <div className="space-y-4">
@@ -378,7 +377,7 @@ const CreateCompetition = () => {
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Opis Turnira</label>
                   <textarea 
                     rows={3}
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-medium outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none shadow-sm dark:shadow-none"
+                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-medium outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all resize-none shadow-sm "
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Ukratko o turniru..."
@@ -389,7 +388,7 @@ const CreateCompetition = () => {
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Pravila i Sistemi (Propozicije)</label>
                   <textarea 
                     rows={6}
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-medium outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none shadow-sm dark:shadow-none"
+                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-medium outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all resize-none shadow-sm "
                     value={rules}
                     onChange={(e) => setRules(e.target.value)}
                     placeholder="Detaljna pravila takmičenja..."
@@ -401,7 +400,7 @@ const CreateCompetition = () => {
                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Kotizacija</label>
                     <input 
                       type="text" 
-                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm dark:shadow-none"
+                      className="w-full bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-bold outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all shadow-sm "
                       value={entryFee}
                       onChange={(e) => setEntryFee(e.target.value)}
                       placeholder="20 KM / 15 EUR"
@@ -412,7 +411,7 @@ const CreateCompetition = () => {
                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Nagrade</label>
                     <input 
                       type="text" 
-                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm dark:shadow-none"
+                      className="w-full bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-bold outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all shadow-sm "
                       value={prizes}
                       onChange={(e) => setPrizes(e.target.value)}
                       placeholder="Pehare, medalje, diplome..."
@@ -424,7 +423,7 @@ const CreateCompetition = () => {
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Raspored (Satnica)</label>
                   <textarea 
                     rows={4}
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-medium outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none shadow-sm dark:shadow-none"
+                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-medium outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all resize-none shadow-sm "
                     value={schedule}
                     onChange={(e) => setSchedule(e.target.value)}
                     placeholder="Subota 9:00 - U11, 11:00 - U15..."
@@ -434,13 +433,13 @@ const CreateCompetition = () => {
             </div>
 
             {/* Dostupne Kategorije za Prijave */}
-            <div className="space-y-6 bg-emerald-50/50 dark:bg-emerald-600/5 p-6 rounded-2xl border border-emerald-100 dark:border-emerald-500/10">
-              <div className="flex items-center gap-3 border-b border-emerald-100 dark:border-emerald-500/10 pb-4">
+            <div className="space-y-6 bg-emerald-500/5 p-5 rounded-2xl border border-emerald-500/20">
+              <div className="flex items-center gap-3 border-b border-emerald-500/20 pb-4">
                 <Award size={18} className="text-emerald-500" />
-                <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">Dostupne Kategorije za Prijave</h3>
+                <h3 className="text-sm font-black text-slate-100 uppercase tracking-widest">Dostupne Kategorije za Prijave</h3>
               </div>
 
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+              <p className="text-xs text-slate-400 font-medium">
                 Dodajte kategorije koje će biti dostupne za prijave na javnoj stranici turnira (npr. "Muški Singl", "Ženski Singl", "Mlađi Pioniri", itd.)
               </p>
 
@@ -448,7 +447,7 @@ const CreateCompetition = () => {
                 <input 
                   type="text" 
                   placeholder="Unesite naziv kategorije..."
-                  className="flex-1 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-sm dark:shadow-none"
+                  className="flex-1 bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-bold outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all shadow-sm "
                   value={newCategory}
                   onChange={(e) => setNewCategory(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCategory())}
@@ -463,19 +462,19 @@ const CreateCompetition = () => {
               </div>
 
               {availableCategories.length > 0 && (
-                <div className="bg-white dark:bg-slate-950 rounded-xl p-4 border border-slate-200 dark:border-slate-800">
+                <div className="bg-slate-950/70 rounded-xl p-3 border border-slate-800">
                   <div className="flex flex-wrap gap-2">
                     {availableCategories.map((category, index) => (
                       <div 
                         key={index} 
-                        className="flex items-center gap-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-4 py-2 rounded-lg font-bold text-sm"
+                        className="flex items-center gap-2 bg-emerald-500/15 text-emerald-300 px-4 py-2 rounded-lg font-bold text-sm border border-emerald-500/20"
                       >
                         <Award size={14} />
                         <span>{category}</span>
                         <button 
                           type="button"
                           onClick={() => removeCategory(category)}
-                          className="ml-1 text-emerald-600 dark:text-emerald-500 hover:text-red-500 transition-colors"
+                          className="ml-1 text-emerald-400 hover:text-red-400 transition-colors"
                         >
                           <X size={14} />
                         </button>
@@ -486,7 +485,7 @@ const CreateCompetition = () => {
               )}
 
               {availableCategories.length === 0 && (
-                <div className="text-center py-8 text-slate-400 dark:text-slate-500">
+                <div className="text-center py-8 text-slate-400 ">
                   <Award size={32} className="mx-auto mb-2 opacity-30" />
                   <p className="text-xs font-bold uppercase tracking-widest">Nema dodanih kategorija</p>
                 </div>
@@ -494,19 +493,19 @@ const CreateCompetition = () => {
             </div>
 
             <div className="space-y-6">
-              <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
                 <Phone size={18} className="text-amber-500" />
-                <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">Kontakt Podaci</h3>
+                <h3 className="text-sm font-black text-slate-100 uppercase tracking-widest">Kontakt Podaci</h3>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Kontakt Telefon</label>
                   <div className="relative">
                     <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                     <input 
                       type="text" 
-                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-4 pl-12 pr-4 text-slate-900 dark:text-white font-bold outline-none shadow-sm dark:shadow-none"
+                      className="w-full bg-slate-950/70 border border-slate-800 rounded-xl py-3 pl-12 pr-4 text-slate-100 font-bold outline-none shadow-sm "
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="+387..."
@@ -520,7 +519,7 @@ const CreateCompetition = () => {
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                     <input 
                       type="email" 
-                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-4 pl-12 pr-4 text-slate-900 dark:text-white font-bold outline-none shadow-sm dark:shadow-none"
+                      className="w-full bg-slate-950/70 border border-slate-800 rounded-xl py-3 pl-12 pr-4 text-slate-100 font-bold outline-none shadow-sm "
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="email@kompanija.ba"
@@ -532,7 +531,7 @@ const CreateCompetition = () => {
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Puna Adresa</label>
                   <input 
                     type="text" 
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm dark:shadow-none"
+                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-bold outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all shadow-sm "
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     placeholder="Ulica broj, Poštanski broj Grad, Država"
@@ -541,11 +540,11 @@ const CreateCompetition = () => {
               </div>
             </div>
 
-            <div className="space-y-6 bg-blue-50/50 dark:bg-blue-600/5 p-6 rounded-2xl border border-blue-100 dark:border-blue-500/10">
-              <div className="flex items-center justify-between border-b border-blue-100 dark:border-blue-500/10 pb-4">
+            <div className="space-y-6 bg-slate-950/40 p-5 rounded-2xl border border-slate-800">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
                 <div className="flex items-center gap-3">
-                  <LinkIcon size={18} className="text-blue-500" />
-                  <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">Postavke Prijava</h3>
+                  <LinkIcon size={18} className="text-amber-500" />
+                  <h3 className="text-sm font-black text-slate-100 uppercase tracking-widest">Postavke Prijava</h3>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className={`text-[10px] font-black uppercase tracking-widest ${registrationOpen ? 'text-emerald-500' : 'text-slate-400'}`}>
@@ -554,20 +553,20 @@ const CreateCompetition = () => {
                   <button 
                     type="button"
                     onClick={() => setRegistrationOpen(!registrationOpen)}
-                    className={`w-12 h-6 rounded-full p-1 transition-colors relative ${registrationOpen ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'}`}
+                    className={`w-12 h-6 rounded-full p-1 transition-colors relative ${registrationOpen ? 'bg-emerald-500' : 'bg-slate-700'}`}
                   >
                     <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${registrationOpen ? 'translate-x-6' : 'translate-x-0'}`} />
                   </button>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Link za prijavu</label>
                   <input 
                     disabled={!registrationOpen}
                     type="text" 
-                    className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-bold outline-none disabled:opacity-50 shadow-sm dark:shadow-none"
+                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-bold outline-none disabled:opacity-50 shadow-sm "
                     value={registrationLink}
                     onChange={(e) => setRegistrationLink(e.target.value)}
                     placeholder="https://..."
@@ -581,7 +580,7 @@ const CreateCompetition = () => {
                     <input 
                       disabled={!registrationOpen}
                       type="date" 
-                      className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl py-4 pl-12 pr-4 text-slate-900 dark:text-white font-bold outline-none disabled:opacity-50 shadow-sm dark:shadow-none"
+                      className="w-full bg-slate-950/70 border border-slate-800 rounded-xl py-3 pl-12 pr-4 text-slate-100 font-bold outline-none disabled:opacity-50 shadow-sm "
                       value={registrationDeadline}
                       onChange={(e) => setRegistrationDeadline(e.target.value)}
                     />
@@ -591,9 +590,9 @@ const CreateCompetition = () => {
             </div>
 
             <div className="space-y-6">
-              <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
                 <Settings2 size={18} className="text-slate-500" />
-                <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">Pravila Mečeva</h3>
+                <h3 className="text-sm font-black text-slate-100 uppercase tracking-widest">Pravila Mečeva</h3>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -601,7 +600,7 @@ const CreateCompetition = () => {
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1 text-center block">Setova do pobjede</label>
                   <input 
                     type="number" 
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-black text-center outline-none shadow-sm dark:shadow-none"
+                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-black text-center outline-none shadow-sm "
                     value={setsToWin}
                     onChange={(e) => setSetsToWin(e.target.value)}
                   />
@@ -610,7 +609,7 @@ const CreateCompetition = () => {
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1 text-center block">Pobjeda (Bodovi)</label>
                   <input 
                     type="number" 
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-black text-center outline-none shadow-sm dark:shadow-none"
+                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-black text-center outline-none shadow-sm "
                     value={winPoints}
                     onChange={(e) => setWinPoints(e.target.value)}
                   />
@@ -619,7 +618,7 @@ const CreateCompetition = () => {
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1 text-center block">Poraz (Bodovi)</label>
                   <input 
                     type="number" 
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-black text-center outline-none shadow-sm dark:shadow-none"
+                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-black text-center outline-none shadow-sm "
                     value={lossPoints}
                     onChange={(e) => setLossPoints(e.target.value)}
                   />
@@ -628,7 +627,7 @@ const CreateCompetition = () => {
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1 text-center block">Prolazi iz grupe</label>
                   <input 
                     type="number" 
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-4 text-slate-900 dark:text-white font-black text-center outline-none shadow-sm dark:shadow-none"
+                    className="w-full bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-black text-center outline-none shadow-sm "
                     value={advancingPlayers}
                     onChange={(e) => setAdvancingPlayers(e.target.value)}
                   />
@@ -637,14 +636,14 @@ const CreateCompetition = () => {
             </div>
 
             {/* Visibility Section */}
-            <div className="space-y-6 bg-slate-50 dark:bg-slate-950 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
-              <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+            <div className="space-y-6 bg-slate-950/40 p-5 rounded-2xl border border-slate-800">
+              <div className="flex items-center justify-between border-b border-slate-700  pb-4">
                 <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${isPublic ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'}`}>
+                  <div className={`p-2 rounded-lg ${isPublic ? 'bg-emerald-500/15 text-emerald-300' : 'bg-slate-800 text-slate-400'}`}>
                     {isPublic ? <Globe size={18} /> : <Lock size={18} />}
                   </div>
                   <div>
-                    <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest leading-none mb-1">Vidljivost Takmičenja</h3>
+                    <h3 className="text-sm font-black text-slate-100 uppercase tracking-widest leading-none mb-1">Vidljivost Takmičenja</h3>
                     <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
                       {isPublic ? 'Takmičenje će biti javno odmah nakon kreiranja' : 'Takmičenje će biti privatno (DRAFT)'}
                     </p>
@@ -657,7 +656,7 @@ const CreateCompetition = () => {
                   <button 
                     type="button"
                     onClick={() => setIsPublic(!isPublic)}
-                    className={`w-12 h-6 rounded-full p-1 transition-colors relative ${isPublic ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'}`}
+                    className={`w-12 h-6 rounded-full p-1 transition-colors relative ${isPublic ? 'bg-emerald-500' : 'bg-slate-700'}`}
                   >
                     <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${isPublic ? 'translate-x-6' : 'translate-x-0'}`} />
                   </button>
@@ -666,7 +665,7 @@ const CreateCompetition = () => {
 
               {isPublic && (
                 <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl animate-in fade-in slide-in-from-top-2 duration-300">
-                  <p className="text-[10px] text-emerald-600 dark:text-emerald-500 font-bold uppercase leading-relaxed">
+                  <p className="text-[10px] text-emerald-300 font-bold uppercase leading-relaxed">
                     <CheckCircle size={10} className="inline mr-1" /> Javno takmičenje je vidljivo svima. 
                     Nakon kreiranja, dobit ćete link koji možete podijeliti sa učesnicima i gledaocima.
                   </p>
@@ -678,14 +677,14 @@ const CreateCompetition = () => {
               <button 
                 type="button"
                 onClick={() => navigate('/admin/competitions')}
-                className="flex-1 md:px-12 py-5 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl font-black uppercase text-xs tracking-widest hover:bg-slate-200 dark:hover:bg-slate-700 transition-all border border-slate-200 dark:border-slate-700"
+                className="flex-1 md:px-12 py-4 bg-slate-900 text-slate-200 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-slate-800 transition-all border border-slate-700"
               >
                 Otkaži
               </button>
               <button 
                 type="submit"
                 disabled={loading}
-                className="flex-[2] md:px-16 py-5 bg-amber-400 hover:bg-amber-500 text-black rounded-xl font-black uppercase text-xs tracking-widest transition-all shadow-xl shadow-amber-500/20 flex items-center justify-center gap-3 disabled:opacity-50"
+                className="flex-[2] md:px-16 py-4 bg-amber-400 hover:bg-amber-500 text-black rounded-xl font-black uppercase text-xs tracking-widest transition-all shadow-xl shadow-amber-500/20 flex items-center justify-center gap-3 disabled:opacity-50"
               >
                 {loading ? 'Kreiranje...' : (
                     <>

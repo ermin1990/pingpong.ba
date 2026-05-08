@@ -35,186 +35,155 @@ const CompetitionSettingsModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm transition-colors">
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl transition-all">
-        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900/50">
-          <h3 className="font-black uppercase italic tracking-tighter text-lg text-slate-900 dark:text-white">Postavke Takmičenja</h3>
-          <button onClick={() => setShowCompSettings(false)} className="text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"><X size={20} /></button>
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md transition-all">
+      <div className="bg-[#0f172a] border border-slate-800 w-full max-w-lg rounded-[40px] overflow-hidden shadow-2xl transition-all ring-1 ring-white/5">
+        <div className="p-8 border-b border-slate-800 flex justify-between items-center bg-slate-900/40">
+          <h3 className="font-black uppercase italic tracking-tighter text-2xl text-white">Postavke Takmičenja</h3>
+          <button 
+            onClick={() => setShowCompSettings(false)} 
+            className="p-3 bg-slate-950 text-slate-500 hover:text-white hover:bg-slate-800 rounded-2xl transition-all border border-slate-800"
+          >
+            <X size={20} />
+          </button>
         </div>
         
-        <div className="p-8 space-y-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
-          <div className="space-y-2">
-            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Naziv Takmičenja</label>
+        <div className="p-10 space-y-8 max-h-[75vh] overflow-y-auto custom-scrollbar">
+          <div className="space-y-3">
+            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1 ml-1 flex items-center gap-2">
+               <FileText size={12} className="text-amber-500" /> NAZIV TAKMIČENJA
+            </label>
             <input 
               type="text" 
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm dark:shadow-none"
+              className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-5 text-white font-black uppercase tracking-widest text-xs outline-none focus:border-amber-500/50 transition-all placeholder:text-slate-800"
               value={compName}
               onChange={(e) => setCompName(e.target.value)}
               placeholder="npr. Joola Cup 2024"
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Link (Slug)</label>
-            <div className="relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-600 font-bold text-xs">
-                {window.location.host}/p/
+          <div className="space-y-3">
+            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1 ml-1 flex items-center gap-2">
+               <ExternalLink size={12} className="text-amber-500" /> LINK (SLUG)
+            </label>
+            <div className="relative group">
+              <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-700 font-black text-[10px] uppercase tracking-widest border-r border-slate-800 pr-3 h-4 flex items-center">
+                /p/
               </div>
               <input 
                 type="text" 
-                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 pl-40 pr-4 text-blue-600 dark:text-blue-400 font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm dark:shadow-none"
+                className="w-full bg-slate-950 border border-slate-800 rounded-2xl py-5 pl-16 pr-5 text-amber-500 font-black uppercase tracking-widest text-xs outline-none focus:border-amber-500 transition-all placeholder:text-slate-800"
                 value={compSlug}
                 onChange={(e) => setCompSlug(e.target.value)}
                 placeholder="joola-cup"
               />
             </div>
+            <p className="text-[9px] text-slate-600 font-black uppercase tracking-widest ml-1 mt-1">
+               * Ovo je unikatni link po kojem će korisnici pratiti turnir
+            </p>
           </div>
 
-          <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800/50">
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Vidljivost Takmičenja</label>
-              <div className="flex items-center gap-2">
-                {isPublic ? <Globe size={14} className="text-emerald-500" /> : <Lock size={14} className="text-slate-500" />}
-                <span className={`text-[9px] font-bold uppercase px-2 py-1 rounded ${isPublic ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-800 text-slate-500'}`}>
+          <div className="space-y-6 pt-8 border-t border-slate-800">
+            <div className="flex items-center justify-between px-1">
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                 <Lock size={12} className="text-amber-500" /> VIDLJIVOST TAKMIČENJA
+              </label>
+              <div className="flex items-center gap-3">
+                <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-lg border ${isPublic ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-slate-950 text-slate-600 border-slate-800'}`}>
                   {isPublic ? 'JAVNO' : 'PRIVATNO'}
                 </span>
               </div>
             </div>
             
-            <div className="bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-2xl p-4">
+            <div className="bg-slate-950 border border-slate-800 rounded-[24px] p-6 group hover:border-amber-500/20 transition-all">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex-1">
-                  <p className="text-sm font-bold text-slate-900 dark:text-white mb-1">Javno Takmičenje</p>
-                  <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-                    {isPublic ? 'Takmičenje je vidljivo svima sa linkom' : 'Samo vlasnik i saradnici mogu vidjeti takmičenje'}
+                  <p className="text-sm font-black text-white uppercase italic tracking-tighter mb-1">JAVNO TAKMIČENJE</p>
+                  <p className="text-[10px] text-slate-600 font-black uppercase tracking-tight">
+                    {isPublic ? 'Svi sa linkom mogu pratiti rezultate' : 'Samo administratori imaju pristup'}
                   </p>
                 </div>
                 <button 
                   onClick={() => handleTogglePublic(!isPublic)}
-                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                  className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
                     isPublic 
-                      ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20 hover:bg-emerald-500' 
-                      : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-slate-700'
+                      ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20 hover:scale-105' 
+                      : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700'
                   }`}
                 >
-                  {isPublic ? 'Sakrij' : 'Objavi'}
+                  {isPublic ? 'ISKLJUČI' : 'AKTIVIRAJ'}
                 </button>
               </div>
 
               {isPublic && (
-                <div className="flex items-center gap-2 bg-white dark:bg-slate-900 p-2 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-none">
-                   <div className="flex-1 truncate text-xs font-mono text-slate-500 dark:text-slate-400 select-all px-2">
+                <div className="flex items-center gap-2 bg-slate-900 p-2.5 rounded-xl border border-slate-800 shadow-inner">
+                   <div className="flex-1 truncate text-[10px] font-black text-amber-500/70 uppercase tracking-widest px-3 select-all">
                       {`${window.location.origin}/p/${compSlug}`}
                    </div>
-                   <button 
-                     onClick={() => window.open(`/p/${compSlug}`, '_blank')}
-                     className="px-3 py-1.5 bg-blue-50 dark:bg-blue-600/10 text-blue-600 dark:text-blue-500 hover:bg-blue-600 hover:text-white rounded-lg text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 shrink-0"
-                   >
-                     <Globe size={12} /> Otvori
-                   </button>
                    <button 
                      onClick={() => {
                         navigator.clipboard.writeText(`${window.location.origin}/p/${compSlug}`);
                         alert("Link kopiran!");
                      }}
-                     className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white rounded-lg text-[9px] font-black uppercase tracking-widest transition-all shrink-0"
+                     className="px-4 py-2 bg-slate-800 text-white hover:bg-slate-700 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all"
                    >
-                     Kopiraj
+                     KOPIRAJ
                    </button>
                 </div>
               )}
             </div>
 
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Saradnici (Email)</label>
-              <span className="text-[9px] text-slate-500 font-bold bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">DODAJ SARADNIKA</span>
-            </div>
-            
-            <div className="flex gap-2">
-              <input 
-                type="email" 
-                className="flex-1 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 text-slate-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm shadow-sm dark:shadow-none"
-                value={newCollabEmail}
-                onChange={(e) => setNewCollabEmail(e.target.value)}
-                placeholder="email@example.com"
-                onKeyPress={(e) => e.key === 'Enter' && addCollaborator()}
-              />
-              <button 
-                onClick={addCollaborator}
-                className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white px-6 rounded-2xl font-bold text-sm transition-all shadow-sm dark:shadow-none border border-slate-200 dark:border-slate-700"
-              >
-                Dodaj
-              </button>
-            </div>
+            <div className="space-y-4">
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1 ml-1 flex items-center gap-2">
+                 <UserPlus size={12} className="text-amber-500" /> SARADNICI (EMAIL)
+              </label>
+              
+              <div className="flex gap-3">
+                <input 
+                  type="email" 
+                  className="flex-1 bg-slate-950 border border-slate-800 rounded-2xl p-5 text-white font-black uppercase tracking-widest text-xs outline-none focus:border-amber-500 transition-all placeholder:text-slate-800"
+                  value={newCollabEmail}
+                  onChange={(e) => setNewCollabEmail(e.target.value)}
+                  placeholder="email@example.com"
+                  onKeyPress={(e) => e.key === 'Enter' && addCollaborator()}
+                />
+                <button 
+                  onClick={addCollaborator}
+                  className="bg-slate-800 hover:bg-slate-700 text-white px-8 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-sm border border-slate-700"
+                >
+                  DODAJ
+                </button>
+              </div>
 
-            <div className="space-y-2">
-              {collaborators.map((email) => (
-                <div key={email} className="flex items-center justify-between bg-white dark:bg-white/5 border border-slate-100 dark:border-white/5 p-3 rounded-2xl group transition-all shadow-sm dark:shadow-none">
-                  <span className="text-slate-900 dark:text-white text-sm font-bold">{email}</span>
-                  <button 
-                    onClick={() => removeCollaborator(email)}
-                    className="text-slate-400 hover:text-red-500 dark:text-slate-500 transition-colors"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-              ))}
-              {collaborators.length === 0 && (
-                <p className="text-center py-4 text-slate-400 dark:text-slate-600 text-[10px] font-bold uppercase tracking-widest border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-2xl">Nema dodanih saradnika</p>
-              )}
-            </div>
-            <p className="text-[9px] text-slate-600 font-bold uppercase tracking-wider px-1">
-              * Saradnici će moći vidjeti i uređivati ovo takmičenje u svom dashboardu.
-            </p>
-          </div>
-
-            <div className="bg-blue-50 dark:bg-blue-600/5 border border-blue-100 dark:border-blue-500/10 rounded-2xl p-4 flex items-center justify-between mt-4">
-            <div className="flex items-center gap-3">
-              <FileText size={16} className="text-blue-500" />
-              <div>
-                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Javni Link</p>
-                <p className="text-xs text-slate-900 dark:text-white font-bold">{window.location.host}/p/{competition.slug || compSlug}</p>
+              <div className="space-y-2 mt-4">
+                {collaborators.map((email) => (
+                  <div key={email} className="flex items-center justify-between bg-white/5 border border-white/5 p-4 rounded-2xl group transition-all hover:bg-white/[0.08]">
+                    <span className="text-white text-[11px] font-black uppercase tracking-widest">{email}</span>
+                    <button 
+                      onClick={() => removeCollaborator(email)}
+                      className="text-slate-600 hover:text-red-500 transition-colors p-2"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ))}
+                {collaborators.length === 0 && (
+                  <div className="text-center py-6 text-slate-700 text-[10px] font-black uppercase tracking-widest border-2 border-dashed border-slate-800 rounded-[24px]">
+                    NEMA DODANIH SARADNIKA
+                  </div>
+                )}
               </div>
             </div>
-            <div className="flex gap-2">
-                <button 
-                onClick={() => {
-                    const slugToCopy = compSlug || competition.slug;
-                    navigator.clipboard.writeText(`${window.location.origin}/p/${slugToCopy}`);
-                    alert("Link kopiran!");
-                }}
-                className="text-blue-600 dark:text-blue-500 hover:text-blue-500 dark:hover:text-blue-400 font-black uppercase text-[10px]"
-                >
-                Kopiraj
-                </button>
-                <div className="w-px h-3 bg-slate-200 dark:bg-slate-800 self-center"></div>
-                <button 
-                onClick={() => {
-                    const slugToOpen = compSlug || competition.slug;
-                    window.open(`${window.location.origin}/p/${slugToOpen}`, '_blank');
-                }}
-                className="text-emerald-600 dark:text-emerald-500 hover:text-emerald-500 dark:hover:text-emerald-400 font-black uppercase text-[10px] flex items-center gap-1"
-                >
-                Otvori <ExternalLink size={10} />
-                </button>
-            </div>
           </div>
+        </div>
 
-          <div className="pt-4 flex gap-3">
-            <button 
-              onClick={() => setShowCompSettings(false)}
-              className="flex-1 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-all border border-slate-200 dark:border-slate-700"
-            >
-              Otkaži
-            </button>
-            <button 
-              onClick={handleUpdateCompetition}
-              disabled={savingComp}
-              className="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-blue-500 transition-all shadow-xl shadow-blue-500/20 disabled:opacity-50"
-            >
-              {savingComp ? 'Spremanje...' : 'Sačuvaj Promjene'}
-            </button>
-          </div>
+        <div className="p-8 bg-slate-900/40 border-t border-slate-800">
+           <button 
+             onClick={handleUpdateCompetition}
+             disabled={savingComp}
+             className="w-full bg-amber-500 hover:bg-amber-600 disabled:bg-slate-700 disabled:text-slate-400 text-black py-5 rounded-[24px] font-black uppercase italic tracking-tighter text-lg shadow-xl shadow-amber-500/20 transition-all active:scale-95"
+           >
+             {savingComp ? 'SPAŠAVANJE...' : 'SAČUVAJ SVE POSTAVKE'}
+           </button>
         </div>
       </div>
     </div>

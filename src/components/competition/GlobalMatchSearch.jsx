@@ -5,9 +5,9 @@ const GlobalMatchSearch = ({
   setMatchSearchQuery, 
   searchTableId,
   setSearchTableId,
-  tables = [],
-  filteredGlobalMatches = [], 
-  categories = [], 
+  tables,
+  filteredGlobalMatches, 
+  categories, 
   setEditingMatch, 
   setShowMatchModal 
 }) => {
@@ -51,10 +51,10 @@ const GlobalMatchSearch = ({
             <select
               value={searchTableId}
               onChange={(e) => setSearchTableId(e.target.value)}
-              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-4 text-xs font-black uppercase tracking-widest text-slate-900 dark:text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none appearance-none cursor-pointer"
+              className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-4 text-xs font-black uppercase tracking-widest text-slate-900 dark:text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all appearance-none cursor-pointer"
             >
               <option value="">Svi stolovi</option>
-              {Array.isArray(tables) && tables.map(table => (
+              {tables.map(table => (
                 <option key={table.id} value={table.id}>
                   {table.name}
                 </option>
@@ -83,24 +83,21 @@ const GlobalMatchSearch = ({
             <div className="flex items-center gap-3">
               <div className="w-2.5 h-2.5 bg-blue-600 rounded-full shadow-[0_0_8px_rgba(37,99,235,0.5)]"></div>
               <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest italic">
-                Rezultati Pretrage ({filteredGlobalMatches?.length || 0})
+                Rezultati Pretrage ({filteredGlobalMatches.length})
               </h4>
             </div>
             <button 
-              onClick={() => {
-                setMatchSearchQuery('');
-                setSearchTableId('');
-              }} 
+              onClick={() => setMatchSearchQuery('')} 
               className="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all"
             >
               Zatvori
             </button>
           </div>
           
-          {(filteredGlobalMatches?.length || 0) > 0 ? (
+          {filteredGlobalMatches.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[600px] overflow-y-auto pr-2 scrollbar-hide">
               {filteredGlobalMatches.map(match => {
-                const category = Array.isArray(categories) ? categories.find(c => c.id === match.categoryId) : null;
+                const category = categories.find(c => c.id === match.categoryId);
                 const isCompleted = match.status === 'completed';
                 const p1 = match.player1 || { name: 'TBD' };
                 const p2 = match.player2 || { name: 'TBD' };

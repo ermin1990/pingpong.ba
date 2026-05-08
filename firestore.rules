@@ -1,6 +1,15 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['org_admin', 'super_admin'];
+    }
 
     // Users collection: users can read/update their own profile; super_admin can manage all users
     match /users/{userId} {
@@ -58,11 +67,12 @@ service cloud.firestore {
         resource.data.ownerUid == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin'
       );
 
-      match /categories/{catId} {
+      // Fix for subcollections (categories, matches, etc.)
+      match /{allSubcollections=**} {
         allow read: if true;
         allow write: if request.auth != null && (
-          get(/databases/$(database)/documents/amater_league_tournaments/$(tourneyId)).data.ownerUid == request.auth.uid 
-          || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin'
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin'
+          || get(/databases/$(database)/documents/competitions/$(compId)).data.ownerUid == request.auth.uid
         );
       }
     }
@@ -79,61 +89,61 @@ service cloud.firestore {
     // Matches: writable by owners or admins OR assigned referees
     match /matches/{matchId} {
       allow read: if true;
-      
-      // Helper function to check ownership of parent competition
-      function isCompetitionOwner(compId) {
-        let isStd = exists(/databases/$(database)/documents/competitions/$(compId)) && 
-                    get(/databases/$(database)/documents/competitions/$(compId)).data.ownerUid == request.auth.uid;
-        let isAmater = exists(/databases/$(database)/documents/amater_league_tournaments/$(compId)) && 
-                       get(/databases/$(database)/documents/amater_league_tournaments/$(compId)).data.ownerUid == request.auth.uid;
-        return isStd || isAmater;
-      }
-
-      // Create: allow if user is admin OR if the user is owner of the parent competition
-      allow create: if request.auth != null && (
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['org_admin', 'super_admin']
-        || (
-          request.resource.data.competitionId is string && 
-          isCompetitionOwner(request.resource.data.competitionId)
-        )
+      allow create, delete: if request.auth != null && (
+        isAdmin()
+        || resource.data.ownerUid == request.auth.uid
       );
-
-      // Delete: allow if admin OR the competition owner
-      allow delete: if request.auth != null && (
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['org_admin', 'super_admin']
-        || (resource.data.competitionId is string && isCompetitionOwner(resource.data.competitionId))
-      );
-
-      // Update: allow admin, competition owner or an assigned referee
       allow update: if request.auth != null && (
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['org_admin', 'super_admin']
-        || (resource.data.competitionId is string && isCompetitionOwner(resource.data.competitionId))
+        isAdmin()
+        || resource.data.ownerUid == request.auth.uid
         || (
-             exists(/databases/$(database)/documents/referees/$(request.auth.uid))
+             exists(/databases/$(database)/documents/referees/$(request.auth.uid)) 
              && get(/databases/$(database)/documents/referees/$(request.auth.uid)).data.competitionId == resource.data.competitionId
            )
       );
     }
 
-    // Referees collection: Public read for code check (security by obscurity of code), update only by claiming or admin
+    // Referees collection
     match /referees/{refereeId} {
       allow read: if true; 
-      allow create: if request.auth != null && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['org_admin', 'super_admin']);
+      allow create: if request.auth != null && (
+        isAdmin()
+        || (request.auth.uid == refereeId && request.resource.data.currentUid == request.auth.uid)
+      );
       allow update: if request.auth != null && (
-        // Admin can update
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['org_admin', 'super_admin']
-        // OR the user is claiming the code (currentUid is null)
+        isAdmin()
         || (resource.data.currentUid == null)
-        // OR the user OWNS this referee profile
+        || (resource.data.currentUid == request.auth.uid)
+      );
+      allow delete: if request.auth != null && (
+        isAdmin()
+        || (resource.data.currentUid == null)
         || (resource.data.currentUid == request.auth.uid)
       );
     }
 
-    // Access requests and whitelisted_emails: super_admin can manage; authenticated users can create requests
+    // Access requests and whitelisted_emails
     match /access_requests/{reqId} {
       allow create: if request.auth != null;
       allow read: if request.auth != null && (resource.data.userId == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin');
       allow update, delete: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin';
+    }
+
+    // Deleted matches (recycle bin): only admins and owners can read/write
+    match /deleted_matches/{docId} {
+      allow read, create, delete: if request.auth != null && (
+        isAdmin()
+        || resource.data.deletedBy == request.auth.uid
+        || request.resource.data.deletedBy == request.auth.uid
+      );
+      allow update: if false;
+    }
+
+    // Global settings (e.g. theme)
+    match /settings/{docId} {
+      allow read: if true;
+      allow create, update, delete: if request.auth != null
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin';
     }
 
     match /whitelisted_emails/{id} {
@@ -147,9 +157,3 @@ service cloud.firestore {
     }
   }
 }
-
-// NOTE:
-// - These rules enforce that only users with role 'org_admin' or 'super_admin' can create competitions/players/matches.
-// - Subscription-based quotas (limits on number of competitions/leagues) cannot be reliably enforced in security rules by counting other documents.
-//   To enforce quotas, maintain counters (e.g. in the user's document) that the trusted server or Cloud Function increments/decrements
-//   and check those counters here before allowing writes.

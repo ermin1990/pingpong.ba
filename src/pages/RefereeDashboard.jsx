@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { auth, db } from '../firebase/config';
-import { collection, query, where, getDocs, updateDoc, doc, onSnapshot, deleteDoc, addDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, updateDoc, doc, onSnapshot } from 'firebase/firestore';
 import { Loader2, LogOut, LayoutGrid, List, Trophy, ChevronRight, Table as TableIcon, Search, X } from 'lucide-react';
 import MatchUpdateModal from '../components/competition/MatchUpdateModal';
 import MatchCard from '../components/competition/MatchCard';
@@ -102,16 +102,10 @@ const RefereeDashboard = () => {
         if (confirm("Da li se želite odjaviti? Vaš pristupni kod će biti oslobođen za ponovnu upotrebu.")) {
             if (referee && auth.currentUser) {
                 try {
-                    // Oslobađamo kod kako bi se mogao opet iskoristiti
-                    await addDoc(collection(db, 'referees'), {
-                        name: referee.name,
-                        code: referee.code,
-                        competitionId: referee.competitionId,
-                        assignedTableId: referee.assignedTableId || null,
-                        createdAt: referee.createdAt || new Date()
+                    await updateDoc(doc(db, 'referees', auth.currentUser.uid), {
+                        currentUid: null,
+                        activatedAt: null
                     });
-                    
-                    await deleteDoc(doc(db, 'referees', auth.currentUser.uid));
                 } catch (err) {
                     console.error("Logout cleanup error:", err);
                 }

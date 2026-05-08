@@ -47,13 +47,6 @@ export const ThemeProvider = ({ children }) => {
           if (themes[savedTheme]) {
             setCurrentTheme(savedTheme);
           }
-        } else {
-          // Initialize with default theme
-          await setDoc(doc(db, 'settings', 'globalTheme'), {
-            theme: 'trophy',
-            updatedAt: new Date(),
-            updatedBy: 'system'
-          });
         }
       } catch (error) {
         console.warn('Failed to load global theme, using default:', error);

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase/config';
-import { collection, query, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
 import { Trophy, Plus, Calendar, Target, ChevronRight, ExternalLink, List, Settings, Info, Users, Trash2 } from 'lucide-react';
 import DashboardLayout from '../layouts/DashboardLayout';
 
@@ -217,7 +217,7 @@ const Leagues = () => {
                     <Trash2 size={12} />
                   </button>
                   <Link 
-                    to={league.type === 'league_season' ? `/admin/seasons/${league.id}` : `/admin/leagues/${league.id}`}
+                    to={`/admin/leagues/${league.id}`}
                     className={`flex-1 rounded-xl px-4 py-2 text-xs font-semibold uppercase tracking-wide transition-all shadow-lg flex items-center justify-center gap-2 ${
                       league.status === 'active' 
                         ? 'bg-white text-blue-600 hover:bg-blue-50' 
@@ -247,7 +247,7 @@ const Leagues = () => {
               
               <form onSubmit={handleCreate} className="p-6 space-y-5">
                 <div>
-                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Naziv</label>
+                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Naziv Lige</label>
                   <input
                     required
                     type="text"
@@ -287,7 +287,7 @@ const Leagues = () => {
 
                 <div className={`grid grid-cols-3 gap-3 animate-in fade-in duration-300 ${type === 'league_season' ? 'opacity-50' : ''}`}>
                   <div>
-                    <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-2 px-1 text-center">Pobjeda</label>
+                    <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Bodova (Pob)</label>
                     <input
                       disabled={type === 'league_season'}
                       type="number"
@@ -297,7 +297,7 @@ const Leagues = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-2 px-1 text-center">Neriješeno</label>
+                    <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Bodova (Ner)</label>
                     <input
                       disabled={type === 'league_season'}
                       type="number"
@@ -307,7 +307,7 @@ const Leagues = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-2 px-1 text-center">Poraz</label>
+                    <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Bodova (Por)</label>
                     <input
                       disabled={type === 'league_season'}
                       type="number"

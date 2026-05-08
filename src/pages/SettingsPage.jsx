@@ -1,49 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../themes/ThemeContext';
 import { User, Building, Shield, Bell, Save, CreditCard, Trophy, Palette } from 'lucide-react';
-import ThemeSwitcher from '../components/common/ThemeSwitcher';
 
 const SettingsPage = () => {
   const { user, userData, isSuperAdmin } = useAuth();
-  const [showThemeSelector, setShowThemeSelector] = useState(false);
 
   return (
     <DashboardLayout title="Postavke">
       <div className="max-w-4xl mx-auto space-y-8">
-        
-        {/* Theme Selector Section - SUPER ADMIN ONLY */}
-        {isSuperAdmin && (
-          <div className="bg-white dark:bg-slate-900/40 border-2 border-slate-200 dark:border-slate-800 rounded-lg p-8 backdrop-blur-xl shadow-lg">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center text-white shadow-lg">
-                  <Palette size={24} />
-                </div>
-                <div>
-                  <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase italic tracking-tighter">Globalna Tema Aplikacije</h3>
-                  <p className="text-slate-600 dark:text-slate-500 text-xs font-bold uppercase tracking-widest">
-                    <Shield className="inline w-3 h-3 mr-1" />
-                    Primjenjuje se za SVE korisnike • Samo Super Admin
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowThemeSelector(!showThemeSelector)}
-                className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-lg hover:shadow-xl"
-              >
-                {showThemeSelector ? 'Sakrij' : 'Promijeni Temu'}
-              </button>
-            </div>
-
-            {showThemeSelector && (
-              <div className="mt-6 flex justify-center">
-                <ThemeSwitcher />
-              </div>
-            )}
-          </div>
-        )}
 
         {/* Info message for non-SuperAdmins */}
         {!isSuperAdmin && (
