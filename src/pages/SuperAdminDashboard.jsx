@@ -331,6 +331,31 @@ const SuperAdminDashboard = () => {
     }
   };
 
+  const assignPendingPlanToWhitelist = async (whitelistId, planId) => {
+    try {
+      const plan = plans.find(p => p.id === planId);
+      if (!plan) return alert('Plan nije pronađen.');
+
+      const pendingExpiry = plan.periodDays
+        ? new Date(Date.now() + Number(plan.periodDays) * 24 * 60 * 60 * 1000)
+        : null;
+
+      const payload = {
+        pendingPlanId: plan.id,
+        pendingPlanName: plan.name || plan.id,
+        pendingPlanExpiry: pendingExpiry,
+        pendingPlanAssignedAt: new Date()
+      };
+
+      await updateDoc(doc(db, 'whitelisted_emails', whitelistId), payload);
+      setWhitelistedEmails(prev => prev.map(item => item.id === whitelistId ? { ...item, ...payload } : item));
+      alert('Plan je sačuvan i biće primijenjen pri prvom loginu korisnika.');
+    } catch (err) {
+      console.error('Greška pri dodjeli pending plana:', err);
+      alert('Greška pri dodjeli plana za whitelist email.');
+    }
+  };
+
   const seedInitialPlansDB = async () => {
     if (!confirm('Dodati početne planove (Jednokratni, Paket 5, Godišnji)?')) return;
     try {
@@ -397,6 +422,17 @@ const SuperAdminDashboard = () => {
   if (!isSuperAdmin) {
     return <div className="p-20 text-center text-red-500 font-bold">PRISTUP ODBIJEN: Samo za Super Admina.</div>;
   }
+
+  const existingUserEmails = new Set(
+    users
+      .map(u => (u.email || '').toLowerCase().trim())
+      .filter(Boolean)
+  );
+
+  const whitelistWithoutProfile = whitelistedEmails.filter(item => {
+    const email = (item.email || '').toLowerCase().trim();
+    return email && !existingUserEmails.has(email);
+  });
 
   return (
     <DashboardLayout title="Super Admin Panel">
@@ -597,6 +633,9 @@ const SuperAdminDashboard = () => {
                   <Users size={20} className="text-blue-600 " />
                   Korisnički Profili
                 </h2>
+                <div className="text-[10px] text-slate-400 mt-1">
+                  Profil se prikazuje ovdje tek nakon prvog login-a korisnika.
+                </div>
               </div>
             </div>
             
@@ -691,6 +730,53 @@ const SuperAdminDashboard = () => {
               </table>
             </div>
           </div>
+
+          {whitelistWithoutProfile.length > 0 && (
+            <div className="bg-[#0f172a] border-2 border-slate-800 rounded-xl overflow-hidden shadow-md">
+              <div className="p-5 border-b-2 border-slate-800 bg-slate-950/30">
+                <h3 className="text-sm font-black flex items-center gap-2 text-amber-300 uppercase tracking-widest">
+                  <Clock size={14} />
+                  Whitelist bez profila
+                </h3>
+                <p className="text-[10px] text-slate-400 mt-1">
+                  Za ove email adrese možeš unaprijed dodijeliti plan koji će se automatski primijeniti nakon prve prijave.
+                </p>
+              </div>
+
+              <div className="divide-y-2 divide-slate-800">
+                {whitelistWithoutProfile.map(item => (
+                  <div key={item.id} className="p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                    <div>
+                      <div className="text-xs font-bold text-slate-200">{item.email}</div>
+                      <div className="text-[10px] text-slate-400 uppercase">{item.role || 'org_admin'}</div>
+                      <div className="text-[10px] text-slate-500 mt-1">
+                        Pending plan: {item.pendingPlanName || 'nije postavljen'}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <select
+                        className="bg-[#0f172a] border-2 border-slate-800 text-xs rounded-lg px-2 py-1 text-slate-200"
+                        value={userPlanSelections[`whitelist:${item.id}`] || item.pendingPlanId || ''}
+                        onChange={(e) => setUserPlanSelections(prev => ({ ...prev, [`whitelist:${item.id}`]: e.target.value }))}
+                      >
+                        <option value="">-- Odaberi plan --</option>
+                        {plans.map(p => (
+                          <option key={p.id} value={p.id}>{p.name} ({p.periodDays || 0}d)</option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={() => assignPendingPlanToWhitelist(item.id, userPlanSelections[`whitelist:${item.id}`] || item.pendingPlanId)}
+                        className="p-1.5 rounded-lg bg-amber-600 text-slate-100 hover:bg-amber-700 transition-all shadow-md"
+                      >
+                        Sačuvaj pending
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

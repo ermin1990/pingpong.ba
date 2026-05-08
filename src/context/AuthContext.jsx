@@ -60,12 +60,16 @@ export const AuthProvider = ({ children }) => {
             // Provjera Whiteliste
             let isAllowed = false;
             let whitelistedOrgId = null;
+            let whitelistedEntry = null;
+            let whitelistedEntryId = null;
             try {
               const whiteQ = query(collection(db, "whitelisted_emails"), where("email", "==", userEmail));
               const whiteSnap = await getDocs(whiteQ);
               isAllowed = !whiteSnap.empty;
               if (isAllowed) {
-                whitelistedOrgId = whiteSnap.docs[0].data()?.organizationId || null;
+                whitelistedEntry = whiteSnap.docs[0].data() || null;
+                whitelistedEntryId = whiteSnap.docs[0].id;
+                whitelistedOrgId = whitelistedEntry?.organizationId || null;
                 console.log("Whitelisted org found:", whitelistedOrgId);
               }
             } catch (whiteErr) {
@@ -81,15 +85,43 @@ export const AuthProvider = ({ children }) => {
             }
 
             console.log("Email dozvoljen, pravim profil...");
+            let pendingPlanId = whitelistedEntry?.pendingPlanId || null;
+            let pendingPlanName = whitelistedEntry?.pendingPlanName || null;
+            let pendingPlanExpiry = whitelistedEntry?.pendingPlanExpiry || null;
+
+            if (pendingPlanId && !pendingPlanName) {
+              const pendingPlan = await fetchPlanDetails(pendingPlanId);
+              pendingPlanName = pendingPlan?.name || pendingPlanId;
+            }
+
+            if (pendingPlanExpiry?.toMillis) {
+              pendingPlanExpiry = new Date(pendingPlanExpiry.toMillis());
+            } else if (pendingPlanExpiry) {
+              pendingPlanExpiry = new Date(pendingPlanExpiry);
+            }
+
             const newUserData = {
               uid: currentUser.uid,
               email: userEmail,
               displayName: currentUser.displayName || 'Korisnik',
               role: isSuperAdmin ? 'super_admin' : 'org_admin',
-              createdAt: new Date()
+              createdAt: new Date(),
+              ...(pendingPlanId ? {
+                subscriptionPlanId: pendingPlanId,
+                subscriptionPlan: pendingPlanName || pendingPlanId,
+                subscriptionExpiry: pendingPlanExpiry || null
+              } : {})
             };
 
             await setDoc(docRef, newUserData);
+
+            if (whitelistedEntryId && pendingPlanId) {
+              await updateDoc(doc(db, 'whitelisted_emails', whitelistedEntryId), {
+                activatedAt: new Date(),
+                activatedUid: currentUser.uid
+              });
+            }
+
             currentUserData = newUserData;
           } else {
             currentUserData = docSnap.data();
