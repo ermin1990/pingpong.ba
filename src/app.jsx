@@ -18,10 +18,12 @@ const Competitions = lazy(() => import('./pages/Competitions'));
 const CreateCompetition = lazy(() => import('./pages/CreateCompetition'));
 const CompetitionDetails = lazy(() => import('./pages/CompetitionDetails'));
 const CompetitionSettings = lazy(() => import('./pages/CompetitionSettings'));
+const CompetitionSemaforSettings = lazy(() => import('./pages/CompetitionSemaforSettings'));
 const Leagues = lazy(() => import('./pages/Leagues'));
 const LeagueDetails = lazy(() => import('./pages/LeagueDetails'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const PublicCompetition = lazy(() => import('./pages/PublicCompetitionNew'));
+const PublicSemafor = lazy(() => import('./pages/PublicSemafor'));
 const PublicOverview = lazy(() => import('./pages/PublicOverview'));
 const MyProfile = lazy(() => import('./pages/MyProfile'));
 const Explore = lazy(() => import('./pages/Explore'));
@@ -342,6 +344,7 @@ export function App() {
               <Route path="/admin/competitions/new" element={<CreateCompetition />} />
               <Route path="/admin/competitions/:id" element={<CompetitionDetails />} />
               <Route path="/admin/competitions/:id/settings" element={<CompetitionSettings />} />
+              <Route path="/admin/competitions/:id/semafor" element={<CompetitionSemaforSettings />} />
               <Route path="/admin/leagues" element={<Leagues />} />
               <Route path="/admin/leagues/:id" element={<LeagueDetails />} />
               <Route path="/admin/seasons" element={<Leagues />} />
@@ -359,6 +362,7 @@ export function App() {
               <Route path="/settings" element={<Navigate to="/admin/settings" replace />} />
               <Route path="/profile" element={<Navigate to="/admin/profile" replace />} />
 
+              <Route path="/p/:slug/screen-semafor" element={<PublicSemafor />} />
               <Route path="/p/:slug/:categorySlug?" element={<PublicCompetition />} />
               <Route path="/p/help" element={<PublicOverview />} />
               <Route path="/explore" element={<Explore />} />

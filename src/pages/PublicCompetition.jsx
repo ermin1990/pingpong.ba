@@ -4,7 +4,7 @@ import { db } from '../firebase/config';
 import { collection, query, where, getDocs, onSnapshot, doc, getDoc } from 'firebase/firestore';
 import PublicGroupStandings from '../components/public/PublicGroupStandings';
 import PublicGroupMatches from '../components/public/PublicGroupMatches';
-import { Trophy, Clock, Zap, Users, LayoutGrid, AlertTriangle, ChevronRight, ChevronDown, CheckCircle, ArrowUp, ArrowDown, Share2, Code, Search, ShieldCheck, Calendar, MapPin, Info } from 'lucide-react';
+import { Trophy, Clock, Zap, Users, LayoutGrid, AlertTriangle, ChevronRight, ChevronDown, CheckCircle, ArrowUp, ArrowDown, Share2, Code, Search, ShieldCheck, Calendar, MapPin, Info, Link2, PlayCircle, ExternalLink } from 'lucide-react';
 
 const KnockoutMatchCard = ({ match, isFinal = false }) => {
   const p1Win = match.status === 'completed' && match.player1Score > match.player2Score;
@@ -419,6 +419,39 @@ const PublicCompetition = () => {
       })
     }));
   }, [matches]);
+
+  const normalizeExternalUrl = (value) => {
+    const raw = (value || '').trim();
+    if (!raw) return '';
+    if (/^https?:\/\//i.test(raw)) return raw;
+    return `https://${raw}`;
+  };
+
+  const publicSocialLinks = useMemo(() => {
+    const list = Array.isArray(competition?.publicProfile?.socialLinks)
+      ? competition.publicProfile.socialLinks
+      : [];
+
+    return list
+      .map((item) => ({
+        label: item?.label || 'Link',
+        url: normalizeExternalUrl(item?.url),
+      }))
+      .filter((item) => item.url);
+  }, [competition]);
+
+  const publicVideoBanners = useMemo(() => {
+    const list = Array.isArray(competition?.publicProfile?.videoBanners)
+      ? competition.publicProfile.videoBanners
+      : [];
+
+    return list
+      .map((item) => ({
+        title: item?.title || 'Live prenos',
+        url: normalizeExternalUrl(item?.url),
+      }))
+      .filter((item) => item.url);
+  }, [competition]);
 
   if (loading) return (
     <div className="min-h-screen bg-[#070b14] flex items-center justify-center">
@@ -896,6 +929,59 @@ const PublicCompetition = () => {
                         </div>
                     ) : (
                         <div className="space-y-12">
+                        {(publicVideoBanners.length > 0 || publicSocialLinks.length > 0) && (
+                          <div className="space-y-6">
+                            {publicVideoBanners.length > 0 && (
+                              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                {publicVideoBanners.map((item, index) => (
+                                  <a
+                                    key={`${item.url}-${index}`}
+                                    href={item.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="group relative overflow-hidden rounded-2xl border border-red-500/30 bg-gradient-to-r from-red-500/10 via-red-400/5 to-amber-400/10 p-5 hover:border-red-400/50 transition-all"
+                                  >
+                                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-[radial-gradient(circle_at_90%_10%,rgba(248,113,113,0.25),transparent_40%)]" />
+                                    <div className="relative z-10 flex items-center justify-between gap-4">
+                                      <div className="min-w-0">
+                                        <p className="text-[10px] text-red-300 font-black uppercase tracking-[0.2em] mb-1">Live Stream</p>
+                                        <p className="text-base md:text-lg font-black text-slate-900 dark:text-white uppercase italic tracking-tight truncate">
+                                          {item.title}
+                                        </p>
+                                      </div>
+                                      <div className="shrink-0 w-12 h-12 rounded-xl bg-red-500 text-white flex items-center justify-center shadow-lg shadow-red-500/30">
+                                        <PlayCircle size={22} />
+                                      </div>
+                                    </div>
+                                    <div className="relative z-10 mt-3 text-[11px] text-slate-600 dark:text-slate-300 flex items-center gap-2">
+                                      Otvori prenos <ExternalLink size={13} />
+                                    </div>
+                                  </a>
+                                ))}
+                              </div>
+                            )}
+
+                            {publicSocialLinks.length > 0 && (
+                              <div className="rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-4 md:p-5">
+                                <p className="text-[10px] text-cyan-300 font-black uppercase tracking-[0.2em] mb-3">Ostali Linkovi</p>
+                                <div className="flex flex-wrap gap-2">
+                                  {publicSocialLinks.map((item, index) => (
+                                    <a
+                                      key={`${item.url}-${index}`}
+                                      href={item.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-cyan-400/30 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 hover:border-cyan-300 hover:text-cyan-500 transition-all"
+                                    >
+                                      <Link2 size={14} /> {item.label}
+                                    </a>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
                             {/* CATEGORY SELECT GRID */}
                             <div className="text-center space-y-2 mb-10">
                                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 dark:text-white uppercase italic tracking-tighter">Takmičarske Kategorije</h2>

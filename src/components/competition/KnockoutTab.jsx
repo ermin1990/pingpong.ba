@@ -21,7 +21,8 @@ const KnockoutTab = ({
   handleDeleteAllMatches,
   tables,
   publicView = false,
-  MatchCardComponent
+  MatchCardComponent,
+  isAmater = false
 }) => {
   const seededPlayerIds = activeCategory?.seededPlayerIds || [];
   const [showSetupModal, setShowSetupModal] = React.useState(false);
@@ -29,6 +30,9 @@ const KnockoutTab = ({
   const [editingPlayerSlot, setEditingPlayerSlot] = React.useState(null); // { matchId, playerSlot }
   const [scale, setScale] = React.useState(1);
   const [showQualifiersSidebar, setShowQualifiersSidebar] = React.useState(false);
+  const publicOuterRef = React.useRef(null);
+  const publicInnerRef = React.useRef(null);
+  const [publicAutoScale, setPublicAutoScale] = React.useState(1);
   const [manualMatch, setManualMatch] = React.useState({
     player1Id: '',
     player2Id: '',
@@ -66,14 +70,125 @@ const KnockoutTab = ({
     return allPlayers.filter((p) => (activeCategory?.playerIds || []).includes(p.id));
   }, [isDirectKnockout, activeCategory, allPlayers]);
 
+  const categoryParticipantIds = React.useMemo(() => {
+    const ids = new Set();
+
+    (activeCategory?.playerIds || []).forEach((id) => {
+      if (id) ids.add(id);
+    });
+
+    if (activeCategory?.groupConfig && typeof activeCategory.groupConfig === 'object') {
+      Object.values(activeCategory.groupConfig).forEach((groupPlayers) => {
+        if (!Array.isArray(groupPlayers)) return;
+        groupPlayers.forEach((id) => {
+          if (id) ids.add(id);
+        });
+      });
+    }
+
+    (activeCategory?.doublesPairs || []).forEach((pair) => {
+      if (pair?.id) ids.add(pair.id);
+    });
+
+    return ids;
+  }, [activeCategory]);
+
   const knockoutSeedPool = isDirectKnockout ? directKnockoutPool : advancingPool;
 
   const knockoutMatches = React.useMemo(() => {
-    return matches.filter(m => 
-      (m.isKnockout || (m.roundName && !m.groupId)) && 
+    const strictMatches = matches.filter((m) =>
+      (m.isKnockout || (m.roundName && !m.groupId)) &&
       m.categoryId === activeCategory?.id
     );
-  }, [matches, activeCategory]);
+
+    // In public semafor view, keep bracket structure (rounds/finale) visible,
+    // but hide foreign-category participants by replacing them with TBD.
+    if (!publicView || !categoryParticipantIds.size) {
+      return strictMatches;
+    }
+
+    const sanitizePlayer = (player) => {
+      if (!player?.id || player.id === 'tbd') return player;
+      return categoryParticipantIds.has(player.id)
+        ? player
+        : { id: 'tbd', name: 'TBD' };
+    };
+
+    return strictMatches.map((m) => ({
+      ...m,
+      player1: sanitizePlayer(m.player1),
+      player2: sanitizePlayer(m.player2)
+    }));
+  }, [matches, activeCategory?.id, publicView, categoryParticipantIds]);
+
+  const knockoutMatchesForDisplay = React.useMemo(() => {
+    if (!publicView) return knockoutMatches;
+    if (!knockoutMatches.length) return knockoutMatches;
+
+    const cloned = knockoutMatches.map((match) => ({
+      ...match,
+      player1: match.player1 ? { ...match.player1 } : match.player1,
+      player2: match.player2 ? { ...match.player2 } : match.player2
+    }));
+
+    const roundsByNumber = new Map();
+    cloned.forEach((match) => {
+      const roundNum = Number(match.round);
+      if (!Number.isFinite(roundNum)) return;
+      if (!roundsByNumber.has(roundNum)) roundsByNumber.set(roundNum, []);
+      roundsByNumber.get(roundNum).push(match);
+    });
+
+    if (!roundsByNumber.size) return cloned;
+
+    const resolveWinner = (match) => {
+      if (!match || match.status !== 'completed') return null;
+
+      const p1 = match.player1;
+      const p2 = match.player2;
+      const p1Real = p1?.id && p1.id !== 'tbd';
+      const p2Real = p2?.id && p2.id !== 'tbd';
+
+      if (p1Real && !p2Real) return p1;
+      if (p2Real && !p1Real) return p2;
+
+      const s1 = Number(match.player1Score);
+      const s2 = Number(match.player2Score);
+      if (Number.isNaN(s1) || Number.isNaN(s2) || s1 === s2) return null;
+
+      return s1 > s2 ? p1 : p2;
+    };
+
+    const orderedRounds = [...roundsByNumber.keys()].sort((a, b) => a - b);
+
+    orderedRounds.forEach((roundNum) => {
+      const currentRound = roundsByNumber.get(roundNum) || [];
+      const nextRound = roundsByNumber.get(roundNum + 1) || [];
+      if (!nextRound.length) return;
+
+      currentRound.forEach((match) => {
+        const winner = resolveWinner(match);
+        if (!winner?.id || winner.id === 'tbd') return;
+
+        const bracket = Number(match.bracketIndex || 0);
+        const nextBracket = Math.floor(bracket / 2);
+        const targetSlot = bracket % 2 === 0 ? 'player1' : 'player2';
+
+        const nextMatch = nextRound.find((candidate) => Number(candidate.bracketIndex || 0) === nextBracket);
+        if (!nextMatch) return;
+
+        const existing = nextMatch[targetSlot];
+        if (existing?.id && existing.id !== 'tbd') return;
+
+        nextMatch[targetSlot] = {
+          id: winner.id,
+          name: winner.name || 'TBD'
+        };
+      });
+    });
+
+    return cloned;
+  }, [publicView, knockoutMatches]);
 
   // Identifikuj igrače koji su već ubačeni u žrijeb
   const placedPlayerIds = React.useMemo(() => {
@@ -90,7 +205,7 @@ const KnockoutTab = ({
 
   const rounds = React.useMemo(() => {
     const r = {};
-    knockoutMatches.forEach(m => {
+    knockoutMatchesForDisplay.forEach(m => {
       const rName = m.roundName || `Runda ${m.round}`;
       if (!r[rName]) r[rName] = [];
       r[rName].push(m);
@@ -101,7 +216,7 @@ const KnockoutTab = ({
       r[rName].sort((a, b) => (a.bracketIndex || 0) - (b.bracketIndex || 0));
     });
     return r;
-  }, [knockoutMatches]);
+  }, [knockoutMatchesForDisplay]);
 
   const roundKeys = React.useMemo(() => {
     return Object.keys(rounds).sort((a, b) => {
@@ -151,8 +266,71 @@ const KnockoutTab = ({
     return { nextMatch: namedNext || null, targetSlot };
   }, [knockoutMatches, roundKeys]);
 
-  const knockoutMatchesCount = knockoutMatches.length;
+  const knockoutMatchesCount = knockoutMatchesForDisplay.length;
   const hasBarazRound = knockoutMatches.some(m => m.roundName === 'Baraž');
+
+  React.useEffect(() => {
+    if (!publicView) return undefined;
+
+    const computePreferredScale = () => {
+      if (knockoutMatchesCount <= 2) return 1.55;
+      if (knockoutMatchesCount <= 4) return 1.38;
+      if (knockoutMatchesCount <= 8) return 1.2;
+      if (knockoutMatchesCount <= 12) return 1.05;
+      if (knockoutMatchesCount <= 20) return 0.92;
+      return 0.82;
+    };
+
+    const preferredScale = computePreferredScale();
+    let cancelled = false;
+
+    const calculateFitScale = () => {
+      if (cancelled) return;
+
+      const outer = publicOuterRef.current;
+      const inner = publicInnerRef.current;
+      if (!outer || !inner) return;
+
+      const availableWidth = outer.clientWidth;
+      const availableHeight = outer.clientHeight;
+      const neededWidth = inner.scrollWidth;
+      const neededHeight = inner.scrollHeight;
+
+      if (!availableWidth || !availableHeight || !neededWidth || !neededHeight) return;
+
+      const widthScale = availableWidth / neededWidth;
+      const heightScale = availableHeight / neededHeight;
+      const fitScale = Math.min(widthScale, heightScale);
+
+      // Scale up for small brackets, but always keep the bracket fully visible.
+      const resolved = Math.max(0.38, Math.min(preferredScale, Number.isFinite(fitScale) ? fitScale : 1));
+      setPublicAutoScale(resolved);
+    };
+
+    const measureUntilReady = () => {
+      if (cancelled) return;
+      const outer = publicOuterRef.current;
+      const inner = publicInnerRef.current;
+      if (!outer || !inner || !outer.clientWidth || !outer.clientHeight || !inner.scrollWidth || !inner.scrollHeight) {
+        window.requestAnimationFrame(measureUntilReady);
+        return;
+      }
+      calculateFitScale();
+    };
+
+    measureUntilReady();
+
+    const observer = new ResizeObserver(() => calculateFitScale());
+    if (publicOuterRef.current) observer.observe(publicOuterRef.current);
+    if (publicInnerRef.current) observer.observe(publicInnerRef.current);
+    window.addEventListener('resize', calculateFitScale);
+
+    return () => {
+      cancelled = true;
+      observer.disconnect();
+      window.removeEventListener('resize', calculateFitScale);
+    };
+  }, [publicView, knockoutMatchesCount, roundKeys.length]);
 
   const suggestedMatches = React.useMemo(() => {
     if (!groups || groups.length < 2) return [];
@@ -394,53 +572,53 @@ const KnockoutTab = ({
   }
 
   if (publicView) {
-    return (
-      <>
-        <div className="flex justify-end mb-4 gap-2">
-          <button 
-            onClick={() => setScale(prev => Math.max(0.5, prev - 0.1))}
-            className="px-3 py-1 rounded bg-slate-800 hover:bg-slate-700 text-white text-lg font-bold transition-colors"
-            title="Smanji"
-          >
-            −
-          </button>
-          <button 
-            onClick={() => setScale(prev => Math.min(2, prev + 0.1))}
-            className="px-3 py-1 rounded bg-slate-800 hover:bg-slate-700 text-white text-lg font-bold transition-colors"
-            title="Povećaj"
-          >
-            +
-          </button>
-        </div>
+    const effectiveScale = Math.max(0.35, Math.min(2, publicAutoScale));
+    const maxMatchesInRound = Math.max(...roundKeys.map((key) => rounds[key]?.length || 0), 1);
+    const baseUnit = knockoutMatchesCount <= 2 ? 74 : knockoutMatchesCount <= 4 ? 66 : knockoutMatchesCount <= 8 ? 56 : 46;
+    const columnHeight = baseUnit * maxMatchesInRound * 2;
 
-        <div className="min-w-max">
+    return (
+      <div ref={publicOuterRef} className="w-full h-full min-h-0 overflow-hidden flex items-center justify-center">
+        <div className="w-full h-full flex items-center justify-center overflow-hidden">
           <div 
-            className="flex justify-start transition-transform duration-200 origin-top-left"
-            style={{ transform: `scale(${scale})`, gap: '40px', padding: '10px' }}
+            ref={publicInnerRef}
+            className="inline-flex items-start transition-transform duration-200 origin-center"
+            style={{ transform: `scale(${effectiveScale})`, gap: '24px', padding: '8px' }}
           >
             {roundKeys.map((rName, rIdx) => (
-              <div key={rName} className="flex flex-col justify-start" style={{ gap: '10px' }}>
+              <div key={rName} className="flex flex-col" style={{ gap: '8px', minWidth: '250px' }}>
                 <div className="text-center mb-2">
-                  <h4 className="text-xs md:text-sm font-bold text-slate-500 uppercase tracking-widest">
+                  <h4 className="text-base md:text-lg font-black text-slate-200 uppercase tracking-widest">
                     {rName}
                   </h4>
                 </div>
 
-                <div className="flex flex-col justify-around h-full" style={{ gap: '6px' }}>
-                  {rounds[rName].map((match) => (
-                    <MatchCardComponent 
-                      key={match.id}
-                      match={match} 
-                      isFinal={rName.toLowerCase().includes('finale') && !rName.toLowerCase().includes('1/')}
-                      onMatchClick={null}
-                    />
-                  ))}
+                <div className="relative" style={{ height: `${columnHeight}px` }}>
+                  {rounds[rName].map((match, mIdx) => {
+                    const center = baseUnit * (Math.pow(2, rIdx) + mIdx * Math.pow(2, rIdx + 1));
+
+                    return (
+                      <div
+                        key={match.id}
+                        className="absolute left-0 right-0 flex justify-center"
+                        style={{ top: `${center}px`, transform: 'translateY(-50%)' }}
+                      >
+                        <div style={{ width: '250px', maxWidth: '250px' }}>
+                          <MatchCardComponent
+                            match={match}
+                            isFinal={rName.toLowerCase().includes('finale') && !rName.toLowerCase().includes('1/')}
+                            onMatchClick={null}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             ))}
           </div>
         </div>
-      </>
+      </div>
     );
   }
 
@@ -618,7 +796,7 @@ const KnockoutTab = ({
                 onClick={handleResetKnockout}
                 className="bg-red-600 hover:bg-red-500 text-white px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-colors flex items-center gap-2"
               >
-                <Trash2 size={14} /> {isPlayoffOnly ? 'Obriši Sve' : 'Resetuj'}
+                <Trash2 size={14} /> Resetuj
               </button>
             )}
           </div>

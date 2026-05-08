@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Trophy, AlertTriangle } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 
 import { useCompetitionData } from '../components/public/PublicCompetition/useCompetitionData';
 import CompetitionHeader from '../components/public/PublicCompetition/sections/CompetitionHeader';
@@ -50,6 +50,39 @@ const PublicCompetitionNew = () => {
     }
   };
 
+  const normalizeExternalUrl = (value) => {
+    const raw = (value || '').trim();
+    if (!raw) return '';
+    if (/^https?:\/\//i.test(raw)) return raw;
+    return `https://${raw}`;
+  };
+
+  const publicSocialLinks = useMemo(() => {
+    const list = Array.isArray(competition?.publicProfile?.socialLinks)
+      ? competition.publicProfile.socialLinks
+      : [];
+
+    return list
+      .map((item) => ({
+        label: item?.label || 'Link',
+        url: normalizeExternalUrl(item?.url),
+      }))
+      .filter((item) => item.url);
+  }, [competition]);
+
+  const publicVideoBanners = useMemo(() => {
+    const list = Array.isArray(competition?.publicProfile?.videoBanners)
+      ? competition.publicProfile.videoBanners
+      : [];
+
+    return list
+      .map((item) => ({
+        title: item?.title || 'Live prenos',
+        url: normalizeExternalUrl(item?.url),
+      }))
+      .filter((item) => item.url);
+  }, [competition]);
+
   if (loading) return (
     <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center gap-6">
       <div className="w-20 h-20 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
@@ -70,7 +103,12 @@ const PublicCompetitionNew = () => {
 
   return (
     <div className="min-h-screen bg-[#070b14] text-slate-200 selection:bg-blue-500/30 font-sans antialiased max-w-full overflow-x-hidden">
-      <CompetitionHeader competition={competition} onShare={onShare} />
+      <CompetitionHeader
+        competition={competition}
+        onShare={onShare}
+        publicVideoBanners={!categorySlug ? publicVideoBanners : []}
+        publicSocialLinks={!categorySlug ? publicSocialLinks : []}
+      />
       
       <div className="w-full max-w-full overflow-x-hidden">
         <Navigation 

@@ -7,7 +7,7 @@ import DashboardLayout from '../layouts/DashboardLayout';
 import { 
   ArrowLeft, Save, Globe, Lock, Calendar, MapPin, 
   Info, Shield, Phone, Mail, LinkIcon, Clock, 
-  Settings2, FileText, Award, DollarSign, Users, X, ExternalLink
+  Settings2, Award, Users, X, ExternalLink
 } from 'lucide-react';
 
 const CompetitionSettings = () => {
@@ -48,6 +48,12 @@ const CompetitionSettings = () => {
   const [newCollabEmail, setNewCollabEmail] = useState('');
   const [availableCategories, setAvailableCategories] = useState([]);
   const [newCategory, setNewCategory] = useState('');
+  const [socialLinks, setSocialLinks] = useState([]);
+  const [videoBanners, setVideoBanners] = useState([]);
+  const [newSocialLabel, setNewSocialLabel] = useState('');
+  const [newSocialUrl, setNewSocialUrl] = useState('');
+  const [newBannerTitle, setNewBannerTitle] = useState('');
+  const [newBannerUrl, setNewBannerUrl] = useState('');
 
   useEffect(() => {
     const fetchCompetition = async () => {
@@ -87,6 +93,26 @@ const CompetitionSettings = () => {
           setCollaborators(compData.collaborators || []);
           setIsPublic(compData.isPublic || false);
           setAvailableCategories(compData.availableCategories || []);
+          setSocialLinks(
+            Array.isArray(compData.publicProfile?.socialLinks)
+              ? compData.publicProfile.socialLinks
+                  .filter((item) => item?.url)
+                  .map((item) => ({
+                    label: item?.label || 'Link',
+                    url: item?.url || '',
+                  }))
+              : []
+          );
+          setVideoBanners(
+            Array.isArray(compData.publicProfile?.videoBanners)
+              ? compData.publicProfile.videoBanners
+                  .filter((item) => item?.url)
+                  .map((item) => ({
+                    title: item?.title || 'Live prenos',
+                    url: item?.url || '',
+                  }))
+              : []
+          );
         }
       } catch (err) {
         console.error("Error fetching competition:", err);
@@ -108,6 +134,18 @@ const CompetitionSettings = () => {
     setSaving(true);
     try {
       const slugVal = compSlug.trim().toLowerCase().replace(/[^a-z0-9]/g, '-');
+      const cleanedSocialLinks = socialLinks
+        .filter((item) => item?.url)
+        .map((item) => ({
+          label: item.label || 'Link',
+          url: item.url,
+        }));
+      const cleanedVideoBanners = videoBanners
+        .filter((item) => item?.url)
+        .map((item) => ({
+          title: item.title || 'Live prenos',
+          url: item.url,
+        }));
       const updateData = {
         name: compName.trim(),
         slug: slugVal,
@@ -142,6 +180,10 @@ const CompetitionSettings = () => {
         collaborators: collaborators,
         isPublic: isPublic,
         availableCategories: availableCategories,
+        publicProfile: {
+          socialLinks: cleanedSocialLinks,
+          videoBanners: cleanedVideoBanners,
+        },
         updatedAt: serverTimestamp()
       };
       
@@ -197,6 +239,51 @@ const CompetitionSettings = () => {
 
   const removeCategory = (category) => {
     setAvailableCategories(availableCategories.filter(c => c !== category));
+  };
+
+  const normalizeExternalUrl = (value) => {
+    const raw = (value || '').trim();
+    if (!raw) return '';
+    if (/^https?:\/\//i.test(raw)) return raw;
+    return `https://${raw}`;
+  };
+
+  const addSocialLink = () => {
+    const url = normalizeExternalUrl(newSocialUrl);
+    if (!url) return;
+
+    setSocialLinks((current) => [
+      ...current,
+      {
+        label: newSocialLabel.trim() || 'Link',
+        url,
+      },
+    ]);
+    setNewSocialLabel('');
+    setNewSocialUrl('');
+  };
+
+  const removeSocialLink = (index) => {
+    setSocialLinks((current) => current.filter((_, idx) => idx !== index));
+  };
+
+  const addVideoBanner = () => {
+    const url = normalizeExternalUrl(newBannerUrl);
+    if (!url) return;
+
+    setVideoBanners((current) => [
+      ...current,
+      {
+        title: newBannerTitle.trim() || 'Live prenos',
+        url,
+      },
+    ]);
+    setNewBannerTitle('');
+    setNewBannerUrl('');
+  };
+
+  const removeVideoBanner = (index) => {
+    setVideoBanners((current) => current.filter((_, idx) => idx !== index));
   };
 
   if (loading) {
@@ -306,6 +393,7 @@ const CompetitionSettings = () => {
           </div>
 
           <div className="p-5 space-y-7">
+
             {/* Osnovne Informacije */}
             <div className="space-y-6">
               <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
@@ -518,6 +606,112 @@ const CompetitionSettings = () => {
                     value={compContactAddress}
                     onChange={(e) => setCompContactAddress(e.target.value)}
                   />
+                </div>
+              </div>
+            </div>
+
+            {/* Javni profil linkovi */}
+            <div className="space-y-6 bg-cyan-500/5 p-5 rounded-2xl border border-cyan-500/15">
+              <div className="flex items-center gap-3 border-b border-cyan-500/20 pb-4">
+                <LinkIcon size={18} className="text-cyan-400" />
+                <h3 className="text-sm font-black text-slate-100 uppercase tracking-widest">Javni Profil: Linkovi i Live Banneri</h3>
+              </div>
+
+              <p className="text-xs text-slate-400 font-medium">
+                Ovdje možete dodati social linkove (Facebook, Instagram, web) i više YouTube/live linkova koji će se prikazati kao banneri iznad kategorija na javnom profilu.
+              </p>
+
+              <div className="space-y-3">
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Social Linkovi</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                  <input
+                    type="text"
+                    value={newSocialLabel}
+                    onChange={(e) => setNewSocialLabel(e.target.value)}
+                    placeholder="Naziv (npr. Facebook)"
+                    className="bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-bold outline-none"
+                  />
+                  <input
+                    type="text"
+                    value={newSocialUrl}
+                    onChange={(e) => setNewSocialUrl(e.target.value)}
+                    placeholder="facebook.com/klub"
+                    className="md:col-span-2 bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-bold outline-none"
+                    onKeyDown={(e) => e.key === 'Enter' && addSocialLink()}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={addSocialLink}
+                  className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl font-black uppercase text-xs tracking-widest transition-all"
+                >
+                  Dodaj Social Link
+                </button>
+
+                <div className="space-y-2">
+                  {socialLinks.map((item, index) => (
+                    <div key={`${item.url}-${index}`} className="flex items-center justify-between gap-3 bg-slate-950/70 border border-slate-800 rounded-xl p-3">
+                      <div className="min-w-0">
+                        <p className="text-xs font-black text-slate-100 uppercase tracking-wider">{item.label}</p>
+                        <p className="text-xs text-slate-400 truncate">{item.url}</p>
+                      </div>
+                      <button type="button" onClick={() => removeSocialLink(index)} className="text-slate-400 hover:text-red-400 transition-colors">
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ))}
+                  {socialLinks.length === 0 && (
+                    <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold text-center py-3 border border-dashed border-slate-800 rounded-xl">
+                      Nema dodanih social linkova
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">YouTube / Live Banneri</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                  <input
+                    type="text"
+                    value={newBannerTitle}
+                    onChange={(e) => setNewBannerTitle(e.target.value)}
+                    placeholder="Naslov (npr. Live Stream 1)"
+                    className="bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-bold outline-none"
+                  />
+                  <input
+                    type="text"
+                    value={newBannerUrl}
+                    onChange={(e) => setNewBannerUrl(e.target.value)}
+                    placeholder="youtube.com/watch?v=..."
+                    className="md:col-span-2 bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-slate-100 font-bold outline-none"
+                    onKeyDown={(e) => e.key === 'Enter' && addVideoBanner()}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={addVideoBanner}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-black uppercase text-xs tracking-widest transition-all"
+                >
+                  Dodaj Live Banner
+                </button>
+
+                <div className="space-y-2">
+                  {videoBanners.map((item, index) => (
+                    <div key={`${item.url}-${index}`} className="flex items-center justify-between gap-3 bg-slate-950/70 border border-slate-800 rounded-xl p-3">
+                      <div className="min-w-0">
+                        <p className="text-xs font-black text-slate-100 uppercase tracking-wider">{item.title}</p>
+                        <p className="text-xs text-slate-400 truncate">{item.url}</p>
+                      </div>
+                      <button type="button" onClick={() => removeVideoBanner(index)} className="text-slate-400 hover:text-red-400 transition-colors">
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ))}
+                  {videoBanners.length === 0 && (
+                    <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold text-center py-3 border border-dashed border-slate-800 rounded-xl">
+                      Nema dodanih live bannera
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

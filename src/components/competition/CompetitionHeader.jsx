@@ -1,4 +1,4 @@
-import { List, Users, Settings, Calendar, MapPin, Shield, LayoutGrid, FileText, ArrowLeft, Zap, Trash2, Database } from 'lucide-react';
+import { List, Users, Settings, Calendar, MapPin, Shield, LayoutGrid, FileText, ArrowLeft, Zap, Trash2, Database, MonitorPlay } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const CompetitionHeader = ({ 
@@ -19,7 +19,6 @@ const CompetitionHeader = ({
     : activeCategory?.format === 'round_robin'
       ? 'Liga'
       : (competition?.type || 'Individualno');
-
   const startDateLabel = competition?.startDate
     ? new Date(competition.startDate).toLocaleDateString('bs-BA', { day: '2-digit', month: 'short', year: 'numeric' })
     : 'Nije postavljen';
@@ -83,6 +82,14 @@ const CompetitionHeader = ({
               >
                 <FileText className="w-4 h-4 mr-2" />
                 PDF Izvjestaj
+              </button>
+
+              <button
+                onClick={() => navigate(`/admin/competitions/${competition?.id}/semafor`)}
+                className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl border border-cyan-500 transition-colors font-semibold text-sm shadow-md shadow-cyan-950/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+              >
+                <MonitorPlay className="w-4 h-4 mr-2" />
+                Semafor
               </button>
 
               <button
