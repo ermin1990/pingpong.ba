@@ -34,6 +34,7 @@ const CompetitionExport = ({
 }) => {
   const [selectedCategoryId, setSelectedCategoryId] = useState(initialCategoryId || 'all');
   const [selectedGroupId, setSelectedGroupId] = useState('all');
+  const [selectedStage, setSelectedStage] = useState('all');
   const [exportLayout, setExportLayout] = useState('report');
   const exportStageRef = useRef(null);
 
@@ -263,6 +264,10 @@ const CompetitionExport = ({
     setSelectedGroupId('all');
   }, [selectedCategoryId]);
 
+  useEffect(() => {
+    if (selectedStage === 'knockout') setSelectedGroupId('all');
+  }, [selectedStage]);
+
   const selectedCategory = useMemo(
     () => categories.find((category) => category.id === selectedCategoryId) || null,
     [categories, selectedCategoryId]
@@ -384,7 +389,7 @@ const CompetitionExport = ({
                 className="rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
                 value={selectedGroupId}
                 onChange={(e) => setSelectedGroupId(e.target.value)}
-                disabled={selectedCategoryId === 'all'}
+                disabled={selectedCategoryId === 'all' || selectedStage === 'knockout'}
               >
                 <option value="all">Sve grupe</option>
                 {availableGroups.map((group) => (
@@ -392,6 +397,23 @@ const CompetitionExport = ({
                     {group.label}
                   </option>
                 ))}
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-3 py-2 shadow-sm">
+              <label htmlFor="export-stage-filter" className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-600">
+                Faza
+              </label>
+              <select
+                id="export-stage-filter"
+                className="rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
+                value={selectedStage}
+                onChange={(e) => setSelectedStage(e.target.value)}
+                disabled={selectedCategoryId === 'all'}
+              >
+                <option value="all">Sve faze</option>
+                <option value="groups">Grupna faza</option>
+                <option value="knockout">Knockout faza</option>
               </select>
             </div>
 
@@ -484,7 +506,7 @@ const CompetitionExport = ({
                 </section>
               )}
 
-              {hasGroups && groupPages.map((groupPage, pageIndex) => {
+              {hasGroups && (selectedStage === 'all' || selectedStage === 'groups') && groupPages.map((groupPage, pageIndex) => {
                 const isSingleGroupPage = groupPage.length === 1;
                 return (
                   <section key={`${category.id}-groups-${pageIndex}`} className="preview-page">
@@ -686,7 +708,75 @@ const CompetitionExport = ({
                 );
               })}
 
-              {exportLayout === 'report' && hasKnockout && (
+              {exportLayout === 'propositions' && hasKnockout && (selectedStage === 'all' || selectedStage === 'knockout') && (
+                <section className="preview-page">
+                  <div className="section-page-header">
+                    <h3>Eliminaciona Faza</h3>
+                    <p>{category.name}</p>
+                  </div>
+
+                  <div className="section-title-row">
+                    <h2>Eliminacioni Raspored za Sudije</h2>
+                    <span>{knockoutRounds.reduce((acc, round) => acc + round.matches.length, 0)} mečeva</span>
+                  </div>
+
+                  <div className="page-section">
+                    {knockoutRounds.map((round) => (
+                      <div key={round.roundName} className="round-section">
+                        <h4 className="round-title">{round.roundName}</h4>
+                        <div className="proposition-match-list">
+                          {round.matches.map((match, matchIndex) => (
+                            <div key={match.id || `${round.roundName}-${matchIndex}`} className="table-shell proposition-match-shell">
+                              <table className="preview-table proposition-match-table">
+                                <thead>
+                                  <tr>
+                                    <th colSpan={2} className="proposition-match-title">Meč {matchIndex + 1}</th>
+                                    <th>S1</th>
+                                    <th>S2</th>
+                                    <th>S3</th>
+                                    <th>S4</th>
+                                    <th>S5</th>
+                                    <th>K</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr>
+                                    <td className="proposition-player-label">A</td>
+                                    <td className="proposition-player-name-cell">{getPlayerName(match, 1)}</td>
+                                    <td className="blank-cell"></td>
+                                    <td className="blank-cell"></td>
+                                    <td className="blank-cell"></td>
+                                    <td className="blank-cell"></td>
+                                    <td className="blank-cell"></td>
+                                    <td className="blank-cell final"></td>
+                                  </tr>
+                                  <tr>
+                                    <td className="proposition-player-label">B</td>
+                                    <td className="proposition-player-name-cell">{getPlayerName(match, 2)}</td>
+                                    <td className="blank-cell"></td>
+                                    <td className="blank-cell"></td>
+                                    <td className="blank-cell"></td>
+                                    <td className="blank-cell"></td>
+                                    <td className="blank-cell"></td>
+                                    <td className="blank-cell final"></td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <footer className="page-footer">
+                    <span>Generisano: {formatDateTime(new Date())}</span>
+                    <span>pingpong.ba</span>
+                  </footer>
+                </section>
+              )}
+
+              {exportLayout === 'report' && hasKnockout && (selectedStage === 'all' || selectedStage === 'knockout') && (
                 <section className="preview-page">
                   <div className="section-page-header">
                     <h3>Eliminaciona Faza</h3>
