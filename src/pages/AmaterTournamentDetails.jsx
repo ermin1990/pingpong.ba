@@ -536,7 +536,7 @@ const AmaterTournamentDetails = () => {
     try {
       const batch = writeBatch(db);
       const oldKnockoutMatches = matches.filter((m) =>
-        m.categoryId === selectedCategoryId && (m.isKnockout || (m.roundName && !m.groupId))
+        m.categoryId === selectedCategoryId && (m.isKnockout || (m.roundName && (m.groupId === undefined || m.groupId === null)))
       );
       oldKnockoutMatches.forEach((m) => batch.delete(doc(db, "matches", m.id)));
       
@@ -612,7 +612,7 @@ const AmaterTournamentDetails = () => {
     if (!window.confirm("Obrisati knockout fazu?")) return;
     try {
       const koMatches = matches.filter((m) =>
-        m.categoryId === selectedCategoryId && (m.isKnockout || (m.roundName && !m.groupId))
+        m.categoryId === selectedCategoryId && (m.isKnockout || (m.roundName && (m.groupId === undefined || m.groupId === null)))
       );
       const batch = writeBatch(db);
       koMatches.forEach((m) => batch.delete(doc(db, "matches", m.id)));

@@ -102,7 +102,7 @@ const KnockoutTab = ({
 
   const knockoutMatches = React.useMemo(() => {
     const strictMatches = matches.filter((m) =>
-      (m.isKnockout || (m.roundName && !m.groupId)) &&
+      (m.isKnockout || (m.roundName && (m.groupId === undefined || m.groupId === null))) &&
       m.categoryId === activeCategory?.id
     );
 

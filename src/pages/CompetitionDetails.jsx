@@ -767,7 +767,7 @@ const CompetitionDetails = () => {
       if (stage === 'groups' && status === false) {
         const categoryMatches = matches.filter((m) => m.categoryId === selectedCategoryId);
         const knockoutMatches = categoryMatches.filter((m) =>
-          m.isKnockout || (m.roundName && !m.groupId)
+          m.isKnockout || (m.roundName && (m.groupId === undefined || m.groupId === null))
         );
         if (knockoutMatches.length) {
           await softDeleteMatches(knockoutMatches, 'toggle_stage');
@@ -817,7 +817,7 @@ const CompetitionDetails = () => {
     try {
       const categoryMatches = matches.filter((m) => m.categoryId === selectedCategoryId);
       const knockoutMatches = categoryMatches.filter((m) =>
-        m.isKnockout || (m.roundName && !m.groupId)
+        m.isKnockout || (m.roundName && (m.groupId === undefined || m.groupId === null))
       );
 
       if (knockoutMatches.length) {
