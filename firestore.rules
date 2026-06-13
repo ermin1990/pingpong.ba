@@ -11,6 +11,19 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['org_admin', 'super_admin'];
     }
 
+    function ownsCompetitionEntity(entityId) {
+      return isSignedIn() && (
+        (exists(/databases/$(database)/documents/competitions/$(entityId))
+          && get(/databases/$(database)/documents/competitions/$(entityId)).data.ownerUid == request.auth.uid)
+        ||
+        (exists(/databases/$(database)/documents/amater_league_tournaments/$(entityId))
+          && get(/databases/$(database)/documents/amater_league_tournaments/$(entityId)).data.ownerUid == request.auth.uid)
+        ||
+        (exists(/databases/$(database)/documents/amater_leagues/$(entityId))
+          && get(/databases/$(database)/documents/amater_leagues/$(entityId)).data.ownerUid == request.auth.uid)
+      );
+    }
+
     // Users collection: users can read/update their own profile; super_admin can manage all users
     match /users/{userId} {
       allow read: if request.auth != null && (request.auth.uid == userId || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin');
@@ -39,6 +52,15 @@ service cloud.firestore {
       // Disallow client-side deletes for regular users. Only super_admins may delete via the client.
       // NOTE: Admin SDK (server) bypasses security rules and can still delete documents when needed.
       allow delete: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin';
+
+      // Competition subcollections (categories, manualOrders, etc.)
+      match /{allSubcollections=**} {
+        allow read: if true;
+        allow write: if request.auth != null && (
+          get(/databases/$(database)/documents/competitions/$(compId)).data.ownerUid == request.auth.uid
+          || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin'
+        );
+      }
     }
 
     // Amater Leagues collection (isolated collection)
@@ -72,7 +94,7 @@ service cloud.firestore {
         allow read: if true;
         allow write: if request.auth != null && (
           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin'
-          || get(/databases/$(database)/documents/competitions/$(compId)).data.ownerUid == request.auth.uid
+          || get(/databases/$(database)/documents/amater_league_tournaments/$(tourneyId)).data.ownerUid == request.auth.uid
         );
       }
     }
@@ -89,13 +111,20 @@ service cloud.firestore {
     // Matches: writable by owners or admins OR assigned referees
     match /matches/{matchId} {
       allow read: if true;
-      allow create, delete: if request.auth != null && (
+      allow create: if request.auth != null && (
+        isAdmin()
+        || request.resource.data.ownerUid == request.auth.uid
+        || (request.resource.data.competitionId != null && ownsCompetitionEntity(request.resource.data.competitionId))
+      );
+      allow delete: if request.auth != null && (
         isAdmin()
         || resource.data.ownerUid == request.auth.uid
+        || (resource.data.competitionId != null && ownsCompetitionEntity(resource.data.competitionId))
       );
       allow update: if request.auth != null && (
         isAdmin()
         || resource.data.ownerUid == request.auth.uid
+        || (resource.data.competitionId != null && ownsCompetitionEntity(resource.data.competitionId))
         || (
              exists(/databases/$(database)/documents/referees/$(request.auth.uid)) 
              && get(/databases/$(database)/documents/referees/$(request.auth.uid)).data.competitionId == resource.data.competitionId
@@ -131,10 +160,15 @@ service cloud.firestore {
 
     // Deleted matches (recycle bin): only admins and owners can read/write
     match /deleted_matches/{docId} {
-      allow read, create, delete: if request.auth != null && (
+      allow read, delete: if request.auth != null && (
         isAdmin()
         || resource.data.deletedBy == request.auth.uid
+        || (resource.data.competitionId != null && ownsCompetitionEntity(resource.data.competitionId))
+      );
+      allow create: if request.auth != null && (
+        isAdmin()
         || request.resource.data.deletedBy == request.auth.uid
+        || (request.resource.data.competitionId != null && ownsCompetitionEntity(request.resource.data.competitionId))
       );
       allow update: if false;
     }

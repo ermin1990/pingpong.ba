@@ -93,6 +93,11 @@ const KnockoutTab = ({
     return ids;
   }, [activeCategory]);
 
+  const categoryPlayers = React.useMemo(() => {
+    if (!categoryParticipantIds.size) return [];
+    return allPlayers.filter((player) => categoryParticipantIds.has(player.id));
+  }, [allPlayers, categoryParticipantIds]);
+
   const knockoutSeedPool = isDirectKnockout ? directKnockoutPool : advancingPool;
 
   const knockoutMatches = React.useMemo(() => {
@@ -383,6 +388,10 @@ const KnockoutTab = ({
       
       const player = JSON.parse(playerData);
       if (!player.id || !player.name) return;
+      if (player.id !== 'tbd' && categoryParticipantIds.size && !categoryParticipantIds.has(player.id)) {
+        alert('Igrač ne pripada aktivnoj kategoriji.');
+        return;
+      }
 
       const targetMatch = knockoutMatches.find(m => m.id === matchId);
       const oppositePlayer = playerSlot === 1 ? targetMatch?.player2 : targetMatch?.player1;
@@ -455,6 +464,11 @@ const KnockoutTab = ({
   const onSelectPlayerForSlot = async (player) => {
     if (!editingPlayerSlot || !player) return;
     try {
+      if (player.id !== 'tbd' && categoryParticipantIds.size && !categoryParticipantIds.has(player.id)) {
+        alert('Igrač ne pripada aktivnoj kategoriji.');
+        return;
+      }
+
       const targetMatch = knockoutMatches.find(m => m.id === editingPlayerSlot.matchId);
       const oppositePlayer = editingPlayerSlot.playerSlot === 1 ? targetMatch?.player2 : targetMatch?.player1;
 
@@ -489,7 +503,12 @@ const KnockoutTab = ({
     const s2 = Number(match.player2Score);
     if (Number.isNaN(s1) || Number.isNaN(s2) || s1 === s2) return null;
 
-    return s1 > s2 ? p1 : p2;
+    const winner = s1 > s2 ? p1 : p2;
+    if (winner?.id && winner.id !== 'tbd' && categoryParticipantIds.size && !categoryParticipantIds.has(winner.id)) {
+      return null;
+    }
+
+    return winner;
   };
 
   // Pobjednici iz prethodnih rundi za lakši ručni odabir
@@ -551,6 +570,43 @@ const KnockoutTab = ({
       cancelled = true;
     };
   }, [findNextKnockoutMatch, knockoutMatches, handleUpdateMatchPlayer]);
+
+  React.useEffect(() => {
+    if (!knockoutMatches.length || !categoryParticipantIds.size) return;
+
+    let cancelled = false;
+
+    const removeForeignPlayers = async () => {
+      const fixes = [];
+
+      knockoutMatches.forEach((match) => {
+        const p1 = match.player1;
+        const p2 = match.player2;
+
+        if (p1?.id && p1.id !== 'tbd' && !categoryParticipantIds.has(p1.id)) {
+          fixes.push({ matchId: match.id, slot: 1 });
+        }
+        if (p2?.id && p2.id !== 'tbd' && !categoryParticipantIds.has(p2.id)) {
+          fixes.push({ matchId: match.id, slot: 2 });
+        }
+      });
+
+      for (const fix of fixes) {
+        if (cancelled) break;
+        try {
+          await handleUpdateMatchPlayer(fix.matchId, fix.slot, { id: 'tbd', name: 'TBD' });
+        } catch (err) {
+          console.error('Greška pri čišćenju igrača iz druge kategorije:', err);
+        }
+      }
+    };
+
+    removeForeignPlayers();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [knockoutMatches, categoryParticipantIds, handleUpdateMatchPlayer]);
 
   // NIKADA ne vraćaj null - uvijek prikaži nešto
   if (!activeCategory) {
@@ -1483,12 +1539,12 @@ const KnockoutTab = ({
                       <summary className="flex items-center justify-between cursor-pointer list-none">
                         <div className="flex items-center gap-2">
                           <Users size={14} className="text-slate-400" />
-                          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Svi registrovani igrači (Napredno)</span>
+                          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Igrači ove kategorije (Napredno)</span>
                         </div>
                         <ChevronDown size={14} className="text-slate-400 group-open:rotate-180 transition-transform" />
                       </summary>
                       <div className="grid grid-cols-1 gap-2 mt-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                        {allPlayers.map(player => (
+                        {categoryPlayers.map(player => (
                           <button 
                             key={player.id}
                             onClick={() => onSelectPlayerForSlot(player)}

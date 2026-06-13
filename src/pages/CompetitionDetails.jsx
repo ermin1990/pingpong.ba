@@ -423,6 +423,32 @@ const CompetitionDetails = () => {
   }, [id]);
 
   const activeCategory = categories.find(c => c.id === selectedCategoryId);
+  const allowedCategoryPlayerIds = useMemo(() => {
+    const ids = new Set();
+
+    (activeCategory?.playerIds || []).forEach((pid) => {
+      if (pid) ids.add(pid);
+    });
+
+    if (activeCategory?.groupConfig) {
+      const groupValues = Array.isArray(activeCategory.groupConfig)
+        ? activeCategory.groupConfig
+        : Object.values(activeCategory.groupConfig || {});
+
+      groupValues.forEach((groupPlayers) => {
+        if (!Array.isArray(groupPlayers)) return;
+        groupPlayers.forEach((pid) => {
+          if (pid) ids.add(pid);
+        });
+      });
+    }
+
+    (activeCategory?.doublesPairs || []).forEach((pair) => {
+      if (pair?.id) ids.add(pair.id);
+    });
+
+    return ids;
+  }, [activeCategory]);
 
   useEffect(() => {
     if (activeCategory?.format === 'direct_knockout' && activeTab === 'matches') {
@@ -739,15 +765,12 @@ const CompetitionDetails = () => {
 
       // Ako ponovo otvaramo grupe, automatski obriši knockout mečeve te kategorije
       if (stage === 'groups' && status === false) {
-        const koQ = query(
-          collection(db, "matches"),
-          where("competitionId", "==", id),
-          where("categoryId", "==", selectedCategoryId),
-          where("isKnockout", "==", true)
+        const categoryMatches = matches.filter((m) => m.categoryId === selectedCategoryId);
+        const knockoutMatches = categoryMatches.filter((m) =>
+          m.isKnockout || (m.roundName && !m.groupId)
         );
-        const koSnap = await getDocs(koQ);
-        if (!koSnap.empty) {
-          await softDeleteMatchDocs(koSnap.docs, 'toggle_stage');
+        if (knockoutMatches.length) {
+          await softDeleteMatches(knockoutMatches, 'toggle_stage');
         }
       }
     } catch (err) {
@@ -762,11 +785,12 @@ const CompetitionDetails = () => {
     setGenerating(true);
     try {
       // Soft delete svih mečeva ove kategorije
-      await softDeleteMatches(matches, 'return_to_draft');
+      const categoryMatches = matches.filter((m) => m.categoryId === selectedCategoryId);
+      await softDeleteMatches(categoryMatches, 'return_to_draft');
 
       // Vrati status na draft
       const batch = writeBatch(db);
-      const catRef = doc(db, "competitions", id, "categories", selectedCategoryId);
+      const catRef = doc(db, competitionCollectionPath, id, "categories", selectedCategoryId);
       batch.update(catRef, {
         status: 'draft',
         [`stages.groups.completed`]: false,
@@ -791,15 +815,13 @@ const CompetitionDetails = () => {
     
     setGenerating(true);
     try {
-      const koQ = query(
-        collection(db, "matches"),
-        where("competitionId", "==", id),
-        where("categoryId", "==", selectedCategoryId),
-        where("isKnockout", "==", true)
+      const categoryMatches = matches.filter((m) => m.categoryId === selectedCategoryId);
+      const knockoutMatches = categoryMatches.filter((m) =>
+        m.isKnockout || (m.roundName && !m.groupId)
       );
-      const koSnap = await getDocs(koQ);
-      if (!koSnap.empty) {
-        await softDeleteMatchDocs(koSnap.docs, 'reset_knockout');
+
+      if (knockoutMatches.length) {
+        await softDeleteMatches(knockoutMatches, 'reset_knockout');
       }
       alert("Knockout faza je resetovana.");
       window.location.reload();
@@ -839,9 +861,10 @@ const CompetitionDetails = () => {
       batch.update(catRef, {
         status: 'draft',
         groupConfig: null,
-        stages: null,
-        [`stages.groups.completed`]: false,
-        [`stages.knockout.completed`]: false,
+        stages: {
+          groups: { completed: false },
+          knockout: { completed: false },
+        },
         updatedAt: serverTimestamp()
       });
 
@@ -1319,6 +1342,17 @@ const CompetitionDetails = () => {
   const handleUpdateMatchPlayer = async (matchId, playerSlot, playerData) => {
     if (!matchId) return;
     try {
+      const playerId = playerData?.id;
+      if (
+        playerId
+        && playerId !== 'tbd'
+        && allowedCategoryPlayerIds.size
+        && !allowedCategoryPlayerIds.has(playerId)
+      ) {
+        alert("Ovaj igrač ne pripada aktivnoj kategoriji.");
+        return;
+      }
+
       const matchRef = doc(db, "matches", matchId);
       const updateKey = (playerSlot === 1 || playerSlot === '1') ? "player1" : 
                         (playerSlot === 2 || playerSlot === '2') ? "player2" : 

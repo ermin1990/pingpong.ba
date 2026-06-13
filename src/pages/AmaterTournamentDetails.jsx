@@ -534,15 +534,11 @@ const AmaterTournamentDetails = () => {
     
     setGenerating(true);
     try {
-      const oldMatchesQ = query(
-        collection(db, "matches"),
-        where("competitionId", "==", id),
-        where("categoryId", "==", selectedCategoryId),
-        where("isKnockout", "==", true)
-      );
-      const oldSnap = await getDocs(oldMatchesQ);
       const batch = writeBatch(db);
-      oldSnap.forEach(d => batch.delete(d.ref));
+      const oldKnockoutMatches = matches.filter((m) =>
+        m.categoryId === selectedCategoryId && (m.isKnockout || (m.roundName && !m.groupId))
+      );
+      oldKnockoutMatches.forEach((m) => batch.delete(doc(db, "matches", m.id)));
       
       // Koristimo sve igrače iz kategorije za amater knockout
       const players = activeCategory.playerIds.map(pid => {
@@ -615,9 +611,11 @@ const AmaterTournamentDetails = () => {
   const handleResetKnockout = async () => {
     if (!window.confirm("Obrisati knockout fazu?")) return;
     try {
-      const koMatches = matches.filter(m => m.isKnockout);
+      const koMatches = matches.filter((m) =>
+        m.categoryId === selectedCategoryId && (m.isKnockout || (m.roundName && !m.groupId))
+      );
       const batch = writeBatch(db);
-      koMatches.forEach(m => batch.delete(doc(db, "matches", m.id)));
+      koMatches.forEach((m) => batch.delete(doc(db, "matches", m.id)));
       await batch.commit();
     } catch (err) { console.error(err); }
   };
