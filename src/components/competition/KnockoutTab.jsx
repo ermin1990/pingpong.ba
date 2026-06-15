@@ -227,15 +227,20 @@ const KnockoutTab = ({
     return Object.keys(rounds).sort((a, b) => {
       // Definisanje ranga rundi za sortiranje (od prve do finala)
       const getRoundWeight = (name) => {
-        // Prioritet dajemo broju runde iz samih mečeva ako su isti nazivi
+        const normalized = String(name || '').toLowerCase();
         const rNum = rounds[name][0]?.round || 0;
-        
-        if (name.includes('Finale') && !name.includes('1/')) return 1000 + rNum;
-        if (name.includes('Polufinale')) return 500 + rNum;
-        if (name.includes('1/4')) return 250 + rNum;
-        if (name.includes('1/8')) return 120 + rNum;
-        if (name.includes('Baraž')) return -10 + rNum;
-        
+
+        if (normalized.includes('baraž') || normalized.includes('baraz')) return -100;
+
+        const fractionMatch = normalized.match(/1\s*\/\s*(\d+)/);
+        if (fractionMatch) {
+          const denominator = Number(fractionMatch[1]);
+          if (Number.isFinite(denominator)) return 1000 - denominator;
+        }
+
+        if (normalized.includes('polufinale')) return 2000 + rNum;
+        if (normalized.includes('finale') && !normalized.includes('1/')) return 3000 + rNum;
+
         return rNum;
       };
       return getRoundWeight(a) - getRoundWeight(b);
@@ -544,8 +549,14 @@ const KnockoutTab = ({
 
         if (!nextMatch) return;
 
-        const currentTargetPlayer = targetSlot === 1 ? nextMatch.player1 : nextMatch.player2;
+        const targetKey = targetSlot === 1 ? 'player1' : 'player2';
+        const oppositeKey = targetKey === 'player1' ? 'player2' : 'player1';
+        const currentTargetPlayer = nextMatch[targetKey];
+        const oppositePlayer = nextMatch[oppositeKey];
+
         if (currentTargetPlayer?.id === winner.id) return;
+        if (currentTargetPlayer?.id && currentTargetPlayer.id !== 'tbd' && currentTargetPlayer.id !== winner.id) return;
+        if (oppositePlayer?.id && oppositePlayer.id !== 'tbd' && oppositePlayer.id === winner.id) return;
 
         updates.push({
           matchId: nextMatch.id,

@@ -24,6 +24,7 @@ import AllMatchesTab from '../components/competition/AllMatchesTab';
 import AllPlayersTab from '../components/competition/AllPlayersTab';
 import RefereesTab from '../components/competition/RefereesTab';
 import TablesTab from '../components/competition/TablesTab';
+import { sanitizeMatchSets } from '../utils/matchSets';
 
 const AmaterTournamentDetails = () => {
   const { seasonId, id } = useParams();
@@ -624,6 +625,15 @@ const AmaterTournamentDetails = () => {
     try {
       if (!player || !player.id) return;
       const slotKey = slot === 1 ? 'player1' : 'player2';
+      const currentMatch = matches.find((m) => m.id === matchId);
+      const oppositeKey = slotKey === 'player1' ? 'player2' : 'player1';
+      const oppositePlayerId = currentMatch?.[oppositeKey]?.id;
+
+      if (player.id !== 'tbd' && oppositePlayerId === player.id) {
+        alert('Isti igrač ne može biti na obje strane istog meča.');
+        return;
+      }
+
       await updateDoc(doc(db, "matches", matchId), {
         [slotKey]: { 
           id: player.id, 
@@ -894,6 +904,10 @@ const AmaterTournamentDetails = () => {
                                       }}
                                       saveMatchResult={async (match) => {
                                         try {
+                                          const player1Score = Math.max(0, parseInt(match.player1Score, 10) || 0);
+                                          const player2Score = Math.max(0, parseInt(match.player2Score, 10) || 0);
+                                          const sanitizedSets = sanitizeMatchSets(match.sets, player1Score, player2Score);
+
                                           const resultMatch = {
                                             ...match,
                                             status: 'completed',
@@ -905,9 +919,9 @@ const AmaterTournamentDetails = () => {
                                           delete resultMatch.isAmater;
                                           
                                           await updateDoc(doc(db, "matches", match.id), {
-                                            player1Score: match.player1Score || 0,
-                                            player2Score: match.player2Score || 0,
-                                            sets: match.sets || [],
+                                            player1Score,
+                                            player2Score,
+                                            sets: sanitizedSets,
                                             status: 'completed',
                                             seasonalTag: activeCategory.seasonalTag || '',
                                             updatedAt: serverTimestamp()
@@ -992,10 +1006,14 @@ const AmaterTournamentDetails = () => {
                                   }}
                                       saveMatchResult={async (match) => {
                                         try {
+                                          const player1Score = Math.max(0, parseInt(match.player1Score, 10) || 0);
+                                          const player2Score = Math.max(0, parseInt(match.player2Score, 10) || 0);
+                                          const sanitizedSets = sanitizeMatchSets(match.sets, player1Score, player2Score);
+
                                           await updateDoc(doc(db, "matches", match.id), {
-                                            player1Score: parseInt(match.player1Score) || 0,
-                                            player2Score: parseInt(match.player2Score) || 0,
-                                            sets: match.sets || [],
+                                            player1Score,
+                                            player2Score,
+                                            sets: sanitizedSets,
                                             status: 'completed',
                                             isPlayoff: true,
                                             updatedAt: serverTimestamp(),
@@ -1133,10 +1151,14 @@ const AmaterTournamentDetails = () => {
                   setShowMatchModal={setShowMatchModal}
                   saveMatchResult={async (match) => {
                     try {
+                      const player1Score = Math.max(0, parseInt(match.player1Score, 10) || 0);
+                      const player2Score = Math.max(0, parseInt(match.player2Score, 10) || 0);
+                      const sanitizedSets = sanitizeMatchSets(match.sets, player1Score, player2Score);
+
                       await updateDoc(doc(db, "matches", match.id), {
-                        player1Score: parseInt(match.player1Score) || 0,
-                        player2Score: parseInt(match.player2Score) || 0,
-                        sets: match.sets || [],
+                        player1Score,
+                        player2Score,
+                        sets: sanitizedSets,
                         status: 'completed',
                         updatedAt: serverTimestamp()
                       });

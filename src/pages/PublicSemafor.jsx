@@ -44,6 +44,8 @@ const buildGroupsForCategory = (category, allPlayers) => {
 };
 
 const calculateStandingsForGroup = (category, allMatches, groups, groupIdx, manualOrders = {}) => {
+  const winPoints = Number.isFinite(Number(category?.winPoints)) ? Number(category.winPoints) : 2;
+  const lossPoints = Number.isFinite(Number(category?.lossPoints)) ? Number(category.lossPoints) : 0;
   const groupPlayers = groups[groupIdx] || [];
   const groupMatches = allMatches.filter((match) => {
     if (match.categoryId && match.categoryId !== category?.id) return false;
@@ -92,13 +94,13 @@ const calculateStandingsForGroup = (category, allMatches, groups, groupIdx, manu
     if (match.player1Score > match.player2Score) {
       p1.won += 1;
       p2.lost += 1;
-      p1.points += 2;
-      p2.points += 1;
+      p1.points += winPoints;
+      p2.points += lossPoints;
     } else if (match.player2Score > match.player1Score) {
       p2.won += 1;
       p1.lost += 1;
-      p2.points += 2;
-      p1.points += 1;
+      p2.points += winPoints;
+      p1.points += lossPoints;
     }
   });
 

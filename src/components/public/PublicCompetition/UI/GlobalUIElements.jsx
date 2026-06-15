@@ -1,7 +1,14 @@
 import React from 'react';
 import { ArrowUp, X } from 'lucide-react';
+import { sanitizeMatchSets } from '../../../../utils/matchSets';
 
 const GlobalUIElements = ({ showAtTop, selectedMatch, setSelectedMatch }) => {
+  const selectedMatchSets = sanitizeMatchSets(
+    selectedMatch?.sets,
+    selectedMatch?.player1Score,
+    selectedMatch?.player2Score
+  );
+
   return (
     <>
       {/* Back to Top Button */}
@@ -44,11 +51,11 @@ const GlobalUIElements = ({ showAtTop, selectedMatch, setSelectedMatch }) => {
                 </div>
               </div>
 
-              {selectedMatch.sets && selectedMatch.sets.length > 0 && (
+              {selectedMatchSets.length > 0 && (
                 <div className="space-y-6 bg-slate-950/50 p-6 rounded-3xl border border-slate-800/50">
                   <p className="text-center text-[10px] text-slate-500 font-black uppercase tracking-[0.3em]">Rezultati po setovima</p>
                   <div className="flex justify-center gap-3">
-                    {selectedMatch.sets.map((set, idx) => (
+                    {selectedMatchSets.map((set, idx) => (
                       <div key={idx} className="flex flex-col gap-2">
                         <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg border-2 ${set.p1 > set.p2 ? 'bg-blue-600 text-white border-blue-500' : 'bg-slate-800 text-slate-400 border-slate-700'}`}>
                           {set.p1}

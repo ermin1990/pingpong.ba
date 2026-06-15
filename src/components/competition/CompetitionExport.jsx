@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Eye, Filter, Printer, X } from 'lucide-react';
 import { calculateStandings } from '../../utils/standings';
+import { sanitizeMatchSets } from '../../utils/matchSets';
 
 const dateFormatter = new Intl.DateTimeFormat('bs-BA', {
   day: '2-digit',
@@ -83,8 +84,9 @@ const CompetitionExport = ({
   };
 
   const getSetEntries = (match) => {
-    if (!Array.isArray(match?.sets)) return [];
-    return match.sets
+    const sets = sanitizeMatchSets(match?.sets, match?.player1Score, match?.player2Score);
+    if (!Array.isArray(sets)) return [];
+    return sets
       .map((set, setIndex) => {
         const p1 = set?.p1 ?? set?.home;
         const p2 = set?.p2 ?? set?.away;
@@ -121,6 +123,37 @@ const CompetitionExport = ({
   const getCategoryMatches = (categoryId) =>
     matches
       .filter((match) => match.categoryId === categoryId)
+      .map((match) => {
+        const category = categories.find((c) => c.id === categoryId);
+        if (!category) return match;
+
+        const participantIds = new Set();
+        (category.playerIds || []).forEach((id) => id && participantIds.add(id));
+
+        if (category.groupConfig && typeof category.groupConfig === 'object') {
+          Object.values(category.groupConfig).forEach((group) => {
+            if (!Array.isArray(group)) return;
+            group.forEach((id) => id && participantIds.add(id));
+          });
+        }
+
+        (category.doublesPairs || []).forEach((pair) => {
+          if (pair?.id) participantIds.add(pair.id);
+        });
+
+        if (!participantIds.size) return match;
+
+        const sanitizePlayer = (player) => {
+          if (!player?.id || player.id === 'tbd') return player;
+          return participantIds.has(player.id) ? player : { id: 'tbd', name: 'TBD' };
+        };
+
+        return {
+          ...match,
+          player1: sanitizePlayer(match.player1),
+          player2: sanitizePlayer(match.player2)
+        };
+      })
       .sort((a, b) => {
         const groupDiff = safeNum(a.groupId) - safeNum(b.groupId);
         if (groupDiff !== 0) return groupDiff;
@@ -194,6 +227,8 @@ const CompetitionExport = ({
   const getGroupStandings = (category, groupIdx) => {
     const groupMatches = getGroupMatches(category, groupIdx);
     const groupPlayerIds = getGroupPlayerIds(category, groupIdx);
+    const winPoints = Number.isFinite(Number(category?.winPoints)) ? Number(category.winPoints) : 2;
+    const lossPoints = Number.isFinite(Number(category?.lossPoints)) ? Number(category.lossPoints) : 0;
     const idsFromMatches = groupMatches.flatMap((match) => [match.player1?.id, match.player2?.id]).filter(Boolean);
     const mergedIds = [...new Set([...groupPlayerIds, ...idsFromMatches])];
 
@@ -242,13 +277,13 @@ const CompetitionExport = ({
       if (s1 > s2) {
         p1.won += 1;
         p2.lost += 1;
-        p1.points += 2;
-        p2.points += 1;
+        p1.points += winPoints;
+        p2.points += lossPoints;
       } else if (s2 > s1) {
         p2.won += 1;
         p1.lost += 1;
-        p2.points += 2;
-        p1.points += 1;
+        p2.points += winPoints;
+        p1.points += lossPoints;
       }
     });
 

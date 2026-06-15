@@ -31,6 +31,7 @@ import CompetitionBackup from '../components/competition/CompetitionBackup';
 import { useCompetitionData } from '../hooks/useCompetitionData';
 import { useReferees } from '../hooks/useReferees';
 import PlayerAddModal from '../components/competition/PlayerAddModal';
+import { sanitizeMatchSets } from '../utils/matchSets';
 
 const CompetitionDetails = () => {
   const { id } = useParams();
@@ -204,15 +205,20 @@ const CompetitionDetails = () => {
       const getRoundWeight = (name) => {
         const sample = roundMap[name]?.[0];
         const numericRound = Number(sample?.round);
+        const normalized = String(name || '').toLowerCase();
+
+        if (normalized.includes('baraž') || normalized.includes('baraz')) return -100;
+
+        const fractionMatch = normalized.match(/1\s*\/\s*(\d+)/);
+        if (fractionMatch) {
+          const denominator = Number(fractionMatch[1]);
+          if (Number.isFinite(denominator)) return 1000 - denominator;
+        }
+
+        if (normalized.includes('polufinale')) return 2000;
+        if (normalized.includes('finale') && !normalized.includes('1/')) return 3000;
 
         if (!Number.isNaN(numericRound)) return numericRound;
-        if (name.includes('Baraž')) return 0;
-        if (name.includes('1/32')) return 1;
-        if (name.includes('1/16')) return 2;
-        if (name.includes('1/8')) return 3;
-        if (name.includes('1/4')) return 4;
-        if (name.includes('Polufinale')) return 5;
-        if (name.includes('Finale') && !name.includes('1/')) return 6;
 
         const fallback = name.match(/\d+/);
         return fallback ? Number(fallback[0]) : 999;
@@ -223,7 +229,12 @@ const CompetitionDetails = () => {
   };
 
   const findNextKnockoutSlot = (allMatches, currentMatch) => {
-    const knockoutOnly = allMatches.filter((match) => match.isKnockout);
+    const knockoutOnly = allMatches.filter(
+      (match) =>
+        match.isKnockout
+        && (!currentMatch?.competitionId || match.competitionId === currentMatch.competitionId)
+        && (!currentMatch?.categoryId || match.categoryId === currentMatch.categoryId)
+    );
     const currentIndex = Number(currentMatch?.bracketIndex ?? 0);
     const nextIndex = Math.floor(currentIndex / 2);
     const nextSlot = currentIndex % 2 === 0 ? 'player1' : 'player2';
@@ -1358,6 +1369,15 @@ const CompetitionDetails = () => {
                         (playerSlot === 2 || playerSlot === '2') ? "player2" : 
                         playerSlot;
 
+      const currentMatch = matches.find((m) => m.id === matchId);
+      const oppositeKey = updateKey === 'player1' ? 'player2' : 'player1';
+      const oppositePlayerId = currentMatch?.[oppositeKey]?.id;
+
+      if (playerData?.id && playerData.id !== 'tbd' && oppositePlayerId === playerData.id) {
+        alert('Isti igrač ne može biti na obje strane istog meča.');
+        return;
+      }
+
       await updateDoc(matchRef, {
         [updateKey]: {
           id: playerData.id,
@@ -1509,14 +1529,17 @@ const CompetitionDetails = () => {
     setSavingMatchId(match.id);
     try {
       const matchRef = doc(db, "matches", match.id);
+      const player1Score = Math.max(0, parseInt(match.player1Score, 10) || 0);
+      const player2Score = Math.max(0, parseInt(match.player2Score, 10) || 0);
+      const sanitizedSets = sanitizeMatchSets(match.sets, player1Score, player2Score);
       
       // 1. Spasi trenutni meč - respektujemo status koji je poslan iz modala + nove meta podatke
       await updateDoc(matchRef, {
         player1: match.player1,
         player2: match.player2,
-        player1Score: match.player1Score || 0,
-        player2Score: match.player2Score || 0,
-        sets: match.sets || [],
+        player1Score,
+        player2Score,
+        sets: sanitizedSets,
         status: match.status || 'completed',
         round: match.round !== undefined ? match.round : 1,
         roundName: match.roundName || '',
@@ -1528,10 +1551,12 @@ const CompetitionDetails = () => {
         updatedAt: serverTimestamp()
       });
 
-      // 2. AUTOMATSKO NAPREDOVANJE - samo ako je meč stvarno GOTOV i ako nismo mijenjali postavke runde (da ne pobrkamo indexe)
-      if (match.status === 'completed' && match.isKnockout && match.roundName !== 'Finale') {
-        const s1 = Number(match.player1Score || 0);
-        const s2 = Number(match.player2Score || 0);
+      // 2. AUTOMATSKO NAPREDOVANJE - samo ako je meč stvarno gotov
+      const isGrandFinal = String(match.roundName || '').toLowerCase().includes('finale')
+        && !String(match.roundName || '').toLowerCase().includes('1/');
+      if (match.status === 'completed' && match.isKnockout && !isGrandFinal) {
+        const s1 = player1Score;
+        const s2 = player2Score;
         
         if (s1 === s2) {
           console.log("Neriješen rezultat, preskačem automatsko napredovanje.");
@@ -1578,6 +1603,16 @@ const CompetitionDetails = () => {
           }
 
           if (nextMatch && nextSlot) {
+            const currentTargetPlayer = nextSlot === 'player1' ? nextMatch.player1 : nextMatch.player2;
+            const oppositePlayer = nextSlot === 'player1' ? nextMatch.player2 : nextMatch.player1;
+            const targetHasDifferentRealPlayer = currentTargetPlayer?.id && currentTargetPlayer.id !== 'tbd' && currentTargetPlayer.id !== winner.id;
+            const wouldCreateMirrorMatch = oppositePlayer?.id && oppositePlayer.id !== 'tbd' && oppositePlayer.id === winner.id;
+
+            if (targetHasDifferentRealPlayer || wouldCreateMirrorMatch) {
+              console.log('Preskačem auto-upis pobjednika: ciljna pozicija je već zauzeta ili bi nastao ogledni meč.');
+              return;
+            }
+
             const nextMatchRef = doc(db, "matches", nextMatch.id);
             const winnerData = { id: winner.id, name: winner.name };
             

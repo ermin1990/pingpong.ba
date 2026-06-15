@@ -1,3 +1,5 @@
+import { sanitizeMatchSets } from '../../utils/matchSets';
+
 const PublicGroupMatches = ({ matches, onMatchClick }) => {
     const matchesByRound = matches.reduce((acc, match) => {
         const key = match.round || 1;
@@ -34,9 +36,10 @@ const PublicGroupMatches = ({ matches, onMatchClick }) => {
                         const p1Name = match.player1?.name || 'TBD';
                         const p2Name = match.player2?.name || 'TBD';
             
+            const matchSets = sanitizeMatchSets(match.sets, p1Score, p2Score);
             const sets = Array.from({ length: 5 }).map((_, i) => {
-                if (match.sets && match.sets[i]) {
-                    return { p1: match.sets[i].p1, p2: match.sets[i].p2, played: true };
+                if (matchSets[i]) {
+                    return { p1: matchSets[i].p1, p2: matchSets[i].p2, played: true };
                 }
                 return { p1: '-', p2: '-', played: false };
             });

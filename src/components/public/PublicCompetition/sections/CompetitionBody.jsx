@@ -8,11 +8,14 @@ import PlayersTab from "../../../competition/PlayersTab";
 import SeasonList from "../../../../pages/SeasonList";
 import KnockoutMatchCard from '../UI/KnockoutMatchCard';
 import { generateSlug } from '../utils';
+import { sanitizeMatchSets } from '../../../../utils/matchSets';
 
 import { useMemo } from 'react';
 
 const CompetitionBody = ({ competition, slug, categorySlug, categories, activeTab, setActiveTab, competitionId, isEmbed, activeCategory, allMatches, allPlayers }) => {
   const totalCompletedMatches = (allMatches || []).filter(m => m.status === 'completed').length;
+  const winPoints = Number.isFinite(Number(activeCategory?.winPoints)) ? Number(activeCategory.winPoints) : 2;
+  const lossPoints = Number.isFinite(Number(activeCategory?.lossPoints)) ? Number(activeCategory.lossPoints) : 0;
 
   return (
     <main className="container mx-auto px-4 py-6 md:py-8">
@@ -158,8 +161,9 @@ const TabContent = ({ activeTab, competitionId, categorySlug, activeCategory, al
         p2.setsLost += match.player1Score || 0;
 
         // Points (gems) from individual sets
-        if (match.sets && match.sets.length > 0) {
-          match.sets.forEach((set) => {
+        const sanitizedSets = sanitizeMatchSets(match.sets, match.player1Score, match.player2Score);
+        if (sanitizedSets.length > 0) {
+          sanitizedSets.forEach((set) => {
             const s1 = set.p1 || 0;
             const s2 = set.p2 || 0;
             p1.pointDiff += s1 - s2;
@@ -170,13 +174,13 @@ const TabContent = ({ activeTab, competitionId, categorySlug, activeCategory, al
         if (match.player1Score > match.player2Score) {
           p1.won++;
           p2.lost++;
-          p1.points += 2;
-          p2.points += 1;
+          p1.points += winPoints;
+          p2.points += lossPoints;
         } else if (match.player2Score > match.player1Score) {
           p2.won++;
           p1.lost++;
-          p2.points += 2;
-          p1.points += 1;
+          p2.points += winPoints;
+          p1.points += lossPoints;
         }
       }
     });
