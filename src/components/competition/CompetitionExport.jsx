@@ -164,22 +164,30 @@ const CompetitionExport = ({
 
   const getGroupIndices = (category) => {
     const set = new Set();
+    const categoryMatches = getCategoryMatches(category.id);
 
     if (Array.isArray(category?.groupConfig)) {
-      category.groupConfig.forEach((_, idx) => set.add(idx));
+      category.groupConfig.forEach((groupPlayers, idx) => {
+        if (Array.isArray(groupPlayers) && groupPlayers.length > 0) {
+          set.add(idx);
+        }
+      });
     } else if (category?.groupConfig && typeof category.groupConfig === 'object') {
       Object.keys(category.groupConfig).forEach((key) => {
         const n = Number(key);
-        if (Number.isFinite(n)) set.add(n);
+        const groupPlayers = category.groupConfig[key];
+        if (Number.isFinite(n) && Array.isArray(groupPlayers) && groupPlayers.length > 0) {
+          set.add(n);
+        }
       });
     }
 
-    getCategoryMatches(category.id).forEach((match) => {
+    categoryMatches.forEach((match) => {
       const groupId = Number(match?.groupId);
       if (!match?.isKnockout && Number.isFinite(groupId)) set.add(groupId);
     });
 
-    if (set.size === 0 && category?.format === 'round_robin' && getCategoryMatches(category.id).length > 0) {
+    if (set.size === 0 && category?.format === 'round_robin' && categoryMatches.length > 0) {
       set.add(0);
     }
 
@@ -195,6 +203,27 @@ const CompetitionExport = ({
     getCategoryMatches(category.id).filter((match) => !match.isKnockout && Number(match.groupId) === Number(groupIdx));
 
   const getKnockoutRoundGroups = (category) => {
+    const getRoundSortWeight = (roundName, sampleMatch) => {
+      const normalized = String(roundName || '').toLowerCase();
+      const numericRound = Number(sampleMatch?.round);
+
+      if (normalized.includes('baraž') || normalized.includes('baraz')) return -100;
+
+      const fractionMatch = normalized.match(/1\s*\/\s*(\d+)/);
+      if (fractionMatch) {
+        const denominator = Number(fractionMatch[1]);
+        if (Number.isFinite(denominator)) return 1000 - denominator;
+      }
+
+      if (normalized.includes('polufinale')) return 2000;
+      if (normalized.includes('finale') && !normalized.includes('1/')) return 3000;
+
+      if (!Number.isNaN(numericRound)) return numericRound;
+
+      const fallback = normalized.match(/\d+/);
+      return fallback ? Number(fallback[0]) : 999;
+    };
+
     const grouped = getCategoryMatches(category.id)
       .filter((match) => {
         const noGroup = match.groupId === undefined || match.groupId === null;
@@ -210,7 +239,7 @@ const CompetitionExport = ({
     return Object.entries(grouped)
       .map(([roundName, roundMatches]) => ({
         roundName,
-        sortWeight: safeNum(roundMatches[0]?.round) || 999,
+        sortWeight: getRoundSortWeight(roundName, roundMatches[0]),
         matches: roundMatches.sort((a, b) => safeNum(a.bracketIndex) - safeNum(b.bracketIndex))
       }))
       .sort((a, b) => a.sortWeight - b.sortWeight);
