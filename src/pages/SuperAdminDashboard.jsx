@@ -2,7 +2,7 @@ import DashboardLayout from '../layouts/DashboardLayout';
 import { useAuth } from '../context/AuthContext';
 import { useState, useEffect } from 'react';
 import { db } from '../firebase/config';
-import { collection, getDocs, query, orderBy, updateDoc, doc, addDoc, deleteDoc } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, updateDoc, doc, addDoc, setDoc, deleteDoc } from 'firebase/firestore';
 import { Shield, Building2, Users, Crown, CheckCircle, XCircle, Plus, Mail, Trash2, Clock, Phone, User, Trophy, Edit2, Layout, Bug } from 'lucide-react';
 import plansSeed from '../../plans_seed.json';
 
@@ -129,9 +129,10 @@ const SuperAdminDashboard = () => {
 
   const handleApproveRequest = async (request) => {
     try {
-      // 1. Dodaj na whitelistu
-      await addDoc(collection(db, "whitelisted_emails"), {
-        email: request.email.toLowerCase().trim(),
+      // 1. Dodaj na whitelistu (email kao ID dokumenta - koriste ga i Firestore pravila)
+      const whitelistEmail = request.email.toLowerCase().trim();
+      await setDoc(doc(db, "whitelisted_emails", whitelistEmail), {
+        email: whitelistEmail,
         role: 'org_admin',
         addedAt: new Date(),
         status: 'active',
@@ -181,16 +182,17 @@ const SuperAdminDashboard = () => {
     if (!newEmail.trim()) return;
 
     try {
-      const docRef = await addDoc(collection(db, "whitelisted_emails"), {
-        email: newEmail.toLowerCase().trim(),
+      const whitelistEmail = newEmail.toLowerCase().trim();
+      await setDoc(doc(db, "whitelisted_emails", whitelistEmail), {
+        email: whitelistEmail,
         role: 'org_admin',
         addedAt: new Date(),
         status: 'active'
       });
 
-      setWhitelistedEmails(prev => [...prev, { 
-        id: docRef.id, 
-        email: newEmail.toLowerCase().trim(),
+      setWhitelistedEmails(prev => [...prev, {
+        id: whitelistEmail,
+        email: whitelistEmail,
         role: 'org_admin'
       }]);
       setNewEmail('');

@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { auth, db } from '../firebase/config';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { doc, getDoc, setDoc, addDoc, collection, updateDoc, query, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 const AuthContext = createContext({
   user: null,
@@ -57,15 +57,14 @@ export const AuthProvider = ({ children }) => {
           if (!docSnap.exists()) {
             console.log("Novi korisnik, provjera whiteliste za:", userEmail);
             
-            // Provjera Whiteliste
+            // Provjera Whiteliste (dokument je keyed po email-u - isto što provjerava i Firestore pravilo)
             let isAllowed = false;
             let whitelistedOrgId = null;
             try {
-              const whiteQ = query(collection(db, "whitelisted_emails"), where("email", "==", userEmail));
-              const whiteSnap = await getDocs(whiteQ);
-              isAllowed = !whiteSnap.empty;
+              const whiteSnap = await getDoc(doc(db, "whitelisted_emails", userEmail));
+              isAllowed = whiteSnap.exists();
               if (isAllowed) {
-                whitelistedOrgId = whiteSnap.docs[0].data()?.organizationId || null;
+                whitelistedOrgId = whiteSnap.data()?.organizationId || null;
                 console.log("Whitelisted org found:", whitelistedOrgId);
               }
             } catch (whiteErr) {

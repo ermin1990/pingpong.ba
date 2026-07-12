@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { db } from '../firebase/config';
-import { doc, onSnapshot, collection, query, where } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 
+// Categories and matches are loaded by CompetitionDetails.jsx itself, scoped to the
+// competitions/{id}/categories subcollection and the active category's matches -
+// this hook used to also open its own unfiltered (all-categories) listeners for
+// both, which duplicated those reads and raced with them to set the same state.
 export const useCompetitionData = (id) => {
   const [competition, setCompetition] = useState(null);
-  const [categories, setCategories] = useState([]);
-  const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -18,29 +20,13 @@ export const useCompetitionData = (id) => {
       } else {
         setError('Takmičenje nije pronađeno');
       }
+      setLoading(false);
     });
-
-    const unsubCats = onSnapshot(
-      query(collection(db, 'categories'), where('competitionId', '==', id)),
-      (snapshot) => {
-        setCategories(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-      }
-    );
-
-    const unsubMatches = onSnapshot(
-      query(collection(db, 'matches'), where('competitionId', '==', id)),
-      (snapshot) => {
-        setMatches(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-        setLoading(false);
-      }
-    );
 
     return () => {
       unsubComp();
-      unsubCats();
-      unsubMatches();
     };
   }, [id]);
 
-  return { competition, categories, matches, loading, error };
+  return { competition, loading, error };
 };

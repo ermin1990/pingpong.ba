@@ -30,13 +30,16 @@ const SeasonDetails = () => {
   const [allPlayers, setAllPlayers] = useState([]);
   const [tournamentCategories, setTournamentCategories] = useState([]); // All categories from all sub-tournaments
 
-  // Load All Players for global name lookup
+  // Load players owned by this season's organizer, for name lookup in standings
+  // (all sub-tournaments inherit season.ownerUid - see handleCreateSubTournament below)
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, "players"), (snap) => {
+    if (!season?.ownerUid) return;
+    const q = query(collection(db, "players"), where("ownerUid", "==", season.ownerUid));
+    const unsub = onSnapshot(q, (snap) => {
       setAllPlayers(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
     return () => unsub();
-  }, []);
+  }, [season?.ownerUid]);
 
   // Load Season Data
   useEffect(() => {

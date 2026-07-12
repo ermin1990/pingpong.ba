@@ -11,11 +11,33 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['org_admin', 'super_admin'];
     }
 
+    function isWhitelisted(email) {
+      return exists(/databases/$(database)/documents/whitelisted_emails/$(email));
+    }
+
     // Users collection: users can read/update their own profile; super_admin can manage all users
     match /users/{userId} {
       allow read: if request.auth != null && (request.auth.uid == userId || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin');
-      allow create: if request.auth != null; // created by server/app on first sign-in
-      allow update: if request.auth != null && (request.auth.uid == userId || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin');
+
+      // Only the signed-in user can create their own profile document, and only
+      // with a role they're actually entitled to: super_admin is reserved for the
+      // hardcoded owner email, org_admin requires the email to be on the whitelist.
+      // This is what stops any authenticated user from self-granting admin access.
+      allow create: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.uid == userId
+        && request.resource.data.email == request.auth.token.email.lower()
+        && (
+          (request.resource.data.role == 'super_admin' && request.auth.token.email.lower() == 'selimovicermin90@gmail.com')
+          || (request.resource.data.role == 'org_admin' && isWhitelisted(request.auth.token.email.lower()))
+        );
+
+      // Users can update their own profile but not escalate their own role;
+      // super_admin can manage (including role changes) for anyone.
+      allow update: if request.auth != null && (
+        (request.auth.uid == userId && request.resource.data.role == resource.data.role)
+        || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin'
+      );
       allow delete: if false; // prevent deletes via client (use server tools)
     }
 
@@ -74,10 +96,9 @@ service cloud.firestore {
     // Referees collection
     match /referees/{refereeId} {
       allow read: if true; 
-      allow create: if request.auth != null && (
-        isAdmin()
-        || (request.auth.uid == refereeId && request.resource.data.currentUid == request.auth.uid)
-      );
+      // Referee slots are created by competition admins only; referees "claim"
+      // a free slot via update below (currentUid == null), not by self-registering.
+      allow create: if request.auth != null && isAdmin();
       allow update: if request.auth != null && (
         isAdmin()
         || (resource.data.currentUid == null)

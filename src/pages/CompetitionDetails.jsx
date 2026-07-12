@@ -39,11 +39,9 @@ const CompetitionDetails = () => {
   const { user, userData, planDetails, isSuperAdmin } = useAuth();
   
   // Custom Hooks
-  const { 
-    competition: dbCompetition, 
-    categories: dbCategories, 
-    matches: dbMatches, 
-    loading: dbLoading 
+  const {
+    competition: dbCompetition,
+    loading: dbLoading
   } = useCompetitionData(id);
 
   const { referees: dbReferees } = useReferees(id);
@@ -79,11 +77,9 @@ const CompetitionDetails = () => {
       setCollaborators(dbCompetition.collaborators || []);
       setIsPublic(dbCompetition.isPublic || false);
     }
-    if (dbCategories.length > 0) setCategories(dbCategories);
-    if (dbMatches.length > 0) setMatches(dbMatches);
     if (dbReferees) setReferees(dbReferees);
     setLoading(dbLoading);
-  }, [dbCompetition, dbCategories, dbMatches, dbReferees, dbLoading]);
+  }, [dbCompetition, dbReferees, dbLoading]);
 
   const [competition, setCompetition] = useState(null);
   const [loading, setLoading] = useState(true);
