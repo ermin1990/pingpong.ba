@@ -7,6 +7,7 @@ import CompetitionHeader from '../components/public/PublicCompetition/sections/C
 import Navigation from '../components/public/PublicCompetition/sections/Navigation';
 import CompetitionBody from '../components/public/PublicCompetition/sections/CompetitionBody';
 import GlobalUIElements from '../components/public/PublicCompetition/UI/GlobalUIElements';
+import PublicRegisterModal from '../components/public/PublicRegisterModal';
 
 const PublicCompetitionNew = () => {
   const { slug, categorySlug } = useParams();
@@ -28,6 +29,7 @@ const PublicCompetitionNew = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showAtTop, setShowAtTop] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState(null);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setShowAtTop(window.scrollY > 400);
@@ -70,7 +72,7 @@ const PublicCompetitionNew = () => {
 
   return (
     <div className="min-h-screen bg-[#070b14] text-slate-200 selection:bg-blue-500/30 font-sans antialiased max-w-full overflow-x-hidden">
-      <CompetitionHeader competition={competition} onShare={onShare} />
+      <CompetitionHeader competition={competition} onShare={onShare} onRegisterClick={() => setShowRegisterModal(true)} />
       
       <div className="w-full max-w-full overflow-x-hidden">
         <Navigation 
@@ -97,10 +99,16 @@ const PublicCompetitionNew = () => {
         />
       </div>
 
-      <GlobalUIElements 
-        showAtTop={showAtTop} 
-        selectedMatch={selectedMatch} 
-        setSelectedMatch={setSelectedMatch} 
+      <GlobalUIElements
+        showAtTop={showAtTop}
+        selectedMatch={selectedMatch}
+        setSelectedMatch={setSelectedMatch}
+      />
+
+      <PublicRegisterModal
+        show={showRegisterModal}
+        competition={competition}
+        onClose={() => setShowRegisterModal(false)}
       />
     </div>
   );

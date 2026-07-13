@@ -31,6 +31,8 @@ const MyProfile = lazy(() => import('./pages/MyProfile'));
 const Explore = lazy(() => import('./pages/Explore'));
 const RefereeLogin = lazy(() => import('./pages/RefereeLogin'));
 const RefereeDashboard = lazy(() => import('./pages/RefereeDashboard'));
+const PlayerLogin = lazy(() => import('./pages/PlayerLogin'));
+const PlayerDashboard = lazy(() => import('./pages/PlayerDashboard'));
 
 const Unauthorized = () => {
   const [showRequestForm, setShowRequestForm] = useState(false);
@@ -339,6 +341,9 @@ function AppRoutes() {
 
           <Route path="/sudija" element={<RefereeLogin />} />
           <Route path="/sudija-dashboard" element={<RefereeDashboard />} />
+
+          <Route path="/moj-nalog" element={<PlayerLogin />} />
+          <Route path="/moj-nalog/pocetna" element={<PlayerDashboard />} />
 
           {/* Admin Routes */}
           <Route path="/admin/dashboard" element={<Dashboard />} />

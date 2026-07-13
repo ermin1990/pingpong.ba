@@ -2,15 +2,15 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase/config';
-import { 
-  doc, getDoc, collection, query, where, getDocs, updateDoc, 
-  onSnapshot, serverTimestamp, writeBatch, deleteDoc, addDoc 
+import {
+  doc, getDoc, collection, query, where, getDocs, updateDoc,
+  onSnapshot, serverTimestamp, writeBatch, deleteDoc, addDoc, arrayUnion
 } from 'firebase/firestore';
 import DashboardLayout from '../layouts/DashboardLayout';
-import { 
+import {
   Users, Trophy, List, Settings, Save, Plus, ChevronRight,
   Trash2, Play, CheckCircle, Info, Edit2, Zap, LayoutGrid, Search, Target,
-  FileText, UserPlus, RefreshCw, X, Building2
+  FileText, UserPlus, RefreshCw, X, Building2, Inbox, Clock, Link as LinkIcon
 } from 'lucide-react';
 import { generateBergerMatches } from '../utils/berger';
 
@@ -21,6 +21,7 @@ import MatchUpdateModal from '../components/competition/MatchUpdateModal';
 import GlobalMatchSearch from '../components/competition/GlobalMatchSearch';
 import DoublesManager from '../components/competition/DoublesManager';
 import TeamsManager from '../components/competition/TeamsManager';
+import RegistrationsTab from '../components/competition/RegistrationsTab';
 
 const LeagueDetails = () => {
   const { id } = useParams();
@@ -488,6 +489,14 @@ const LeagueDetails = () => {
     return Array.from(ids);
   }, [matches]);
 
+  const handleApprovedRegistration = async (player) => {
+    if (league.status === 'draft') {
+      await updateDoc(doc(db, "competitions", id), { playerIds: arrayUnion(player.id) });
+    } else {
+      alert(`${player.name} je odobren/a i dodan/a u registar igrača, ali liga je već u toku - dodajte ih ručno u "Igrači" i po potrebi ponovo generišite raspored.`);
+    }
+  };
+
   if (loading) return <div className="p-10 text-center text-slate-500">Učitavanje lige...</div>;
   if (!league) return <div className="p-10 text-center text-red-500">Liga nije pronađena.</div>;
 
@@ -554,6 +563,7 @@ const LeagueDetails = () => {
             ...(isTeams ? [{ id: 'teams', label: 'Timovi', icon: Building2 }] : []),
             { id: 'matches', label: 'Rezultati', icon: List },
             { id: 'standings', label: 'Tabela', icon: LayoutGrid },
+            { id: 'registrations', label: 'Prijave', icon: Inbox },
             { id: 'settings', label: 'Postavke', icon: Settings },
           ].map(tab => (
             <button
@@ -710,10 +720,23 @@ const LeagueDetails = () => {
                   </h3>
                </div>
                <div className="p-0">
-                  <PublicGroupStandings 
-                    standings={standings} 
+                  <PublicGroupStandings
+                    standings={standings}
                   />
                </div>
+            </div>
+          )}
+
+          {activeTab === 'registrations' && (
+            <div className="bg-slate-900 border border-slate-800 rounded-lg p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <Inbox className="text-lime-400" />
+                <div>
+                  <h3 className="text-xl font-black text-white">Prijave za Ligu</h3>
+                  <p className="text-slate-500 text-xs mt-0.5">Pregledajte i odobrite igrače koji su se prijavili na javnoj stranici lige.</p>
+                </div>
+              </div>
+              <RegistrationsTab competitionId={id} onApproved={handleApprovedRegistration} />
             </div>
           )}
 
@@ -821,7 +844,36 @@ const LeagueDetails = () => {
                            )}
                         </div>
                     </div>
-                    
+
+                    {league.isPublic && (
+                      <div className="pt-6 border-t border-slate-800">
+                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Prijave Igrača</label>
+                          <div className="flex items-center justify-between bg-slate-950 p-4 rounded-lg border border-slate-800 mb-4">
+                              <div>
+                                 <p className="text-white font-bold text-sm">Otvorene prijave</p>
+                                 <p className="text-[10px] text-slate-500">Dozvoli igračima da se sami prijave na javnoj stranici lige</p>
+                              </div>
+                              <button
+                                onClick={() => updateDoc(doc(db, "competitions", id), { "registration.isOpen": !league.registration?.isOpen, "registration.show": true })}
+                                className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${league.registration?.isOpen ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/20' : 'bg-slate-800 text-slate-500'}`}
+                              >
+                                {league.registration?.isOpen ? 'Otvoreno' : 'Zatvoreno'}
+                              </button>
+                          </div>
+                          {league.registration?.isOpen && (
+                            <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                                <label className="text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] ml-1 flex items-center gap-1.5"><Clock size={11} /> Rok za prijavu (opciono)</label>
+                                <input
+                                  type="date"
+                                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-emerald-500 transition-colors"
+                                  value={league.registration?.deadline || ''}
+                                  onChange={(e) => updateDoc(doc(db, "competitions", id), { "registration.deadline": e.target.value || null })}
+                                />
+                            </div>
+                          )}
+                      </div>
+                    )}
+
                     <div className="pt-8 border-t border-slate-800 mt-8 flex flex-wrap gap-4">
                         <button 
                             onClick={handleResetLeague}

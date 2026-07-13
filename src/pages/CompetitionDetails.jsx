@@ -7,7 +7,7 @@ import DashboardLayout from '../layouts/DashboardLayout';
 import { 
   Users, Trophy, Play, CheckCircle, Clock, Save, Plus, Layers, 
   ChevronRight, ChevronDown, LayoutGrid, FileText, Info, UserPlus, Search, 
-  Target, Settings2, PlayCircle, Zap, X, AlertTriangle, Edit2, Code, List
+  Target, Settings2, PlayCircle, Zap, X, AlertTriangle, Edit2, Code, List, Inbox
 } from 'lucide-react';
 import { generateBergerMatches } from '../utils/berger';
 
@@ -27,6 +27,7 @@ import TablesTab from '../components/competition/TablesTab';
 import DoublesManager from '../components/competition/DoublesManager';
 import CompetitionExport from '../components/competition/CompetitionExport';
 import RecycleBin from '../components/competition/RecycleBin';
+import RegistrationsTab from '../components/competition/RegistrationsTab';
 import CompetitionBackup from '../components/competition/CompetitionBackup';
 import { useCompetitionData } from '../hooks/useCompetitionData';
 import { useReferees } from '../hooks/useReferees';
@@ -2310,6 +2311,19 @@ const CompetitionDetails = () => {
                 handleDeletePlayer={handleDeletePlayer}
                 handleDeleteAllPlayers={handleDeleteAllPlayers}
               />
+            )}
+
+            {activeTab === 'registrations' && (
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                <div className="flex items-center gap-3 mb-6">
+                  <Inbox className="text-lime-400" />
+                  <div>
+                    <h3 className="text-xl font-black text-white">Prijave za Turnir</h3>
+                    <p className="text-slate-500 text-xs mt-0.5">Pregledajte i odobrite prijave sa javne stranice. Odobreni igrači se dodaju u registar - dodijelite ih kategoriji u tabu "Igrači".</p>
+                  </div>
+                </div>
+                <RegistrationsTab competitionId={id} />
+              </div>
             )}
 
             {activeTab === 'recycle-bin' && (

@@ -5,6 +5,7 @@ import { db } from '../firebase/config';
 import { collection, query, where, onSnapshot, addDoc, deleteDoc, doc, writeBatch, updateDoc } from 'firebase/firestore';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { Users, Search, UserPlus, Trash2, FileText, LayoutGrid, Info, Edit2, XCircle, UserCircle2 } from 'lucide-react';
+import { provisionPlayerAccount } from '../utils/playerAccounts';
 
 const Players = () => {
   const navigate = useNavigate();
@@ -54,16 +55,31 @@ const Players = () => {
     
     setIsSubmitting(true);
     try {
-      await addDoc(collection(db, "players"), {
+      const trimmedEmail = email.trim().toLowerCase();
+      const playerRef = await addDoc(collection(db, "players"), {
         name: name.trim(),
-        email: email.trim(),
+        email: trimmedEmail,
         club: club.trim(),
         ownerUid: userData.uid,
         ownerEmail: userData.email,
+        authUid: null,
         createdAt: new Date(),
         matchesPlayed: 0,
         wins: 0
       });
+
+      if (trimmedEmail) {
+        const result = await provisionPlayerAccount(trimmedEmail);
+        if (result.ok && result.uid) {
+          await updateDoc(doc(db, "players", playerRef.id), { authUid: result.uid });
+        }
+        if (result.ok) {
+          alert(result.alreadyExists
+            ? `Igrač dodan. ${trimmedEmail} već ima nalog - poslan je email za prijavu/reset lozinke.`
+            : `Igrač dodan. Na ${trimmedEmail} je poslan email da postavi lozinku i pristupi svom nalogu.`);
+        }
+      }
+
       setName('');
       setEmail('');
       setClub('');
@@ -80,12 +96,28 @@ const Players = () => {
 
     setIsSubmitting(true);
     try {
+      const trimmedEmail = email.trim().toLowerCase();
+      const gainedEmail = trimmedEmail && trimmedEmail !== editingPlayer.email && !editingPlayer.authUid;
+
       await updateDoc(doc(db, "players", editingPlayer.id), {
         name: name.trim(),
-        email: email.trim(),
+        email: trimmedEmail,
         club: club.trim(),
         updatedAt: new Date()
       });
+
+      if (gainedEmail) {
+        const result = await provisionPlayerAccount(trimmedEmail);
+        if (result.ok && result.uid) {
+          await updateDoc(doc(db, "players", editingPlayer.id), { authUid: result.uid });
+        }
+        if (result.ok) {
+          alert(result.alreadyExists
+            ? `${trimmedEmail} već ima nalog - poslan je email za prijavu/reset lozinke.`
+            : `Na ${trimmedEmail} je poslan email da postavi lozinku i pristupi svom nalogu.`);
+        }
+      }
+
       setEditingPlayer(null);
       setName('');
       setEmail('');

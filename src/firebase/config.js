@@ -33,4 +33,14 @@ const db = initializeFirestore(app, {
 const googleProvider = new GoogleAuthProvider();
 const analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
 
-export { auth, db, googleProvider, analytics };
+// Second, isolated Firebase app instance used only to provision a player's
+// Auth account from an organizer's session (createUserWithEmailAndPassword
+// signs in as that new user on whichever app instance it's called on - using
+// a separate instance means the organizer's own session on `auth` above is
+// never touched).
+const secondaryApp = getApps().some(a => a.name === 'secondary')
+  ? getApp('secondary')
+  : initializeApp(firebaseConfig, 'secondary');
+const secondaryAuth = getAuth(secondaryApp);
+
+export { auth, db, googleProvider, analytics, secondaryAuth };

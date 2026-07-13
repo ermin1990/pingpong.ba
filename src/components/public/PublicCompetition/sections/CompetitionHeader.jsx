@@ -3,7 +3,7 @@ import { Share2, MapPin, Calendar, Users, DollarSign, CheckCircle, ClockIcon } f
 import { formatDate } from '../utils';
 import Countdown from '../UI/Countdown';
 
-const CompetitionHeader = ({ competition, onShare }) => {
+const CompetitionHeader = ({ competition, onShare, onRegisterClick }) => {
   const dateRange = `${formatDate(competition?.startDate)}${competition?.endDate && competition?.endDate !== competition?.startDate ? ` - ${formatDate(competition?.endDate)}` : ''}`;
   const infoRows = [
     { label: 'Lokacija', value: competition?.location, icon: <MapPin size={14} /> },
@@ -75,7 +75,7 @@ const CompetitionHeader = ({ competition, onShare }) => {
                         <span className="text-[10px] font-black uppercase tracking-[0.18em]">Prijave otvorene</span>
                       </div>
                       <button
-                        onClick={() => competition.registration.link && window.open(competition.registration.link, '_blank')}
+                        onClick={() => competition.registration.link ? window.open(competition.registration.link, '_blank') : onRegisterClick?.()}
                         className="w-full px-4 py-3 rounded-xl bg-lime-500 hover:bg-lime-400 text-black text-[11px] font-black uppercase tracking-[0.16em] transition-colors"
                       >
                         Prijavi se

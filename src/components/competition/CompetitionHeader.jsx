@@ -1,4 +1,4 @@
-import { List, Users, Settings, Calendar, MapPin, Shield, LayoutGrid, FileText, ArrowLeft, Zap, Trash2, Database } from 'lucide-react';
+import { List, Users, Settings, Calendar, MapPin, Shield, LayoutGrid, FileText, ArrowLeft, Zap, Trash2, Database, Inbox } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const CompetitionHeader = ({ 
@@ -199,7 +199,14 @@ const CompetitionHeader = ({
               <Shield size={14} /> Sudije
             </button>
 
-            <button 
+            <button
+              onClick={() => setActiveTab('registrations')}
+              className={`px-3.5 py-2 rounded-lg text-[11px] font-semibold uppercase tracking-wide transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'registrations' ? 'bg-sky-600 text-white shadow-md shadow-sky-600/20' : 'text-slate-300 hover:text-white hover:bg-slate-800'}`}
+            >
+              <Inbox size={14} /> Prijave
+            </button>
+
+            <button
               onClick={() => setActiveTab('recycle-bin')}
               className={`px-3.5 py-2 rounded-lg text-[11px] font-semibold uppercase tracking-wide transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'recycle-bin' ? 'bg-red-600 text-white shadow-md shadow-red-600/20' : 'text-slate-400 hover:text-red-400 hover:bg-slate-800'}`}
             >

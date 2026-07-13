@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Trophy, Zap, ArrowRight, CheckCircle2, Send, Loader2, Building2, CreditCard, Users, X, Activity, BookOpen, Briefcase, Gift, Calendar, Sparkles, ArrowDown, Layers, Wifi, Star, Radio, Undo2 } from 'lucide-react';
+import { ShieldCheck, Trophy, Zap, ArrowRight, CheckCircle2, Send, Loader2, Building2, CreditCard, Users, X, Activity, BookOpen, Briefcase, Gift, Calendar, Sparkles, ArrowDown, Layers, Wifi, Star, Radio, Undo2, UserPlus2, KeyRound } from 'lucide-react';
 import { db } from '../firebase/config';
 import { collection, addDoc, serverTimestamp, getDocs, query, where } from 'firebase/firestore';
 
@@ -414,6 +414,35 @@ const Home = () => {
 
                         <FeatureCard icon={<Trophy size={22} />} title="Rang liste" delay="reveal-delay-2">
                             Pratite napredak igrača i timova kroz detaljnu statistiku pobjeda i poraza.
+                        </FeatureCard>
+                    </div>
+                </div>
+            </section>
+
+            {/* ── Self sign-up + player portal ───────────────────── */}
+            <section className="relative py-16 md:py-24 px-5">
+                <div className="max-w-6xl mx-auto">
+                    <div className="max-w-2xl mb-14 reveal">
+                        <SectionEyebrow icon={<UserPlus2 size={13} />}>Novo</SectionEyebrow>
+                        <h2 className="font-display text-3xl md:text-5xl font-semibold text-white tracking-[-0.02em] leading-tight mb-5">
+                            Igrači se prijave sami, <span className="text-transparent bg-clip-text bg-gradient-to-r from-lime-300 to-emerald-300">vi samo odobrite</span>
+                        </h2>
+                        <p className="text-slate-400 text-lg leading-relaxed">
+                            Idealno za amaterske lige — objavite javni poziv, igrači se prijave preko javne stranice, a svaki odobreni igrač dobija svoj nalog i vidi sve svoje mečeve.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
+                        <FeatureCard icon={<Send size={22} />} title="Javna prijava na turnir/ligu">
+                            Podijelite link javne stranice — svako se može prijaviti sam, uz ime, email i (opciono) kategoriju. Bez Excela, bez grupa na Viberu.
+                        </FeatureCard>
+
+                        <FeatureCard icon={<ShieldCheck size={22} />} title="Vi odobravate ko igra" delay="reveal-delay-1">
+                            Sve prijave stižu u jedan pregled. Odobrite ili odbijte jednim klikom — možete i sami ručno dodati igrača i njegov email.
+                        </FeatureCard>
+
+                        <FeatureCard icon={<KeyRound size={22} />} title="Igrač dobija svoj nalog" delay="reveal-delay-2">
+                            Nakon odobrenja, igrač na email dobija link da postavi lozinku. Uloguje se i vidi svoju poziciju u tabeli, ko mu je slijedeći protivnik, i sam upisuje rezultat — ili vodi meč uživo, poen po poen.
                         </FeatureCard>
                     </div>
                 </div>
@@ -869,7 +898,7 @@ const Logo = ({ size = 'md' }) => {
         <div className="relative shrink-0">
             <div className="absolute inset-0 bg-lime-400/40 blur-md rounded-lg" />
             <div className={`relative ${dims} bg-gradient-to-br from-lime-300 to-lime-500 rounded-lg flex items-center justify-center`}>
-                <span className={`${font} font-black italic text-[#0b1220] leading-none`} style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>P</span>
+                <span className={`${font} font-black italic text-[#0b1220] leading-none`} style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>T</span>
             </div>
         </div>
     );
