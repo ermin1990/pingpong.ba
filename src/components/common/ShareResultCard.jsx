@@ -69,12 +69,12 @@ const ShareResultCard = ({ match, competitionName, label1, label2 }) => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 40 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 10, background: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0b1220', fontWeight: 900, fontSize: 22, fontStyle: 'italic' }}>T</div>
-            <div style={{ color: '#ffffff', fontSize: 22, fontWeight: 700, letterSpacing: -0.5 }}>TENIS<span style={{ color: '#f59e0b' }}>.BA</span></div>
+            <div style={{ width: 40, height: 40, borderRadius: 10, background: '#84cc16', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0b1220', fontWeight: 900, fontSize: 22, fontStyle: 'italic' }}>T</div>
+            <div style={{ color: '#ffffff', fontSize: 22, fontWeight: 700, letterSpacing: -0.5 }}>TENIS<span style={{ color: '#84cc16' }}>.BA</span></div>
           </div>
 
           {competitionName && (
-            <div style={{ color: '#f59e0b', fontSize: 12, fontWeight: 900, letterSpacing: 3, textTransform: 'uppercase', marginBottom: 16 }}>
+            <div style={{ color: '#84cc16', fontSize: 12, fontWeight: 900, letterSpacing: 3, textTransform: 'uppercase', marginBottom: 16 }}>
               {competitionName}
             </div>
           )}
@@ -114,7 +114,7 @@ const ShareResultCard = ({ match, competitionName, label1, label2 }) => {
       <button
         onClick={handleShare}
         disabled={generating}
-        className="flex items-center justify-center gap-2 bg-lime-400 hover:bg-lime-300 disabled:opacity-50 text-black font-black uppercase italic tracking-widest text-xs px-5 py-3 rounded-xl transition-all"
+        className="flex items-center justify-center gap-2 bg-emerald-400 hover:bg-emerald-300 disabled:opacity-50 text-black font-black uppercase italic tracking-widest text-xs px-5 py-3 rounded-xl transition-all"
       >
         {generating ? <Loader2 size={14} className="animate-spin" /> : <Share2 size={14} />}
         {generating ? 'Generišem...' : 'Podijeli Rezultat'}

@@ -54,12 +54,12 @@ const DashboardLayout = ({ children, title }) => {
       <header className="h-20 bg-slate-950 border-b border-slate-900 flex items-center justify-between px-6 shrink-0 z-50">
         <div className="flex items-center gap-8">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/20">
+            <div className="w-10 h-10 bg-lime-500 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-lime-500/20">
               <Trophy size={20} className="text-black" />
             </div>
             <div className="hidden sm:block overflow-hidden whitespace-nowrap">
               <div className="text-2xl font-black text-white tracking-tighter italic leading-none">TENIS.BA</div>
-              <div className="text-[10px] text-amber-500/60 font-black uppercase tracking-[0.2em] mt-1">ADMIN PANEL</div>
+              <div className="text-[10px] text-lime-500/60 font-black uppercase tracking-[0.2em] mt-1">ADMIN PANEL</div>
             </div>
           </div>
 
@@ -70,7 +70,7 @@ const DashboardLayout = ({ children, title }) => {
                 key={item.href}
                 className={`flex items-center gap-2.5 px-4 py-2 rounded-xl transition-all ${
                   window.location.pathname === item.href 
-                    ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/10' 
+                    ? 'bg-lime-500 text-black shadow-lg shadow-lime-500/10' 
                     : 'text-slate-400 hover:text-white hover:bg-slate-900 border border-transparent'
                 }`}
               >
@@ -92,7 +92,7 @@ const DashboardLayout = ({ children, title }) => {
           
           <button 
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-300 hover:text-amber-400 transition-colors"
+            className="lg:hidden p-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-300 hover:text-lime-400 transition-colors"
           >
             <Menu size={20} />
           </button>
@@ -122,7 +122,7 @@ const DashboardLayout = ({ children, title }) => {
 
           <div className="p-8">
             <div className="flex items-center gap-4 mb-10">
-              <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 bg-lime-500 rounded-xl flex items-center justify-center shrink-0">
                 <Trophy size={20} className="text-black" />
               </div>
               <div>
@@ -138,7 +138,7 @@ const DashboardLayout = ({ children, title }) => {
                   onClick={() => setSidebarOpen(false)}
                   className={`flex items-center gap-4 px-5 py-4 rounded-[20px] transition-all ${
                     window.location.pathname === item.href 
-                      ? 'bg-amber-500 text-black' 
+                      ? 'bg-lime-500 text-black' 
                       : 'text-slate-300 hover:bg-slate-900'
                   }`}
                 >

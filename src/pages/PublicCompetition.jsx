@@ -21,7 +21,7 @@ const KnockoutMatchCard = ({ match, isFinal = false }) => {
 
   return (
     <div 
-      className={`block bg-white dark:bg-slate-800/40 backdrop-blur-md rounded-xl border border-slate-200 dark:border-slate-700/50 shadow-sm dark:shadow-xl transition-all duration-200 hover:scale-[1.02] knockout-match relative pt-[3px] my-[3px] ${isFinal ? 'ring-2 ring-amber-500/20' : ''}`}
+      className={`block bg-white dark:bg-slate-800/40 backdrop-blur-md rounded-xl border border-slate-200 dark:border-slate-700/50 shadow-sm dark:shadow-xl transition-all duration-200 hover:scale-[1.02] knockout-match relative pt-[3px] my-[3px] ${isFinal ? 'ring-2 ring-lime-500/20' : ''}`}
     >
       {isLive && (
         <div className="absolute top-0 right-0 z-20">
@@ -516,7 +516,7 @@ const PublicCompetition = () => {
               <div className="pt-8 flex flex-wrap justify-center gap-4">
                  <button 
                   onClick={() => competition.registration.link && window.open(competition.registration.link, '_blank')}
-                  className="bg-amber-400 hover:bg-amber-300 text-black px-8 py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-amber-400/20 transition-all transform hover:-translate-y-1"
+                  className="bg-lime-400 hover:bg-lime-300 text-black px-8 py-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-lime-400/20 transition-all transform hover:-translate-y-1"
                  >
                    Prijavi se na turnir
                  </button>
@@ -858,7 +858,7 @@ const PublicCompetition = () => {
                                                                     return (
                                                                         <div key={rIdx} className="flex-1 flex flex-col knockout-column h-full" style={{ gap: '5px', minWidth: '200px' }}>
                                                                             <div className="text-center mb-4">
-                                                                                <h3 className="text-lg font-bold text-blue-600 dark:text-amber-400 uppercase tracking-widest border-b border-blue-100 dark:border-amber-400/30 pb-2">
+                                                                                <h3 className="text-lg font-bold text-blue-600 dark:text-lime-400 uppercase tracking-widest border-b border-blue-100 dark:border-lime-400/30 pb-2">
                                                                                     {round.name}
                                                                                 </h3>
                                                                             </div>

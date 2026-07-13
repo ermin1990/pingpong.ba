@@ -23,14 +23,14 @@ const CompetitionHeader = ({ competition, onShare }) => {
           <div className="flex flex-col xl:flex-row">
             <div className="flex-1 p-5 md:p-7 border-b xl:border-b-0 xl:border-r border-slate-800">
               <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
-                <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-[10px] font-black tracking-[0.2em] uppercase text-amber-300">
+                <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-lime-500/10 border border-lime-500/20 text-[10px] font-black tracking-[0.2em] uppercase text-lime-300">
                   Javna stranica turnira
                 </span>
                 <button
                   onClick={onShare}
                   className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-950/80 border border-slate-700 text-[11px] font-bold uppercase tracking-wider text-slate-300 hover:text-white hover:border-slate-500 transition-all"
                 >
-                  <Share2 size={14} className="text-amber-400" /> Podijeli
+                  <Share2 size={14} className="text-lime-400" /> Podijeli
                 </button>
               </div>
 
@@ -61,7 +61,7 @@ const CompetitionHeader = ({ competition, onShare }) => {
             <div className="w-full xl:w-[360px] p-5 md:p-7 bg-slate-950/50 space-y-4">
               {competition?.startDate && new Date(competition.startDate) > new Date() && (
                 <div className="rounded-2xl border border-slate-700 bg-slate-900/70 p-4">
-                  <p className="text-[10px] text-amber-300 font-black uppercase tracking-[0.2em] mb-3">Početak za</p>
+                  <p className="text-[10px] text-lime-300 font-black uppercase tracking-[0.2em] mb-3">Početak za</p>
                   <Countdown targetDate={competition.startDate} />
                 </div>
               )}
@@ -76,7 +76,7 @@ const CompetitionHeader = ({ competition, onShare }) => {
                       </div>
                       <button
                         onClick={() => competition.registration.link && window.open(competition.registration.link, '_blank')}
-                        className="w-full px-4 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-[11px] font-black uppercase tracking-[0.16em] transition-colors"
+                        className="w-full px-4 py-3 rounded-xl bg-lime-500 hover:bg-lime-400 text-black text-[11px] font-black uppercase tracking-[0.16em] transition-colors"
                       >
                         Prijavi se
                       </button>
@@ -104,7 +104,7 @@ const CompetitionHeader = ({ competition, onShare }) => {
 const InfoChip = ({ icon, label, value }) => {
   return (
     <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-slate-950/70 border border-slate-700/80 min-w-0">
-      <div className="w-7 h-7 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-amber-300 shrink-0">
+      <div className="w-7 h-7 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-lime-300 shrink-0">
         {icon}
       </div>
       <div className="min-w-0">
