@@ -1,5 +1,7 @@
 import React from 'react';
-import { X, Settings } from 'lucide-react';
+import { X, Settings, Radio } from 'lucide-react';
+import ShareResultCard from '../common/ShareResultCard';
+import LiveScoringModal from './LiveScoringModal';
 
 const MatchUpdateModal = ({ 
   showMatchModal, 
@@ -9,13 +11,16 @@ const MatchUpdateModal = ({
   saveMatchResult,
   activeCategory,
   tables, // New prop
-  referees // New prop
+  referees, // New prop
+  team1Roster, // Optional: full roster of team playing as player1 (team-mode leagues)
+  team2Roster // Optional: full roster of team playing as player2 (team-mode leagues)
 }) => {
   const [showSettings, setShowSettings] = React.useState(false);
-  
+  const [showLive, setShowLive] = React.useState(false);
+
   // Reset showSettings when modal opens/closes
   React.useEffect(() => {
-    if (!showMatchModal) setShowSettings(false);
+    if (!showMatchModal) { setShowSettings(false); setShowLive(false); }
   }, [showMatchModal]);
 
   if (!showMatchModal || !editingMatch) return null;
@@ -36,19 +41,20 @@ const MatchUpdateModal = ({
     const s1 = parseInt(editingMatch.player1Score) || 0;
     const s2 = parseInt(editingMatch.player2Score) || 0;
 
-    if (editingMatch.status === 'completed') return true;
     if (s1 < 0 || s2 < 0) {
       alert("Rezultat ne može biti negativan.");
       return false;
     }
-    if (editingMatch.isKnockout && s1 === s2) {
-      alert("Knockout mec ne može završiti neriješeno.");
+    // Padel se igra na setove (best-of-N) - meč nikad ne može završiti neriješeno.
+    if (editingMatch.status === 'completed' && s1 === s2) {
+      alert("Meč ne može završiti neriješeno.");
       return false;
     }
     return true;
   };
 
   return (
+    <>
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm transition-all overflow-y-auto">
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full md:w-auto md:min-w-[400px] max-w-md rounded-[24px] shadow-2xl transition-all flex flex-col max-h-[90vh] overflow-hidden">
         {/* Header */}
@@ -62,7 +68,14 @@ const MatchUpdateModal = ({
             </p>
           </div>
           <div className="flex items-center gap-1.5">
-            <button 
+            <button
+              onClick={() => setShowLive(true)}
+              className="w-8 h-8 flex items-center justify-center rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all"
+              title="Vodi meč uživo, poen po poen"
+            >
+              <Radio size={14} />
+            </button>
+            <button
               onClick={() => setShowSettings(!showSettings)}
               className={`w-8 h-8 flex items-center justify-center rounded-xl transition-all ${showSettings ? 'bg-amber-400 text-black shadow-lg shadow-amber-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white'}`}
               title="Postavke meča"
@@ -115,7 +128,7 @@ const MatchUpdateModal = ({
 
               {/* Table Selection */}
               <div className="space-y-1">
-                  <label className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 ml-1">Stol</label>
+                  <label className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 ml-1">Teren</label>
                   <select
                     className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 text-slate-900 dark:text-white font-black outline-none focus:ring-2 focus:ring-blue-500/20 text-[10px] uppercase tracking-wider"
                     value={editingMatch.tableId || ''}
@@ -215,7 +228,48 @@ const MatchUpdateModal = ({
                     }}
                   />
                 </div>
-              </div>              
+              </div>
+
+              {/* Lineup picker - who actually played this match, for team-mode leagues */}
+              {(team1Roster?.length > 0 || team2Roster?.length > 0) && (
+                <div className="bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-white/5 rounded-[24px] p-3">
+                  <p className="text-[8px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em] mb-2 text-center">Ko Je Igrao</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { roster: team1Roster, lineupKey: 'lineup1', name: editingMatch.player1?.name },
+                      { roster: team2Roster, lineupKey: 'lineup2', name: editingMatch.player2?.name }
+                    ].map((side, sideIdx) => (
+                      <div key={sideIdx} className="space-y-1.5">
+                        <p className="text-[8px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest truncate">{side.name}</p>
+                        {(side.roster || []).length === 0 ? (
+                          <p className="text-[9px] text-slate-400 dark:text-slate-600 italic">Roster prazan</p>
+                        ) : (
+                          side.roster.map(p => {
+                            const current = editingMatch[side.lineupKey] || [];
+                            const checked = current.some(l => l.id === p.id);
+                            return (
+                              <label key={p.id} className="flex items-center gap-2 text-[10px] text-slate-700 dark:text-slate-300 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={() => {
+                                    const next = checked
+                                      ? current.filter(l => l.id !== p.id)
+                                      : [...current, { id: p.id, name: p.name }];
+                                    setEditingMatch({ ...editingMatch, [side.lineupKey]: next });
+                                  }}
+                                  className="accent-blue-600"
+                                />
+                                <span className="truncate">{p.name}</span>
+                              </label>
+                            );
+                          })
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {((editingMatch.player1Score || 0) + (editingMatch.player2Score || 0)) > 0 && (
                 <div className="bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-white/5 rounded-[24px] p-2.5">
@@ -273,12 +327,18 @@ const MatchUpdateModal = ({
                 </button>
               </div>
 
+              {editingMatch.status === 'completed' && (
+                <div className="pt-1 flex justify-center">
+                  <ShareResultCard match={editingMatch} />
+                </div>
+              )}
+
               {(editingMatch.tableId || editingMatch.refereeId) && (
                 <div className="pt-2 flex flex-wrap gap-2 justify-center">
                     {editingMatch.tableId && (
                         <div className="bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-full text-[8px] font-black text-slate-500 dark:text-slate-400 flex items-center gap-1.5 uppercase tracking-widest">
                             <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
-                            STOL: {tables?.find(t => t.id === editingMatch.tableId)?.name || editingMatch.tableId}
+                            TEREN: {tables?.find(t => t.id === editingMatch.tableId)?.name || editingMatch.tableId}
                         </div>
                     )}
                     {editingMatch.refereeId && (
@@ -294,6 +354,14 @@ const MatchUpdateModal = ({
         </div>
       </div>
     </div>
+    <LiveScoringModal
+      show={showLive}
+      match={editingMatch}
+      onClose={() => setShowLive(false)}
+      onScoreUpdate={(fields) => setEditingMatch(prev => ({ ...prev, ...fields }))}
+      setsToWin={setsToWin}
+    />
+    </>
   );
 };
 

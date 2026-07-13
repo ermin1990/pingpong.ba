@@ -90,7 +90,7 @@ const CompetitionCard = ({ comp, onOpen }) => {
           <div className="flex items-center gap-2 min-w-0">
             <Target size={13} className="text-amber-500 shrink-0" />
             <span className="text-[10px] font-black uppercase tracking-widest text-white truncate">
-              {comp.sport || 'Stoni Tenis'}
+              {comp.sport || 'Padel'}
             </span>
           </div>
           <div className="flex items-center gap-1 text-amber-500 font-black text-[10px] uppercase tracking-widest group-hover:translate-x-1 transition-transform shrink-0">

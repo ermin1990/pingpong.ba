@@ -60,16 +60,23 @@ const PublicGroupMatches = ({ matches, onMatchClick }) => {
                                 <div className="flex items-center justify-between gap-2 min-w-0">
                                     <div className="flex items-center gap-2 min-w-0">
                                         <div className={`flex-shrink-0 w-1.5 h-1.5 rounded-full ${p1Wins ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-transparent'}`} />
-                                        <div className={`text-[12px] md:text-[13px] font-bold truncate ${p1Wins ? 'text-white' : isCompleted ? 'text-slate-500' : 'text-slate-300'}`}>
-                                            {p1Name}
-                                            {match.player1?.club && match.player1.club !== 'Individual' && match.player1.club !== 'Individualno' && (
-                                                <span className="ml-1.5 text-[10px] text-slate-600 font-medium italic lowercase">
-                                                    {match.player1.club}
-                                                </span>
+                                        <div className="min-w-0">
+                                            <div className={`text-[12px] md:text-[13px] font-bold truncate ${p1Wins ? 'text-white' : isCompleted ? 'text-slate-500' : 'text-slate-300'}`}>
+                                                {p1Name}
+                                                {match.player1?.club && match.player1.club !== 'Individual' && match.player1.club !== 'Individualno' && (
+                                                    <span className="ml-1.5 text-[10px] text-slate-600 font-medium italic lowercase">
+                                                        {match.player1.club}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            {match.lineup1?.length > 0 && (
+                                                <div className="text-[9px] text-slate-500 font-medium truncate">
+                                                    {match.lineup1.map(p => p.name).join(', ')}
+                                                </div>
                                             )}
                                         </div>
                                     </div>
-                                    
+
                                     {/* Set Breakdown P1 */}
                                     <div className="flex items-center gap-1 ml-auto">
                                         {sets.map((set, idx) => (
@@ -90,12 +97,19 @@ const PublicGroupMatches = ({ matches, onMatchClick }) => {
                                 <div className="flex items-center justify-between gap-2 min-w-0">
                                     <div className="flex items-center gap-2 min-w-0">
                                         <div className={`flex-shrink-0 w-1.5 h-1.5 rounded-full ${p2Wins ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-transparent'}`} />
-                                        <div className={`text-[12px] md:text-[13px] font-bold truncate ${p2Wins ? 'text-white' : isCompleted ? 'text-slate-500' : 'text-slate-300'}`}>
-                                            {p2Name}
-                                            {match.player2?.club && match.player2.club !== 'Individual' && match.player2.club !== 'Individualno' && (
-                                                <span className="ml-1.5 text-[10px] text-slate-600 font-medium italic lowercase">
-                                                    {match.player2.club}
-                                                </span>
+                                        <div className="min-w-0">
+                                            <div className={`text-[12px] md:text-[13px] font-bold truncate ${p2Wins ? 'text-white' : isCompleted ? 'text-slate-500' : 'text-slate-300'}`}>
+                                                {p2Name}
+                                                {match.player2?.club && match.player2.club !== 'Individual' && match.player2.club !== 'Individualno' && (
+                                                    <span className="ml-1.5 text-[10px] text-slate-600 font-medium italic lowercase">
+                                                        {match.player2.club}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            {match.lineup2?.length > 0 && (
+                                                <div className="text-[9px] text-slate-500 font-medium truncate">
+                                                    {match.lineup2.map(p => p.name).join(', ')}
+                                                </div>
                                             )}
                                         </div>
                                     </div>

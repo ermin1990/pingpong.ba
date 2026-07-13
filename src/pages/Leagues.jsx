@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase/config';
 import { collection, query, where, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
-import { Trophy, Plus, Calendar, Target, ChevronRight, ExternalLink, List, Settings, Info, Users, Trash2 } from 'lucide-react';
+import { Trophy, Plus, Calendar, Target, ChevronRight, ExternalLink, List, Settings, Info, Users, Trash2, Building2 } from 'lucide-react';
 import DashboardLayout from '../layouts/DashboardLayout';
 
 const Leagues = () => {
@@ -15,10 +15,10 @@ const Leagues = () => {
   
   // New League State
   const [name, setName] = useState('');
-  const [sport, setSport] = useState('Table Tennis');
+  const [sport, setSport] = useState('Padel');
   const [pointsWin, setPointsWin] = useState(2);
-  const [pointsDraw, setPointsDraw] = useState(1);
   const [pointsLoss, setPointsLoss] = useState(0);
+  const [participantMode, setParticipantMode] = useState('doubles'); // 'singles' | 'doubles' - Padel je uvijek dublovi
 
   useEffect(() => {
     if (!user) return; // Wait for user auth
@@ -96,9 +96,9 @@ const Leagues = () => {
         ownerEmail: user.email,
         createdAt: serverTimestamp(),
         participantsCount: 0,
+        participantMode,
         settings: {
           pointsWin,
-          pointsDraw,
           pointsLoss
         }
       });
@@ -121,13 +121,22 @@ const Leagues = () => {
             <p className="text-slate-500 text-sm">Ukupno {leagues.length} registrovanih liga (Bergerov sistem).</p>
           </div>
           
-          <button 
-            onClick={() => setShowModal(true)}
-            className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold text-sm transition-all shadow-lg active:scale-95 flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Nova Liga
-          </button>
+          <div className="flex gap-3">
+            <Link
+              to="/admin/leagues/business-leaderboard"
+              className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-semibold text-sm transition-all flex items-center gap-2"
+            >
+              <Building2 className="w-4 h-4" />
+              Poslovna Rang Lista
+            </Link>
+            <button
+              onClick={() => setShowModal(true)}
+              className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold text-sm transition-all shadow-lg active:scale-95 flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Nova Liga
+            </button>
+          </div>
         </div>
 
         {loading ? (
@@ -243,22 +252,57 @@ const Leagues = () => {
                   </select>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Format Igre</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setParticipantMode('singles')}
+                      className={`py-3 px-2 rounded-xl text-xs font-bold uppercase tracking-wide transition-all border ${
+                        participantMode === 'singles'
+                          ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-600 dark:text-emerald-300'
+                          : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-500'
+                      }`}
+                    >
+                      Singl
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setParticipantMode('doubles')}
+                      className={`py-3 px-2 rounded-xl text-xs font-bold uppercase tracking-wide transition-all border ${
+                        participantMode === 'doubles'
+                          ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-600 dark:text-emerald-300'
+                          : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-500'
+                      }`}
+                    >
+                      Dubl (Parovi)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setParticipantMode('teams')}
+                      className={`py-3 px-2 rounded-xl text-xs font-bold uppercase tracking-wide transition-all border ${
+                        participantMode === 'teams'
+                          ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-600 dark:text-emerald-300'
+                          : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-500'
+                      }`}
+                    >
+                      Timovi (Firme)
+                    </button>
+                  </div>
+                  {participantMode === 'teams' && (
+                    <p className="text-[11px] text-slate-500 mt-2 leading-relaxed">
+                      Timovi (npr. firme) igraju jedni protiv drugih. Svaki tim ima roster igrača, a sastav koji je igrao se bira posebno za svaki meč.
+                    </p>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Bodova (Pob)</label>
                     <input
                       type="number"
                       value={pointsWin}
                       onChange={(e) => setPointsWin(e.target.value)}
-                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 font-medium"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">Bodova (Ner)</label>
-                    <input
-                      type="number"
-                      value={pointsDraw}
-                      onChange={(e) => setPointsDraw(e.target.value)}
                       className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 font-medium"
                     />
                   </div>

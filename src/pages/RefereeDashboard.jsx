@@ -158,7 +158,7 @@ const RefereeDashboard = () => {
                 // Direktno dodijeljen
                 if (m.refereeId === referee.id) return true;
                 
-                // Dodijeljen stol
+                // Dodijeljen teren
                 if (referee.assignedTableId && m.tableId === referee.assignedTableId) return true;
                 
                 // Dodijeljena kategorija
@@ -174,7 +174,7 @@ const RefereeDashboard = () => {
             });
         }
 
-        // 2. Filter po stolu (ako je odabran u "Tables" tabu)
+        // 2. Filter po terenu (ako je odabran u "Tables" tabu)
         if (viewMode === 'tables' && selectedTableId) {
             result = result.filter(m => m.tableId === selectedTableId);
         }
@@ -246,7 +246,7 @@ const RefereeDashboard = () => {
                         onClick={() => setSearchParams({ tab: 'tables' })}
                         className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === 'tables' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
                     >
-                        <LayoutGrid size={14} /> Stolovi
+                        <LayoutGrid size={14} /> Tereni
                     </button>
                     <button 
                         onClick={() => setSearchParams({ tab: 'all' })}
@@ -282,7 +282,7 @@ const RefereeDashboard = () => {
                                 onChange={(e) => setSearchTableId(e.target.value)}
                                 className="w-1/3 min-w-[100px] bg-slate-950 border border-white/10 rounded-xl px-2 py-2 text-[10px] font-black uppercase outline-none focus:border-blue-500 transition-all text-white"
                             >
-                                <option value="">Svi Stolovi</option>
+                                <option value="">Svi Tereni</option>
                                 {tables.map(t => (
                                     <option key={t.id} value={t.id}>{t.name}</option>
                                 ))}
@@ -318,7 +318,7 @@ const RefereeDashboard = () => {
                             <div className="py-20 text-center text-slate-500 bg-slate-900 rounded-3xl border-2 border-dashed border-slate-800 flex flex-col items-center gap-4">
                                 <Trophy className="size-10 opacity-10" />
                                 <p className="text-xs font-black uppercase tracking-widest">Nemate direktno dodijeljenih mečeva</p>
-                                <p className="text-[10px] text-slate-600 font-bold max-w-[200px] mx-auto uppercase">Prikažite "Sve mečeve" ili odaberite stol da zadužite meč.</p>
+                                <p className="text-[10px] text-slate-600 font-bold max-w-[200px] mx-auto uppercase">Prikažite "Sve mečeve" ili odaberite teren da zadužite meč.</p>
                             </div>
                         ) : (
                             filteredMatches.map(match => (
@@ -356,7 +356,7 @@ const RefereeDashboard = () => {
                                             <div className="flex flex-col items-end gap-1">
                                                 {isMyTable && (
                                                     <span className="bg-emerald-500 text-white text-[7px] px-1.5 py-0.5 rounded-full font-black uppercase shadow-lg shadow-emerald-500/20">
-                                                        Moj Stol
+                                                        Moj Teren
                                                     </span>
                                                 )}
                                                 {pendingOnTable > 0 && !activeMatchOnTable && (

@@ -45,7 +45,7 @@ const MatchCard = ({ match, categories, tables, referee, handleMatchClick }) => 
                 </div>
                 <div className="text-right">
                     <span className="text-[10px] font-black text-amber-500 uppercase tracking-tighter block leading-none mb-1 shadow-sm">
-                        {tables.find(t => t.id === match.tableId)?.name || 'BEZ STOLA'}
+                        {tables.find(t => t.id === match.tableId)?.name || 'BEZ TERENA'}
                     </span>
                     {match.isKnockout === false && match.groupId !== undefined && (
                         <span className="text-[9px] font-black text-slate-500 uppercase flex items-center gap-1 justify-end">
@@ -95,7 +95,7 @@ const MatchCard = ({ match, categories, tables, referee, handleMatchClick }) => 
             {(() => {
                 let label = null;
                 if (match.refereeId === referee?.id) label = "Vaš Meč (Direktno)";
-                else if (referee?.assignedTableId && match.tableId === referee.assignedTableId) label = "Vaš Stol";
+                else if (referee?.assignedTableId && match.tableId === referee.assignedTableId) label = "Vaš Teren";
                 else if (referee?.assignedCategoryId && match.categoryId === referee.assignedCategoryId) {
                     if (referee.assignedGroupId !== undefined && referee.assignedGroupId !== null && match.groupId === referee.assignedGroupId) {
                         label = "Vaša Grupa";

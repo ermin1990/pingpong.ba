@@ -17,8 +17,8 @@ export default defineConfig({
         'favicon/android-chrome-512x512.png'
       ],
       manifest: {
-        name: 'PingPong BIH',
-        short_name: 'PingPong BIH',
+        name: 'Padel BiH',
+        short_name: 'Padel BiH',
         description: 'Tournament management system',
         theme_color: '#070b14',
         background_color: '#070b14',
@@ -54,6 +54,11 @@ export default defineConfig({
     })
   ],
   base: '/', // Hosting root path (change to '/subpath/' if deploying to subdirectory)
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: './src/test/setup.js'
+  },
   build: {
     outDir: 'dist',
     sourcemap: false, // Disable source maps in production for smaller bundle size

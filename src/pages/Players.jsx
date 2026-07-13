@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { db } from '../firebase/config';
 import { collection, query, where, onSnapshot, addDoc, deleteDoc, doc, writeBatch, updateDoc } from 'firebase/firestore';
 import DashboardLayout from '../layouts/DashboardLayout';
-import { Users, Search, UserPlus, Trash2, FileText, LayoutGrid, Info, Edit2, XCircle } from 'lucide-react';
+import { Users, Search, UserPlus, Trash2, FileText, LayoutGrid, Info, Edit2, XCircle, UserCircle2 } from 'lucide-react';
 
 const Players = () => {
+  const navigate = useNavigate();
   const { userData, user } = useAuth();
   const [players, setPlayers] = useState([]);
   const [name, setName] = useState('');
@@ -331,7 +333,14 @@ const Players = () => {
                             </td>
                             <td className="px-6 py-4 text-right">
                                <div className="flex items-center justify-end gap-1">
-                                  <button 
+                                  <button
+                                    onClick={() => navigate(`/admin/players/${player.id}`)}
+                                    className="p-2 text-slate-400 dark:text-slate-500 hover:text-amber-500 transition-all md:opacity-0 md:group-hover:opacity-100"
+                                    title="Profil igrača"
+                                  >
+                                    <UserCircle2 size={16} />
+                                  </button>
+                                  <button
                                     onClick={() => startEditing(player)}
                                     className={`p-2 transition-all md:opacity-0 md:group-hover:opacity-100 ${editingPlayer?.id === player.id ? 'text-blue-600 bg-blue-600/10 rounded-lg opacity-100' : 'text-slate-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400'}`}
                                     title="Uredi"

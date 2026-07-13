@@ -34,7 +34,7 @@ const TablesTab = ({ competition, id, matches = [], referees = [], setEditingMat
       await updateDoc(compRef, { tables: arrayUnion(newTable) });
     } catch (err) {
       console.error('Error adding table:', err);
-      alert('Greška pri dodavanju stola.');
+      alert('Greška pri dodavanju terena.');
       setTables((prev) => prev.filter((table) => table.id !== newTable.id));
     } finally {
       setLoading(false);
@@ -48,7 +48,7 @@ const TablesTab = ({ competition, id, matches = [], referees = [], setEditingMat
     const currentCount = tables.length;
     const newTables = Array.from({ length: generateCount }, (_, idx) => ({
       id: `${Date.now()}-${idx + 1}`,
-      name: `Stol ${currentCount + idx + 1}`
+      name: `Teren ${currentCount + idx + 1}`
     }));
 
     setTables((prev) => [...prev, ...newTables]);
@@ -58,7 +58,7 @@ const TablesTab = ({ competition, id, matches = [], referees = [], setEditingMat
       await updateDoc(compRef, { tables: arrayUnion(...newTables) });
     } catch (err) {
       console.error('Error generating tables:', err);
-      alert('Greška pri generisanju stolova.');
+      alert('Greška pri generisanju terena.');
       setTables((prev) => prev.slice(0, prev.length - newTables.length));
     } finally {
       setLoading(false);
@@ -94,17 +94,17 @@ const TablesTab = ({ competition, id, matches = [], referees = [], setEditingMat
                 <Plus size={18} />
               </div>
               <div>
-                <h4 className="text-lg font-black italic tracking-tight uppercase text-white leading-none">Novi Stol</h4>
+                <h4 className="text-lg font-black italic tracking-tight uppercase text-white leading-none">Novi Teren</h4>
                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">UPRAVLJANJE RESURSIMA</p>
               </div>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">BROJ / NAZIV STOLA</label>
+                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">BROJ / NAZIV TERENA</label>
                 <input
                   type="text"
-                  placeholder="Npr. Sto 5"
+                  placeholder="Npr. Teren 5"
                   value={newTableName}
                   onChange={(e) => setNewTableName(e.target.value)}
                   className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white font-bold focus:border-sky-500 focus:outline-none placeholder:text-slate-700"
@@ -114,7 +114,7 @@ const TablesTab = ({ competition, id, matches = [], referees = [], setEditingMat
                   disabled={loading || !newTableName}
                   className="w-full mt-3 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-md shadow-sky-950/20 transition-all"
                 >
-                  Dodaj Sto
+                  Dodaj Teren
                 </button>
               </div>
 
@@ -149,7 +149,7 @@ const TablesTab = ({ competition, id, matches = [], referees = [], setEditingMat
 
           <div className="bg-sky-500/5 border border-sky-500/10 p-4 rounded-[20px]">
             <p className="text-[10px] text-sky-300/90 font-black uppercase tracking-widest leading-relaxed">
-              Stolovi vam omogućavaju da pratite aktivne mečeve i red čekanja. Klik na stol otvara njegov red mečeva.
+              Tereni vam omogućavaju da pratite aktivne mečeve i red čekanja. Klik na teren otvara njegov red mečeva.
             </p>
           </div>
         </div>
@@ -158,7 +158,7 @@ const TablesTab = ({ competition, id, matches = [], referees = [], setEditingMat
           <div className="flex justify-between items-center gap-3 flex-wrap">
             <h3 className="text-lg sm:text-xl font-black uppercase tracking-tight text-white italic flex items-center gap-3">
               <div className="w-2 h-7 bg-sky-500 rounded-full" />
-              Stolovi <span className="text-sky-400/40">({tables.length})</span>
+              Tereni <span className="text-sky-400/40">({tables.length})</span>
             </h3>
             {selectedTableId && (
               <button
@@ -266,7 +266,7 @@ const TablesTab = ({ competition, id, matches = [], referees = [], setEditingMat
                       <div className="w-2 h-7 bg-sky-500 rounded-full" />
                       Red Čekanja - {currentTable?.name}
                     </h4>
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1 ml-5">MEČEVI DODIJELJENI OVOM STOLU</p>
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1 ml-5">MEČEVI DODIJELJENI OVOM TERENU</p>
                   </div>
                   <span className="bg-sky-500/10 text-sky-300 text-[10px] font-black px-4 py-2 rounded-full uppercase tracking-widest border border-sky-500/20">
                     {tableMatches.length} MEČA

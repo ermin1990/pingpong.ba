@@ -1,15 +1,15 @@
 import { Search, X, Edit2, Star } from 'lucide-react';
 
-const GlobalMatchSearch = ({ 
-  matchSearchQuery, 
-  setMatchSearchQuery, 
-  searchTableId,
-  setSearchTableId,
-  tables,
-  filteredGlobalMatches, 
-  categories, 
-  setEditingMatch, 
-  setShowMatchModal 
+const GlobalMatchSearch = ({
+  matchSearchQuery,
+  setMatchSearchQuery,
+  searchTableId = '',
+  setSearchTableId = () => {},
+  tables = [],
+  filteredGlobalMatches = [],
+  categories = [],
+  setEditingMatch,
+  setShowMatchModal
 }) => {
   return (
     <div className="mb-8 space-y-4">
@@ -22,7 +22,7 @@ const GlobalMatchSearch = ({
           <div className="flex-1">
             <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase italic tracking-tighter mb-1">Brza Pretraga</h3>
             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-              Pretražite meč po imenu igrača ili odaberite konkretan stol
+              Pretražite meč po imenu igrača ili odaberite konkretan teren
             </p>
           </div>
         </div>
@@ -53,7 +53,7 @@ const GlobalMatchSearch = ({
               onChange={(e) => setSearchTableId(e.target.value)}
               className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-4 text-xs font-black uppercase tracking-widest text-slate-900 dark:text-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all appearance-none cursor-pointer"
             >
-              <option value="">Svi stolovi</option>
+              <option value="">Svi tereni</option>
               {tables.map(table => (
                 <option key={table.id} value={table.id}>
                   {table.name}
