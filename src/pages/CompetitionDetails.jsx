@@ -136,7 +136,7 @@ const CompetitionDetails = () => {
   const [savingMatchId, setSavingMatchId] = useState(null);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryFormat, setNewCategoryFormat] = useState('round_robin'); // 'round_robin' | 'groups_knockout'
-  const [newCategoryType, setNewCategoryType] = useState('singles'); // 'singles' | 'doubles'
+  const [newCategoryType, setNewCategoryType] = useState('doubles'); // 'singles' | 'doubles' - Padel je uvijek dublovi
   const [editingFormat, setEditingFormat] = useState(false);
   const [showOnlySelected, setShowOnlySelected] = useState(true);
   const [editingMatch, setEditingMatch] = useState(null);
@@ -384,7 +384,7 @@ const CompetitionDetails = () => {
   }, [activeCategory?.format, activeTab]);
 
   const filteredGlobalMatches = useMemo(() => {
-    // Ako nema ni upita ni filtera za stol, ne prikazujemo ništa (da ne zakrčimo ekran svim mečevima)
+    // Ako nema ni upita ni filtera za teren, ne prikazujemo ništa (da ne zakrčimo ekran svim mečevima)
     if (!matchSearchQuery.trim() && !searchTableId) return [];
     
     const lower = matchSearchQuery.toLowerCase();
@@ -395,7 +395,7 @@ const CompetitionDetails = () => {
         m.player1?.name?.toLowerCase().includes(lower) || 
         m.player2?.name?.toLowerCase().includes(lower);
         
-      // Provjera stola (ako je odabran)
+      // Provjera terena (ako je odabran)
       const tableMatch = !searchTableId || m.tableId === searchTableId;
       
       return nameMatch && tableMatch;

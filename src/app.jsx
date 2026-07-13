@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import AuthProvider from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { auth, db } from './firebase/config';
@@ -7,6 +7,7 @@ import { useState, lazy, Suspense } from 'react';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { CreditCard, Building2, Users, Trophy } from 'lucide-react';
 import BugReport from './components/common/BugReport';
+import ErrorBoundary from './components/common/ErrorBoundary';
 
 // Lazy-loaded pages to reduce initial bundle size
 const Home = lazy(() => import('./pages/Home'));
@@ -15,12 +16,14 @@ const Register = lazy(() => import('./pages/Register'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const SuperAdminDashboard = lazy(() => import('./pages/SuperAdminDashboard'));
 const Players = lazy(() => import('./pages/Players'));
+const PlayerProfile = lazy(() => import('./pages/PlayerProfile'));
 const Competitions = lazy(() => import('./pages/Competitions'));
 const CreateCompetition = lazy(() => import('./pages/CreateCompetition'));
 const CompetitionDetails = lazy(() => import('./pages/CompetitionDetails'));
 const CompetitionSettings = lazy(() => import('./pages/CompetitionSettings'));
 const Leagues = lazy(() => import('./pages/Leagues'));
 const LeagueDetails = lazy(() => import('./pages/LeagueDetails'));
+const BusinessLeaderboard = lazy(() => import('./pages/BusinessLeaderboard'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const PublicCompetition = lazy(() => import('./pages/PublicCompetitionNew'));
 const PublicOverview = lazy(() => import('./pages/PublicOverview'));
@@ -319,51 +322,65 @@ const Unauthorized = () => {
   );
 };
 
+// Lives inside BrowserRouter so it can key the ErrorBoundary by path -
+// otherwise a crash on one page would keep showing the fallback forever,
+// even after the user navigates elsewhere.
+function AppRoutes() {
+  const location = useLocation();
+  return (
+    <ErrorBoundary key={location.pathname}>
+      <Suspense fallback={<div className="flex items-center justify-center p-20 text-slate-500 font-bold uppercase tracking-widest animate-pulse">Učitavanje...</div>}>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/unauthorized" element={<Unauthorized />} />
+
+          <Route path="/sudija" element={<RefereeLogin />} />
+          <Route path="/sudija-dashboard" element={<RefereeDashboard />} />
+
+          {/* Admin Routes */}
+          <Route path="/admin/dashboard" element={<Dashboard />} />
+          <Route path="/admin/super-admin" element={<SuperAdminDashboard />} />
+          <Route path="/admin/players" element={<Players />} />
+          <Route path="/admin/players/:id" element={<PlayerProfile />} />
+          <Route path="/admin/competitions" element={<Competitions />} />
+          <Route path="/admin/competitions/new" element={<CreateCompetition />} />
+          <Route path="/admin/competitions/:id" element={<CompetitionDetails />} />
+          <Route path="/admin/competitions/:id/settings" element={<CompetitionSettings />} />
+          <Route path="/admin/leagues" element={<Leagues />} />
+          <Route path="/admin/leagues/business-leaderboard" element={<BusinessLeaderboard />} />
+          <Route path="/admin/leagues/:id" element={<LeagueDetails />} />
+          <Route path="/admin/settings" element={<SettingsPage />} />
+          <Route path="/admin/profile" element={<MyProfile />} />
+
+          {/* Legacy support - redirects */}
+          <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="/super-admin" element={<Navigate to="/admin/super-admin" replace />} />
+          <Route path="/players" element={<Navigate to="/admin/players" replace />} />
+          <Route path="/competitions" element={<Navigate to="/admin/competitions" replace />} />
+          <Route path="/settings" element={<Navigate to="/admin/settings" replace />} />
+          <Route path="/profile" element={<Navigate to="/admin/profile" replace />} />
+
+          <Route path="/p/:slug/:categorySlug?" element={<PublicCompetition />} />
+          <Route path="/p/help" element={<PublicOverview />} />
+          <Route path="/explore" element={<Explore />} />
+
+          {/* Catch-all route: Redirect to home for any undefined path */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
+    </ErrorBoundary>
+  );
+}
+
 export function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
         <BrowserRouter>
-          <Suspense fallback={<div className="flex items-center justify-center p-20 text-slate-500 font-bold uppercase tracking-widest animate-pulse">Učitavanje...</div>}>
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/unauthorized" element={<Unauthorized />} />
-
-              <Route path="/sudija" element={<RefereeLogin />} />
-              <Route path="/sudija-dashboard" element={<RefereeDashboard />} />
-
-              {/* Admin Routes */}
-              <Route path="/admin/dashboard" element={<Dashboard />} />
-              <Route path="/admin/super-admin" element={<SuperAdminDashboard />} />
-              <Route path="/admin/players" element={<Players />} />
-              <Route path="/admin/competitions" element={<Competitions />} />
-              <Route path="/admin/competitions/new" element={<CreateCompetition />} />
-              <Route path="/admin/competitions/:id" element={<CompetitionDetails />} />
-              <Route path="/admin/competitions/:id/settings" element={<CompetitionSettings />} />
-              <Route path="/admin/leagues" element={<Leagues />} />
-              <Route path="/admin/leagues/:id" element={<LeagueDetails />} />
-              <Route path="/admin/settings" element={<SettingsPage />} />
-              <Route path="/admin/profile" element={<MyProfile />} />
-              
-              {/* Legacy support - redirects */}
-              <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
-              <Route path="/super-admin" element={<Navigate to="/admin/super-admin" replace />} />
-              <Route path="/players" element={<Navigate to="/admin/players" replace />} />
-              <Route path="/competitions" element={<Navigate to="/admin/competitions" replace />} />
-              <Route path="/settings" element={<Navigate to="/admin/settings" replace />} />
-              <Route path="/profile" element={<Navigate to="/admin/profile" replace />} />
-
-              <Route path="/p/:slug/:categorySlug?" element={<PublicCompetition />} />
-              <Route path="/p/help" element={<PublicOverview />} />
-              <Route path="/explore" element={<Explore />} />
-
-              {/* Catch-all route: Redirect to home for any undefined path */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </Suspense>
+          <AppRoutes />
           <BugReport />
         </BrowserRouter>
       </AuthProvider>

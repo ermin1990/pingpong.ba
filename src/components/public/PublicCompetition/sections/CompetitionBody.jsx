@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Trophy, Users, ChevronRight, Layers3, Swords } from 'lucide-react';
 import PublicGroupMatches from "../../PublicGroupMatches";
 import PublicGroupStandings from "../../PublicGroupStandings";
+import PublicLeagueView from "../../PublicLeagueView";
 import KnockoutTab from "../../../competition/KnockoutTab";
 import PlayersTab from "../../../competition/PlayersTab";
 import SeasonList from "../../../../pages/SeasonList";
@@ -13,6 +14,18 @@ import { useMemo } from 'react';
 
 const CompetitionBody = ({ competition, slug, categorySlug, categories, activeTab, setActiveTab, competitionId, isEmbed, activeCategory, allMatches, allPlayers }) => {
   const totalCompletedMatches = (allMatches || []).filter(m => m.status === 'completed').length;
+
+  // Leagues have no categories subcollection at all - everything lives
+  // directly on the competition doc - so they need their own view instead
+  // of the categories-grid/groups flow below, which would otherwise render
+  // completely empty for them.
+  if (competition?.type === 'League') {
+    return (
+      <main className="container mx-auto px-4 py-6 md:py-8">
+        <PublicLeagueView competition={competition} allMatches={allMatches} />
+      </main>
+    );
+  }
 
   return (
     <main className="container mx-auto px-4 py-6 md:py-8">

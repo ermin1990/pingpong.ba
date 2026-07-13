@@ -272,3 +272,85 @@ html {
     animation-duration: 0.4s;
   }
 }
+
+/* ============================================================
+   LANDING — Premium redesign utilities
+   ============================================================ */
+
+/* Display font for headings on the landing page */
+.font-display {
+  font-family: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-feature-settings: "ss01" on;
+}
+.font-body {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Scroll-reveal — elements start hidden, .is-visible reveals them */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+.reveal-delay-1 { transition-delay: 0.08s; }
+.reveal-delay-2 { transition-delay: 0.16s; }
+.reveal-delay-3 { transition-delay: 0.24s; }
+.reveal-delay-4 { transition-delay: 0.32s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+}
+
+/* Subtle film grain overlay */
+.grain-overlay {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+}
+
+/* Slow aurora drift for hero background */
+@keyframes auroraDrift {
+  0%, 100% { transform: translate(-50%, 0) scale(1); opacity: 0.55; }
+  50% { transform: translate(-46%, 24px) scale(1.08); opacity: 0.8; }
+}
+.animate-aurora { animation: auroraDrift 14s ease-in-out infinite; }
+
+@keyframes auroraDrift2 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.4; }
+  50% { transform: translate(-30px, -20px) scale(1.1); opacity: 0.65; }
+}
+.animate-aurora-2 { animation: auroraDrift2 18s ease-in-out infinite; }
+
+/* Marquee for the ticker band */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee 28s linear infinite;
+}
+
+/* Sheen sweep on primary buttons */
+@keyframes sheen {
+  0% { transform: translateX(-120%) skewX(-18deg); }
+  60%, 100% { transform: translateX(220%) skewX(-18deg); }
+}
+.sheen-parent { position: relative; overflow: hidden; }
+.sheen-parent::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+  transform: translateX(-120%) skewX(-18deg);
+  pointer-events: none;
+}
+.sheen-parent:hover::after {
+  animation: sheen 0.9s ease-out;
+}

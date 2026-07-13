@@ -100,7 +100,7 @@ const CompetitionHeader = ({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-slate-400 text-[11px] uppercase">Sport</p>
-                <p className="text-white text-sm sm:text-base font-bold mt-1">{competition?.sport || 'Stoni Tenis'}</p>
+                <p className="text-white text-sm sm:text-base font-bold mt-1">{competition?.sport || 'Padel'}</p>
               </div>
               <div className="w-8 h-8 bg-sky-500/15 rounded-lg flex items-center justify-center flex-shrink-0">
                 <Zap className="w-4 h-4 text-sky-300" />
@@ -189,7 +189,7 @@ const CompetitionHeader = ({
               onClick={() => setActiveTab('tables')}
               className={`px-3.5 py-2 rounded-lg text-[11px] font-semibold uppercase tracking-wide transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'tables' ? 'bg-sky-600 text-white shadow-md shadow-sky-600/20' : 'text-slate-300 hover:text-white hover:bg-slate-800'}`}
             >
-              <LayoutGrid size={14} /> Stolovi
+              <LayoutGrid size={14} /> Tereni
             </button>
 
             <button 

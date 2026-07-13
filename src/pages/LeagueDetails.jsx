@@ -8,9 +8,9 @@ import {
 } from 'firebase/firestore';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { 
-  Users, Trophy, List, Settings, Save, Plus, ChevronRight, 
+  Users, Trophy, List, Settings, Save, Plus, ChevronRight,
   Trash2, Play, CheckCircle, Info, Edit2, Zap, LayoutGrid, Search, Target,
-  FileText, UserPlus, RefreshCw, X
+  FileText, UserPlus, RefreshCw, X, Building2
 } from 'lucide-react';
 import { generateBergerMatches } from '../utils/berger';
 
@@ -19,6 +19,8 @@ import PlayersTab from '../components/competition/PlayersTab';
 import PublicGroupStandings from '../components/public/PublicGroupStandings';
 import MatchUpdateModal from '../components/competition/MatchUpdateModal';
 import GlobalMatchSearch from '../components/competition/GlobalMatchSearch';
+import DoublesManager from '../components/competition/DoublesManager';
+import TeamsManager from '../components/competition/TeamsManager';
 
 const LeagueDetails = () => {
   const { id } = useParams();
@@ -279,7 +281,6 @@ const LeagueDetails = () => {
       played: 0,
       won: 0,
       lost: 0,
-      draws: 0,
       setsWon: 0,
       setsLost: 0,
       points: 0,
@@ -287,9 +288,10 @@ const LeagueDetails = () => {
     }));
 
     const winPts = league.settings?.pointsWin ?? 2;
-    const drawPts = league.settings?.pointsDraw ?? 1;
     const lossPts = league.settings?.pointsLoss ?? 0;
 
+    // Padel matches are always best-of-N sets, so a tie is never possible -
+    // no draw case here.
     matches.filter(m => m.status === 'completed').forEach(m => {
       const p1 = stats.find(p => p.id === m.player1.id);
       const p2 = stats.find(p => p.id === m.player2.id);
@@ -299,7 +301,7 @@ const LeagueDetails = () => {
         p2.played++;
         const s1 = m.player1Score || 0;
         const s2 = m.player2Score || 0;
-        
+
         p1.setsWon += s1;
         p1.setsLost += s2;
         p2.setsWon += s2;
@@ -315,11 +317,6 @@ const LeagueDetails = () => {
           p2.points += winPts;
           p1.lost++;
           p1.points += lossPts;
-        } else {
-          p1.draws++;
-          p1.points += drawPts;
-          p2.draws++;
-          p2.points += drawPts;
         }
       }
     });
@@ -348,8 +345,39 @@ const LeagueDetails = () => {
     }
   };
 
+  const isDoubles = league?.participantMode === 'doubles';
+  const isTeams = league?.participantMode === 'teams';
+
+  const handleSavePairs = async (pairs) => {
+    try {
+      await updateDoc(doc(db, "competitions", id), { doublesPairs: pairs });
+    } catch (err) {
+      console.error(err);
+      alert("Greška pri spašavanju parova.");
+    }
+  };
+
+  const handleSaveTeams = async (teams) => {
+    try {
+      await updateDoc(doc(db, "competitions", id), { teams });
+    } catch (err) {
+      console.error(err);
+      alert("Greška pri spašavanju timova.");
+    }
+  };
+
   const handleGenerateLeague = async () => {
-    if (selectedPlayers.length < 2) {
+    if (isTeams) {
+      if ((league?.teams || []).length < 2) {
+        alert("Dodajte barem 2 tima u tabu 'Timovi'.");
+        return;
+      }
+    } else if (isDoubles) {
+      if ((league?.doublesPairs || []).length < 2) {
+        alert("Dodajte barem 2 para u tabu 'Parovi'.");
+        return;
+      }
+    } else if (selectedPlayers.length < 2) {
       alert("Dodajte barem 2 igrača.");
       return;
     }
@@ -361,13 +389,17 @@ const LeagueDetails = () => {
     setGenerating(true);
     try {
       const batch = writeBatch(db);
-      
+
       // 1. Delete old matches
       const oldMatchesSnap = await getDocs(query(collection(db, "matches"), where("competitionId", "==", id)));
       oldMatchesSnap.docs.forEach(d => batch.delete(d.ref));
 
-      // 2. Map current selected player objects
-      const participants = allPlayers.filter(p => selectedPlayers.includes(p.id));
+      // 2. Map current participants: teams, pairs (doubles), or individual players (singles)
+      const participants = isTeams
+        ? (league.teams || []).map(team => ({ id: team.id, name: team.name }))
+        : isDoubles
+          ? (league.doublesPairs || []).map(pair => ({ id: pair.id, name: pair.name }))
+          : allPlayers.filter(p => selectedPlayers.includes(p.id));
 
       // 3. Generate Berger
       let bergerRounds = generateBergerMatches(participants);
@@ -489,7 +521,7 @@ const LeagueDetails = () => {
                   </span>
                 </div>
                 <p className="text-slate-500 text-sm mt-1 flex items-center gap-2">
-                   {league.sport} • {selectedPlayers.length} igrača • Bergerov Sistem
+                   {league.sport} • {isTeams ? `${(league.teams || []).length} timova` : isDoubles ? `${(league.doublesPairs || []).length} parova` : `${selectedPlayers.length} igrača`} • Bergerov Sistem
                 </p>
               </div>
             </div>
@@ -518,6 +550,8 @@ const LeagueDetails = () => {
         <div className="flex flex-wrap gap-2 p-1.5 bg-slate-900/50 border border-slate-800 rounded-lg mb-8 w-fit">
           {[
             { id: 'players', label: 'Igrači', icon: Users },
+            ...(isDoubles ? [{ id: 'pairs', label: 'Parovi', icon: UserPlus }] : []),
+            ...(isTeams ? [{ id: 'teams', label: 'Timovi', icon: Building2 }] : []),
             { id: 'matches', label: 'Rezultati', icon: List },
             { id: 'standings', label: 'Tabela', icon: LayoutGrid },
             { id: 'settings', label: 'Postavke', icon: Settings },
@@ -557,13 +591,37 @@ const LeagueDetails = () => {
             />
           )}
 
+          {activeTab === 'pairs' && isDoubles && (
+            <DoublesManager
+              activeCategory={league}
+              allPlayers={allPlayers}
+              selectedPlayers={selectedPlayers}
+              onSavePairs={handleSavePairs}
+            />
+          )}
+
+          {activeTab === 'teams' && isTeams && (
+            <TeamsManager
+              league={league}
+              allPlayers={allPlayers}
+              selectedPlayers={selectedPlayers}
+              onSaveTeams={handleSaveTeams}
+            />
+          )}
+
           {activeTab === 'matches' && (
             <div className="space-y-10">
                {matches.length === 0 ? (
                  <div className="text-center py-24 bg-slate-950/20 border-2 border-dashed border-slate-800 rounded-lg">
                     <List size={48} className="text-slate-700 mx-auto mb-4" />
                     <h3 className="text-xl font-bold text-white mb-2">Nema generisanih mečeva</h3>
-                    <p className="text-slate-500 mb-8 max-w-sm mx-auto">Nakon što odaberete igrače, generišite raspored po kolima.</p>
+                    <p className="text-slate-500 mb-8 max-w-sm mx-auto">
+                        {isTeams
+                          ? 'Nakon što kreirate timove u tabu "Timovi", generišite raspored po kolima.'
+                          : isDoubles
+                            ? 'Nakon što formirate parove u tabu "Parovi", generišite raspored po kolima.'
+                            : 'Nakon što odaberete igrače, generišite raspored po kolima.'}
+                    </p>
                     <button 
                         onClick={handleGenerateLeague}
                         className="px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-all"
@@ -598,17 +656,27 @@ const LeagueDetails = () => {
                                       className="bg-slate-900/50 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/30 p-5 rounded-lg transition-all cursor-pointer group flex items-center justify-between"
                                   >
                                       <div className="flex-1 space-y-3">
-                                          <div className="flex items-center justify-between">
-                                              <span className={`font-medium ${match.player1Score > match.player2Score ? 'text-emerald-400 font-bold' : 'text-slate-300'}`}>
-                                                  {match.player1?.name}
-                                              </span>
-                                              <span className="text-xl font-mono text-white bg-slate-950 px-3 py-1 rounded-lg border border-slate-800">{match.player1Score || 0}</span>
+                                          <div>
+                                              <div className="flex items-center justify-between">
+                                                  <span className={`font-medium ${match.player1Score > match.player2Score ? 'text-emerald-400 font-bold' : 'text-slate-300'}`}>
+                                                      {match.player1?.name}
+                                                  </span>
+                                                  <span className="text-xl font-mono text-white bg-slate-950 px-3 py-1 rounded-lg border border-slate-800">{match.player1Score || 0}</span>
+                                              </div>
+                                              {match.lineup1?.length > 0 && (
+                                                  <p className="text-[10px] text-slate-500 mt-1 truncate">Igrali: {match.lineup1.map(p => p.name).join(', ')}</p>
+                                              )}
                                           </div>
-                                          <div className="flex items-center justify-between">
-                                              <span className={`font-medium ${match.player2Score > match.player1Score ? 'text-emerald-400 font-bold' : 'text-slate-300'}`}>
-                                                  {match.player2?.name}
-                                              </span>
-                                              <span className="text-xl font-mono text-white bg-slate-950 px-3 py-1 rounded-lg border border-slate-800">{match.player2Score || 0}</span>
+                                          <div>
+                                              <div className="flex items-center justify-between">
+                                                  <span className={`font-medium ${match.player2Score > match.player1Score ? 'text-emerald-400 font-bold' : 'text-slate-300'}`}>
+                                                      {match.player2?.name}
+                                                  </span>
+                                                  <span className="text-xl font-mono text-white bg-slate-950 px-3 py-1 rounded-lg border border-slate-800">{match.player2Score || 0}</span>
+                                              </div>
+                                              {match.lineup2?.length > 0 && (
+                                                  <p className="text-[10px] text-slate-500 mt-1 truncate">Igrali: {match.lineup2.map(p => p.name).join(', ')}</p>
+                                              )}
                                           </div>
                                       </div>
                                       <div className="ml-6 pl-6 border-l border-slate-800 flex items-center">
@@ -663,22 +731,17 @@ const LeagueDetails = () => {
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Bodovi (Pobjeda / Neriješeno / Poraz)</label>
-                        <div className="grid grid-cols-3 gap-4">
-                            <input 
-                                type="number" 
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Bodovi (Pobjeda / Poraz)</label>
+                        <p className="text-[10px] text-slate-600 mb-3 italic px-1">* Padel se igra na setove, pa meč nikad ne može završiti neriješeno.</p>
+                        <div className="grid grid-cols-2 gap-4">
+                            <input
+                                type="number"
                                 className="bg-slate-950 border border-slate-800 rounded-xl px-5 py-4 text-white"
                                 value={league.settings?.pointsWin || 2}
                                 onChange={(e) => updateDoc(doc(db, "competitions", id), { "settings.pointsWin": Number(e.target.value) })}
                             />
-                            <input 
-                                type="number" 
-                                className="bg-slate-950 border border-slate-800 rounded-xl px-5 py-4 text-white"
-                                value={league.settings?.pointsDraw || 1}
-                                onChange={(e) => updateDoc(doc(db, "competitions", id), { "settings.pointsDraw": Number(e.target.value) })}
-                            />
-                            <input 
-                                type="number" 
+                            <input
+                                type="number"
                                 className="bg-slate-950 border border-slate-800 rounded-xl px-5 py-4 text-white"
                                 value={league.settings?.pointsLoss || 0}
                                 onChange={(e) => updateDoc(doc(db, "competitions", id), { "settings.pointsLoss": Number(e.target.value) })}
@@ -737,9 +800,9 @@ const LeagueDetails = () => {
                              <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
                                 <label className="text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] ml-1">Unikatni Link Takmičenja (Slug)</label>
                                 <div className="flex items-center bg-slate-950 border border-slate-800 rounded-xl px-5 py-4 group focus-within:border-emerald-500 transition-all">
-                                   <span className="text-slate-600 text-[10px] font-black uppercase tracking-widest mr-2 border-r border-slate-800 pr-3 pointer-events-none">pingpong.ba/p/</span>
+                                   <span className="text-slate-600 text-[10px] font-black uppercase tracking-widest mr-2 border-r border-slate-800 pr-3 pointer-events-none">padel.ba/p/</span>
                                    <input 
-                                     placeholder="npr. moja-stonoteniska-liga"
+                                     placeholder="npr. moja-padel-liga"
                                      className="bg-transparent text-white text-sm font-bold outline-none flex-1 lowercase placeholder:text-slate-700"
                                      value={league.slug || ''}
                                      onChange={(e) => updateDoc(doc(db, "competitions", id), { slug: e.target.value.toLowerCase().trim().replace(/[^a-z0-9-]/g, '-') })}
@@ -798,6 +861,8 @@ const LeagueDetails = () => {
             winPoints: league.settings?.pointsWin,
             lossPoints: league.settings?.pointsLoss
           }}
+          team1Roster={isTeams ? (league.teams || []).find(t => t.id === editingMatch?.player1?.id)?.roster : undefined}
+          team2Roster={isTeams ? (league.teams || []).find(t => t.id === editingMatch?.player2?.id)?.roster : undefined}
         />
 
         {/* Add Player Modal */}

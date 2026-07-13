@@ -76,6 +76,15 @@ service cloud.firestore {
       );
     }
 
+    // Companies: persistent identity for teams (e.g. firms) across league seasons
+    match /companies/{companyId} {
+      allow read: if true;
+      allow create: if request.auth != null && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['org_admin', 'super_admin']);
+      allow update, delete: if request.auth != null && (
+        resource.data.ownerUid == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin'
+      );
+    }
+
     // Matches: writable by owners or admins OR assigned referees
     match /matches/{matchId} {
       allow read: if true;

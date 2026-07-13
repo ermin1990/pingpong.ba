@@ -169,13 +169,13 @@ const RefereesTab = ({ competitionId, tables = [], categories = [] }) => {
 
               <div className="space-y-4 pt-4 border-t border-slate-800">
                 <div className="space-y-2">
-                  <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 block ml-1">ZADUŽENI STOL</label>
+                  <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 block ml-1">ZADUŽENI TEREN</label>
                   <select
                     className="w-full bg-slate-950 border border-slate-800 hover:border-slate-700 rounded-xl px-4 py-3 text-[11px] font-black uppercase text-white tracking-widest outline-none focus:border-sky-500 transition-all cursor-pointer appearance-none"
                     value={ref.assignedTableId || ''}
                     onChange={(e) => handleUpdateAssignment(ref.id, 'assignedTableId', e.target.value)}
                   >
-                    <option value="">SVI STOLOVI</option>
+                    <option value="">SVI TERENI</option>
                     {tables.map((table) => (
                       <option key={table.id} value={table.id}>{table.name}</option>
                     ))}

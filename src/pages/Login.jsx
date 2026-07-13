@@ -73,7 +73,7 @@ const Login = () => {
       <div className="max-w-md w-full bg-gray-800/50 backdrop-blur-xl p-8 rounded-lg border border-gray-700 shadow-2xl text-center">
         
         <div className="mb-8">
-           <h1 className="text-4xl font-black text-white mb-2 tracking-tight">PINGPONG.BA</h1>
+           <h1 className="text-4xl font-black text-white mb-2 tracking-tight">PADEL.BA</h1>
            <p className="text-gray-400">Platforma za upravljanje turnirima</p>
         </div>
 

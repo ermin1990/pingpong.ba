@@ -462,7 +462,7 @@ const CompetitionExport = ({
                   {categoryIndex === 0 ? (
                     <header className="tournament-header">
                       <div>
-                        <p className="event-label">{competition?.organizer || 'pingpong.ba'}</p>
+                        <p className="event-label">{competition?.organizer || 'padel.ba'}</p>
                         <h1>{competition?.name || 'Takmičenje'}</h1>
                         <p className="event-meta">
                           Kategorija: {category.name} | Datum: {formatDate(competition?.startDate)} | Lokacija: {competition?.location || 'Nije uneseno'}
@@ -479,7 +479,7 @@ const CompetitionExport = ({
                   <div className="empty-state">Nema definisanih grupa ili mečeva grupne faze.</div>
                   <footer className="page-footer">
                     <span>Generisano: {formatDateTime(new Date())}</span>
-                    <span>pingpong.ba</span>
+                    <span>padel.ba</span>
                   </footer>
                 </section>
               )}
@@ -491,7 +491,7 @@ const CompetitionExport = ({
                     {categoryIndex === 0 && pageIndex === 0 ? (
                       <header className="tournament-header">
                         <div>
-                          <p className="event-label">{competition?.organizer || 'pingpong.ba'}</p>
+                          <p className="event-label">{competition?.organizer || 'padel.ba'}</p>
                           <h1>{competition?.name || 'Takmičenje'}</h1>
                           <p className="event-meta">
                             {category.name} | {competition?.location || 'Lokacija nije unesena'} | {formatDate(competition?.startDate)}
@@ -680,7 +680,7 @@ const CompetitionExport = ({
 
                     <footer className="page-footer">
                       <span>Generisano: {formatDateTime(new Date())}</span>
-                      <span>pingpong.ba</span>
+                      <span>padel.ba</span>
                     </footer>
                   </section>
                 );
@@ -742,7 +742,7 @@ const CompetitionExport = ({
 
                   <footer className="page-footer">
                     <span>Generisano: {formatDateTime(new Date())}</span>
-                    <span>pingpong.ba</span>
+                    <span>padel.ba</span>
                   </footer>
                 </section>
               )}

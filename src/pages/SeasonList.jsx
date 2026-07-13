@@ -62,7 +62,7 @@ const SeasonList = () => {
           ownerUid: user.uid,
           ownerEmail: user.email,
           createdAt: serverTimestamp(),
-          sport: 'Table Tennis',
+          sport: 'Padel',
           slug: name.trim().toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
           pointsSystem: {
             winInGroup: 5,

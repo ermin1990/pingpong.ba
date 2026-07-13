@@ -328,7 +328,7 @@ const CompetitionSettings = () => {
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">URL Link (Slug)</label>
                   <div className="relative">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">
-                      pingpong.ba/p/
+                      padel.ba/p/
                     </span>
                     <input 
                       type="text" 
