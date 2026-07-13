@@ -136,7 +136,7 @@ const CompetitionDetails = () => {
   const [savingMatchId, setSavingMatchId] = useState(null);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryFormat, setNewCategoryFormat] = useState('round_robin'); // 'round_robin' | 'groups_knockout'
-  const [newCategoryType, setNewCategoryType] = useState('doubles'); // 'singles' | 'doubles' - Padel je uvijek dublovi
+  const [newCategoryType, setNewCategoryType] = useState('singles'); // 'singles' | 'doubles'
   const [editingFormat, setEditingFormat] = useState(false);
   const [showOnlySelected, setShowOnlySelected] = useState(true);
   const [editingMatch, setEditingMatch] = useState(null);

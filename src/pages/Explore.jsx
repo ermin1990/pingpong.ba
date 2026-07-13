@@ -90,7 +90,7 @@ const Explore = () => {
                         <div className="flex items-center gap-2 mb-2">
                             <span className="w-8 h-[2px] bg-amber-500/30 rounded-full" />
                             <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
-                                {comp.sport || 'Padel'}
+                                {comp.sport || 'Tenis'}
                             </p>
                         </div>
                         <h3 className="text-xl font-black text-white uppercase italic leading-[1.1] tracking-tight group-hover:text-amber-300 transition-colors">
@@ -151,7 +151,7 @@ const Explore = () => {
                             <Trophy size={26} className="text-white -rotate-3 group-hover:-rotate-6 transition-transform" />
                         </div>
                         <span className="text-xl font-black uppercase tracking-tighter text-white italic">
-                            padel<span className="text-amber-400">.ba</span>
+                            tenis<span className="text-amber-400">.ba</span>
                         </span>
                     </Link>
                 </div>

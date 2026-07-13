@@ -30,11 +30,11 @@ const ShareResultCard = ({ match, competitionName, label1, label2 }) => {
       const canvas = await html2canvas(cardRef.current, { backgroundColor: null, scale: 2 });
       canvas.toBlob(async (blob) => {
         if (!blob) { setGenerating(false); return; }
-        const file = new File([blob], `padel-rezultat-${Date.now()}.png`, { type: 'image/png' });
+        const file = new File([blob], `tenis-rezultat-${Date.now()}.png`, { type: 'image/png' });
 
         if (navigator.canShare?.({ files: [file] })) {
           try {
-            await navigator.share({ files: [file], title: 'Padel rezultat', text: `${name1} vs ${name2}` });
+            await navigator.share({ files: [file], title: 'Tenis rezultat', text: `${name1} vs ${name2}` });
           } catch {
             // user closed the share sheet - not an error
           }
@@ -42,7 +42,7 @@ const ShareResultCard = ({ match, competitionName, label1, label2 }) => {
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `padel-rezultat-${name1}-vs-${name2}.png`.replace(/\s+/g, '-');
+          a.download = `tenis-rezultat-${name1}-vs-${name2}.png`.replace(/\s+/g, '-');
           a.click();
           URL.revokeObjectURL(url);
         }
@@ -69,8 +69,8 @@ const ShareResultCard = ({ match, competitionName, label1, label2 }) => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 40 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 10, background: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0b1220', fontWeight: 900, fontSize: 22, fontStyle: 'italic' }}>P</div>
-            <div style={{ color: '#ffffff', fontSize: 22, fontWeight: 700, letterSpacing: -0.5 }}>PADEL<span style={{ color: '#f59e0b' }}>.BA</span></div>
+            <div style={{ width: 40, height: 40, borderRadius: 10, background: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0b1220', fontWeight: 900, fontSize: 22, fontStyle: 'italic' }}>T</div>
+            <div style={{ color: '#ffffff', fontSize: 22, fontWeight: 700, letterSpacing: -0.5 }}>TENIS<span style={{ color: '#f59e0b' }}>.BA</span></div>
           </div>
 
           {competitionName && (
@@ -106,7 +106,7 @@ const ShareResultCard = ({ match, competitionName, label1, label2 }) => {
           )}
 
           <div style={{ marginTop: 40, color: '#475569', fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase' }}>
-            padel.ba
+            tenis.ba
           </div>
         </div>
       </div>

@@ -15,10 +15,10 @@ const Leagues = () => {
   
   // New League State
   const [name, setName] = useState('');
-  const [sport, setSport] = useState('Padel');
+  const [sport, setSport] = useState('Tenis');
   const [pointsWin, setPointsWin] = useState(2);
   const [pointsLoss, setPointsLoss] = useState(0);
-  const [participantMode, setParticipantMode] = useState('doubles'); // 'singles' | 'doubles' - Padel je uvijek dublovi
+  const [participantMode, setParticipantMode] = useState('singles'); // 'singles' | 'doubles'
 
   useEffect(() => {
     if (!user) return; // Wait for user auth
@@ -244,9 +244,8 @@ const Leagues = () => {
                     onChange={(e) => setSport(e.target.value)}
                     className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all font-medium appearance-none"
                   >
+                    <option value="Tenis">Tenis</option>
                     <option value="Table Tennis">Stoni Tenis</option>
-                    <option value="Tennis">Tenis</option>
-                    <option value="Padel">Padel</option>
                     <option value="Badminton">Badminton</option>
                     <option value="Other">Ostalo</option>
                   </select>

@@ -192,7 +192,7 @@ const Home = () => {
                 <div className="max-w-7xl mx-auto px-5 md:px-8 h-[70px] flex justify-between items-center">
                     <a href="#top" className="flex items-center gap-2.5 group">
                         <Logo />
-                        <span className="font-display text-xl font-semibold text-white tracking-tight">PADEL<span className="text-amber-400">.BA</span></span>
+                        <span className="font-display text-xl font-semibold text-white tracking-tight">TENIS<span className="text-amber-400">.BA</span></span>
                     </a>
                     <div className="flex gap-1.5 md:gap-2 items-center">
                         <a href="#features" className="hidden md:inline-flex items-center text-sm text-slate-400 hover:text-white px-3.5 py-2 rounded-lg transition-colors">
@@ -228,7 +228,7 @@ const Home = () => {
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-300 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400"></span>
                         </span>
-                        Padel platforma za BiH · uživo bodovanje, poen po poen
+                        Tenis platforma za BiH · uživo bodovanje, poen po poen
                     </div>
 
                     <h1 className="reveal reveal-delay-1 font-display text-[3.25rem] leading-[0.95] md:text-8xl font-semibold mb-7 tracking-[-0.03em] text-white max-w-4xl mx-auto">
@@ -238,7 +238,7 @@ const Home = () => {
                     </h1>
 
                     <p className="reveal reveal-delay-2 text-lg md:text-xl text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
-                        Kompletna platforma za padel klubove, lige i <span className="text-slate-200 font-medium">firme koje žele turnir za svoje zaposlene</span>. Vodite meč <span className="text-lime-300 font-medium">uživo, poen po poen</span> — 0, 15, 30, 40, kao u tenisu — i pratite rezultat u realnom vremenu, bez papira i Excela.
+                        Kompletna platforma za teniske klubove, lige i <span className="text-slate-200 font-medium">firme koje žele turnir za svoje zaposlene</span>. Vodite meč <span className="text-lime-300 font-medium">uživo, poen po poen</span> — 0, 15, 30, 40 — i pratite rezultat u realnom vremenu, bez papira i Excela.
                     </p>
 
                     <div className="reveal reveal-delay-3 flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
@@ -457,7 +457,7 @@ const Home = () => {
                                 Team building koji se <span className="text-transparent bg-clip-text bg-gradient-to-r from-lime-300 to-amber-300">pamti</span>
                             </h2>
                             <p className="text-slate-400 text-lg leading-relaxed">
-                                Organizujte padel turnir za zaposlene bez ijedne tabele u Excelu. Mi vodimo žrijeb, raspored i rezultate uživo — vi samo dođete i igrate.
+                                Organizujte teniski turnir za zaposlene bez ijedne tabele u Excelu. Mi vodimo žrijeb, raspored i rezultate uživo — vi samo dođete i igrate.
                             </p>
                         </div>
 
@@ -577,7 +577,7 @@ const Home = () => {
                                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-lime-300">vašeg kluba ili firme</span>
                                 </h2>
                                 <p className="text-slate-400 text-lg leading-relaxed mb-9 max-w-2xl">
-                                    Padel.ba nije samo softver — to je kompletan ekosistem za upravljanje padel takmičenjima. Od rekreativnih liga do korporativnih turnira, automatizujemo sve ono što vam oduzima vrijeme.
+                                    Tenis.ba nije samo softver — to je kompletan ekosistem za upravljanje teniskim takmičenjima. Od rekreativnih liga do korporativnih turnira, automatizujemo sve ono što vam oduzima vrijeme.
                                 </p>
 
                                 <div className="inline-flex items-center gap-4 bg-slate-900/70 border border-amber-400/25 rounded-2xl p-5">
@@ -601,7 +601,7 @@ const Home = () => {
                                             <Trophy size={92} className="text-white relative z-10 drop-shadow-[0_0_18px_rgba(255,255,255,0.35)]" />
                                         </div>
                                         <div className="text-center">
-                                            <div className="font-display text-2xl font-semibold text-white tracking-tight mb-1">PADEL PRO</div>
+                                            <div className="font-display text-2xl font-semibold text-white tracking-tight mb-1">TENIS PRO</div>
                                             <div className="text-slate-500 font-medium uppercase tracking-[0.25em] text-[10px]">Tournament Management</div>
                                         </div>
                                         <div className="w-full h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
@@ -698,7 +698,7 @@ const Home = () => {
                 <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
                     <div className="flex items-center gap-2.5">
                         <Logo size="sm" />
-                        <span className="text-slate-500 text-sm">&copy; {new Date().getFullYear()} Padel.ba Platforma. Sva prava zadržana.</span>
+                        <span className="text-slate-500 text-sm">&copy; {new Date().getFullYear()} Tenis.ba Platforma. Sva prava zadržana.</span>
                     </div>
                     <Link to="/p/help" className="text-slate-400 hover:text-white text-sm flex items-center gap-2 transition-colors">
                         <BookOpen size={14} /> Kako koristiti javni prikaz
@@ -754,7 +754,7 @@ const Home = () => {
                                             <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em] ml-1">Naziv kluba / organizacije</label>
                                             <input
                                                 required
-                                                placeholder="npr. PK PADEL BIH"
+                                                placeholder="npr. TK TENIS BIH"
                                                 className="w-full bg-slate-950 border border-white/10 rounded-xl px-5 py-3.5 text-white focus:border-amber-400 outline-none transition-all placeholder:text-slate-700"
                                                 value={requestForm.club}
                                                 onChange={e => setRequestForm({ ...requestForm, club: e.target.value })}

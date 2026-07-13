@@ -19,7 +19,7 @@ const CreateCompetition = () => {
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
   const [type, setType] = useState('Groups');
-  const [sport, setSport] = useState('Padel');
+  const [sport, setSport] = useState('Tenis');
   const [location, setLocation] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -203,7 +203,7 @@ const CreateCompetition = () => {
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">URL Link (Slug)</label>
                   <div className="relative">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400  font-bold text-sm">
-                      padel.ba/p/
+                      tenis.ba/p/
                     </span>
                     <input 
                       type="text" 

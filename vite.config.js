@@ -17,8 +17,8 @@ export default defineConfig({
         'favicon/android-chrome-512x512.png'
       ],
       manifest: {
-        name: 'Padel BiH',
-        short_name: 'Padel BiH',
+        name: 'Tenis BiH',
+        short_name: 'Tenis BiH',
         description: 'Tournament management system',
         theme_color: '#070b14',
         background_color: '#070b14',

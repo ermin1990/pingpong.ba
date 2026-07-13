@@ -186,7 +186,7 @@ const MyProfile = () => {
                 <Mail size={16} className="text-blue-500" /> Podrška
               </h3>
               <p className="text-xs text-slate-400 mb-4">Ako imate pitanja ili trebate pomoć, pošaljite poruku našem timu.</p>
-              <a href="mailto:info@padel.ba" className="w-full bg-slate-800 hover:bg-slate-700 text-white py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 text-xs transition-colors">
+              <a href="mailto:info@tenis.ba" className="w-full bg-slate-800 hover:bg-slate-700 text-white py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 text-xs transition-colors">
                 Kontaktiraj nas
               </a>
             </div>

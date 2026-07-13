@@ -58,7 +58,7 @@ const DashboardLayout = ({ children, title }) => {
               <Trophy size={20} className="text-black" />
             </div>
             <div className="hidden sm:block overflow-hidden whitespace-nowrap">
-              <div className="text-2xl font-black text-white tracking-tighter italic leading-none">PADEL.BA</div>
+              <div className="text-2xl font-black text-white tracking-tighter italic leading-none">TENIS.BA</div>
               <div className="text-[10px] text-amber-500/60 font-black uppercase tracking-[0.2em] mt-1">ADMIN PANEL</div>
             </div>
           </div>
@@ -126,7 +126,7 @@ const DashboardLayout = ({ children, title }) => {
                 <Trophy size={20} className="text-black" />
               </div>
               <div>
-                <div className="text-2xl font-black text-white italic tracking-tighter">PADEL.BA</div>
+                <div className="text-2xl font-black text-white italic tracking-tighter">TENIS.BA</div>
               </div>
             </div>
             

@@ -100,7 +100,7 @@ const CompetitionHeader = ({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-slate-400 text-[11px] uppercase">Sport</p>
-                <p className="text-white text-sm sm:text-base font-bold mt-1">{competition?.sport || 'Padel'}</p>
+                <p className="text-white text-sm sm:text-base font-bold mt-1">{competition?.sport || 'Tenis'}</p>
               </div>
               <div className="w-8 h-8 bg-sky-500/15 rounded-lg flex items-center justify-center flex-shrink-0">
                 <Zap className="w-4 h-4 text-sky-300" />

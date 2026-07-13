@@ -290,7 +290,7 @@ const LeagueDetails = () => {
     const winPts = league.settings?.pointsWin ?? 2;
     const lossPts = league.settings?.pointsLoss ?? 0;
 
-    // Padel matches are always best-of-N sets, so a tie is never possible -
+    // Tenis matches are always best-of-N sets, so a tie is never possible -
     // no draw case here.
     matches.filter(m => m.status === 'completed').forEach(m => {
       const p1 = stats.find(p => p.id === m.player1.id);
@@ -732,7 +732,7 @@ const LeagueDetails = () => {
                     </div>
                     <div>
                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Bodovi (Pobjeda / Poraz)</label>
-                        <p className="text-[10px] text-slate-600 mb-3 italic px-1">* Padel se igra na setove, pa meč nikad ne može završiti neriješeno.</p>
+                        <p className="text-[10px] text-slate-600 mb-3 italic px-1">* Tenis se igra na setove, pa meč nikad ne može završiti neriješeno.</p>
                         <div className="grid grid-cols-2 gap-4">
                             <input
                                 type="number"
@@ -800,9 +800,9 @@ const LeagueDetails = () => {
                              <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
                                 <label className="text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] ml-1">Unikatni Link Takmičenja (Slug)</label>
                                 <div className="flex items-center bg-slate-950 border border-slate-800 rounded-xl px-5 py-4 group focus-within:border-emerald-500 transition-all">
-                                   <span className="text-slate-600 text-[10px] font-black uppercase tracking-widest mr-2 border-r border-slate-800 pr-3 pointer-events-none">padel.ba/p/</span>
+                                   <span className="text-slate-600 text-[10px] font-black uppercase tracking-widest mr-2 border-r border-slate-800 pr-3 pointer-events-none">tenis.ba/p/</span>
                                    <input 
-                                     placeholder="npr. moja-padel-liga"
+                                     placeholder="npr. moja-tenis-liga"
                                      className="bg-transparent text-white text-sm font-bold outline-none flex-1 lowercase placeholder:text-slate-700"
                                      value={league.slug || ''}
                                      onChange={(e) => updateDoc(doc(db, "competitions", id), { slug: e.target.value.toLowerCase().trim().replace(/[^a-z0-9-]/g, '-') })}

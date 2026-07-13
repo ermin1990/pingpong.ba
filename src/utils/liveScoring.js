@@ -1,5 +1,5 @@
 /**
- * Point-by-point live scoring engine for a padel/tennis-style match:
+ * Point-by-point live scoring engine for a tennis-style match:
  * points (0/15/30/40 + deuce/advantage) -> games (first to 6, win by 2,
  * tie-break at 6-6) -> sets (best of N, N = config.setsToWin).
  *

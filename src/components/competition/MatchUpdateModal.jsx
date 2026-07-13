@@ -45,7 +45,7 @@ const MatchUpdateModal = ({
       alert("Rezultat ne može biti negativan.");
       return false;
     }
-    // Padel se igra na setove (best-of-N) - meč nikad ne može završiti neriješeno.
+    // Tenis se igra na setove (best-of-N) - meč nikad ne može završiti neriješeno.
     if (editingMatch.status === 'completed' && s1 === s2) {
       alert("Meč ne može završiti neriješeno.");
       return false;

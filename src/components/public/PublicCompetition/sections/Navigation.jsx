@@ -13,7 +13,7 @@ const Navigation = ({ slug, categorySlug, categories, showDropdown, setShowDropd
             className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.14em] transition-all border bg-slate-800 text-slate-200 border-slate-600 hover:text-white hover:border-slate-400 hover:bg-slate-700"
           >
             <Globe size={13} />
-            <span>padel.ba</span>
+            <span>tenis.ba</span>
           </Link>
 
           <div className="w-px h-5 bg-slate-800 flex-shrink-0" />

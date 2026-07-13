@@ -43,7 +43,7 @@ const BusinessLeaderboard = () => {
         const teamById = {};
         (league.teams || []).forEach(t => { teamById[t.id] = t; });
 
-        // Padel matches are always best-of-N sets, so a tie is never possible -
+        // Tenis matches are always best-of-N sets, so a tie is never possible -
         // no draw case here.
         matches.forEach(m => {
           const t1 = teamById[m.player1?.id];

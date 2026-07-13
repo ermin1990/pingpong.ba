@@ -22,7 +22,7 @@ const PublicOverview = () => {
       <div className="max-w-5xl mx-auto space-y-6">
         <div className="bg-slate-900 border border-slate-800 rounded-lg p-8">
           <h1 className="text-2xl font-black">Kako koristiti aplikaciju — Kratki priručnik</h1>
-          <p className="text-slate-400 mt-2">Ovaj vodič pokazuje korak-po-korak kako organizovati takmičenja, upravljati igračima i voditi turnire koristeći Padel.ba.</p>
+          <p className="text-slate-400 mt-2">Ovaj vodič pokazuje korak-po-korak kako organizovati takmičenja, upravljati igračima i voditi turnire koristeći Tenis.ba.</p>
         </div>
 
         <Section title="1) Registracija i dobijanje pristupa" icon={Users}>
@@ -90,7 +90,7 @@ const PublicOverview = () => {
 
         <Section title="7) Liga (Berger) — bodovanje i tabele" icon={LayoutGrid}>
           <div>
-            <p>Liga mod (Berger) koristi podesive bodove za pobjedu/poraz (padel se igra na setove, pa meč nikad ne može završiti neriješeno).</p>
+            <p>Liga mod (Berger) koristi podesive bodove za pobjedu/poraz (tenis se igra na setove, pa meč nikad ne može završiti neriješeno).</p>
             <ul className="list-disc list-inside text-slate-400">
               <li>Podesite bodove u postavkama lige (npr. 2/0).</li>
               <li>Tablice se računaju po bodovima, zatim set-differencama, pa po poen-differenci.</li>

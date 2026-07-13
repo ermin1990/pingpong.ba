@@ -991,7 +991,7 @@ const PublicCompetition = () => {
               <div className="w-8 h-8 bg-slate-50 dark:bg-slate-800 rounded-xl flex items-center justify-center border border-slate-200 dark:border-slate-700">
                   <Trophy size={16} className="text-slate-400" />
               </div>
-              <span className="text-lg font-black text-slate-900 dark:text-white uppercase italic tracking-tighter">PADEL.BA</span>
+              <span className="text-lg font-black text-slate-900 dark:text-white uppercase italic tracking-tighter">TENIS.BA</span>
            </div>
            <p className="text-[10px] text-slate-400 dark:text-slate-800 font-bold uppercase tracking-widest">
               Automated Tournament Management System &copy; {new Date().getFullYear()}
