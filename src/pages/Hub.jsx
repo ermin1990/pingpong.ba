@@ -56,6 +56,21 @@ const Hub = () => {
         status: 'pending',
         createdAt: serverTimestamp()
       });
+
+      const token = import.meta.env.VITE_TELEGRAM_BOT_TOKEN;
+      const chatId = import.meta.env.VITE_TELEGRAM_CHAT_ID;
+      if (token && chatId) {
+        const text = `📬 *Nova poruka - MojTurnir.ba* 📬\n\n` +
+          `👤 *Ime:* ${form.name.trim()}\n` +
+          `📧 *Email:* ${form.email.trim()}\n` +
+          (form.message.trim() ? `💬 *Poruka:* ${form.message.trim()}` : '');
+        fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'Markdown' })
+        }).catch((err) => console.error('Telegram notify failed:', err));
+      }
+
       setSubmitted(true);
     } catch (err) {
       console.error(err);
