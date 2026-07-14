@@ -17,9 +17,9 @@ export default defineConfig({
         'favicon/android-chrome-512x512.png'
       ],
       manifest: {
-        name: 'PingPong BIH',
-        short_name: 'PingPong BIH',
-        description: 'Tournament management system',
+        name: 'MojTurnir.ba',
+        short_name: 'MojTurnir.ba',
+        description: 'Sve tvoje lige, na jednom mjestu',
         theme_color: '#070b14',
         background_color: '#070b14',
         display: 'standalone',
